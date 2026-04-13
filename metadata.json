@@ -1,0 +1,5 @@
+{
+  "name": "Canvas",
+  "description": "No-code generative art studio powered by p5.js",
+  "requestFramePermissions": []
+}
