@@ -58,42 +58,51 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode }: T
   };
 
   return (
-    <div className="h-14 bg-neutral-950 border-b border-neutral-800 flex items-center justify-between px-4 text-neutral-200 shrink-0">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <Palette className="text-indigo-500" size={24} />
+    <div className="h-14 glass-panel flex items-center justify-between px-6 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5 font-semibold text-lg tracking-tight">
+          <Palette className="text-white" size={20} />
           <span>Canvas</span>
         </div>
         
-        <div className="h-6 w-px bg-neutral-800 mx-2"></div>
+        <div className="h-5 w-[1px] bg-white/20"></div>
         
-        <select
-          value={config.templateId}
-          onChange={handleTemplateChange}
-          className="bg-neutral-900 border border-neutral-700 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 p-1.5 outline-none cursor-pointer"
-        >
-          {Object.values(templates).map(t => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={config.templateId}
+            onChange={handleTemplateChange}
+            className="appearance-none bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-white/30 transition-colors cursor-pointer"
+          >
+            {Object.values(templates).map(t => (
+              <option key={t.id} value={t.id} className="bg-[#1c1c1e] text-white/90">{t.name}</option>
+            ))}
+          </select>
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={handleSurpriseMe}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer active:scale-95"
         >
-          <Wand2 size={16} className="text-purple-400" />
+          <Wand2 size={14} />
           Surprise Me
         </button>
         
         <button
           onClick={onToggleCode}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium border rounded-md transition-colors cursor-pointer ${showCode ? 'bg-indigo-900/30 border-indigo-500/50 text-indigo-300' : 'bg-neutral-900 hover:bg-neutral-800 border-neutral-700'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${showCode ? 'bg-white text-black border-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'}`}
         >
-          <Code size={16} />
+          <Code size={14} />
           Code
         </button>
+        
+        <div className="h-4 w-[1px] bg-white/20 mx-1"></div>
         
         <button
           onClick={() => {
@@ -107,17 +116,17 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode }: T
             a.click();
             URL.revokeObjectURL(url);
           }}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer active:scale-95"
         >
-          <Download size={16} />
+          <Download size={14} />
           JS
         </button>
         
         <button
           onClick={onExport}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-white hover:bg-white/90 text-black rounded-lg transition-colors cursor-pointer active:scale-95 shadow-sm"
         >
-          <Download size={16} />
+          <Download size={14} />
           PNG
         </button>
       </div>

@@ -24,12 +24,12 @@ export function CanvasRunner({ config, exportTrigger }: CanvasRunnerProps) {
   }, [exportTrigger]);
 
   return (
-    <div className="w-full h-full bg-neutral-900 overflow-hidden relative">
+    <div className="w-full h-full bg-[#0b0b0d] overflow-hidden relative border-none">
       <iframe
         ref={iframeRef}
         title="p5-canvas"
         className="w-full h-full border-none"
-        sandbox="allow-scripts allow-downloads"
+        sandbox="allow-scripts allow-downloads allow-same-origin allow-popups"
       />
     </div>
   );

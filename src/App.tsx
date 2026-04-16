@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { ControlPanel } from './components/ControlPanel';
 import { CanvasRunner } from './components/CanvasRunner';
 import { CodeViewer } from './components/CodeViewer';
+import { PromptBar } from './components/PromptBar';
 import { SketchConfig } from './types';
 import { defaultTemplateId, templates } from './templates';
+import { generateConfigFromPrompt } from './lib/ai';
 
 export default function App() {
   const [config, setConfig] = useState<SketchConfig>(() => {
@@ -28,13 +30,27 @@ export default function App() {
 
   const [showCode, setShowCode] = useState(false);
   const [exportTrigger, setExportTrigger] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleExport = () => {
     setExportTrigger(prev => prev + 1);
   };
 
+  const handleGenerate = async (prompt: string) => {
+    setIsGenerating(true);
+    try {
+      const newConfig = await generateConfigFromPrompt(prompt, config);
+      setConfig(newConfig);
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      alert("Failed to generate sketch from prompt. Please check your console.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen w-full bg-neutral-950 text-neutral-200 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-[#000000] text-white overflow-hidden font-sans relative">
       <TopBar 
         config={config} 
         onChange={setConfig} 
@@ -43,11 +59,12 @@ export default function App() {
         showCode={showCode}
       />
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <ControlPanel config={config} onChange={setConfig} />
         
         <div className="flex-1 relative">
           <CanvasRunner config={config} exportTrigger={exportTrigger} />
+          <PromptBar onGenerate={handleGenerate} isLoading={isGenerating} />
         </div>
         
         {showCode && (
