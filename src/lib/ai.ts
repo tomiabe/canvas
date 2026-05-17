@@ -1,66 +1,64 @@
+import Groq from 'groq-sdk';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
 
-export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error('GROQ_API_KEY is not set.');
+let groqInstance: Groq | null = null;
 
-  const availableTemplates = Object.values(templates).map(t => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    params: t.params.map(p => ({
-      id: p.id,
-      name: p.name,
-      type: p.type,
-      default: p.default,
-      options: p.options,
-      min: p.min,
-      max: p.max,
-    }))
-  }));
+function getGroq() {
+  if (!groqInstance) {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) throw new Error('GROQ_API_KEY is not set.');
+    groqInstance = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+  }
+  return groqInstance;
+}
+
+export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
+  const groq = getGroq();
+
+  const templateList = Object.values(templates).map(t => `${t.id}: ${t.name} — ${t.description}`).join('\n');
+
+  const currentTemplate = templates[currentConfig.templateId];
+  const currentParamDefs = currentTemplate
+    ? currentTemplate.params.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        default: p.default,
+        ...(p.options ? { options: p.options } : {}),
+        ...(p.min !== undefined ? { min: p.min } : {}),
+        ...(p.max !== undefined ? { max: p.max } : {}),
+      }))
+    : [];
 
   const systemPrompt = `You are an AI assistant for Canvas, a generative art tool powered by p5.js.
 Translate the user's natural language request into a valid sketch configuration.
 
-Available templates:
-${JSON.stringify(availableTemplates, null, 2)}
+Available templates (id: name — description):
+${templateList}
 
-Current configuration:
-${JSON.stringify(currentConfig, null, 2)}
+Current templateId: "${currentConfig.templateId || 'none'}"
+${currentParamDefs.length ? `Current template params:\n${JSON.stringify(currentParamDefs, null, 2)}` : ''}
 
 Rules:
 - If the user wants to modify the current sketch, keep templateId and update relevant params.
-- If they want something new, pick the best matching templateId.
-- Always return valid params matching the template's param definitions.
+- If they want something new, pick the best matching templateId from the list above.
 - Colors must be valid HEX strings (e.g. "#ff0000").
 - Numbers must respect min/max bounds.
-- Respond ONLY with a valid JSON object with keys: "templateId" (string) and "params" (object).`;
+- Respond ONLY with a valid JSON object: {"templateId": string, "params": object}.
+- Only include params you want to change; omit the rest (defaults will be used).`;
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    }),
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: prompt },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.7,
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`xAI API error: ${response.status} ${err}`);
-  }
-
-  const json = await response.json();
-  const text = json.choices?.[0]?.message?.content ?? '{}';
+  const text = completion.choices[0]?.message?.content ?? '{}';
 
   try {
     const data = JSON.parse(text);

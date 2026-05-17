@@ -14,11 +14,10 @@ import { defaultTemplateId, templates } from './templates';
 import { generateConfigFromPrompt } from './lib/ai';
 
 export default function App() {
-  const [config, setConfig] = useState<SketchConfig>(() => {
-    const template = templates[defaultTemplateId];
-    const defaultParams: Record<string, any> = {};
-    template.params.forEach(p => { defaultParams[p.id] = p.default; });
-    return { templateId: defaultTemplateId, seed: Math.floor(Math.random() * 1000000), params: defaultParams };
+  const [config, setConfig] = useState<SketchConfig>({
+    templateId: '',
+    seed: 0,
+    params: {},
   });
 
   const [isStarted, setIsStarted] = useState(false);
@@ -56,7 +55,7 @@ export default function App() {
       />
 
       <div className="flex flex-1 overflow-hidden relative">
-        <ControlPanel config={config} onChange={handleConfigChange} />
+        {isStarted && <ControlPanel config={config} onChange={handleConfigChange} />}
 
         <div className="flex-1 relative">
           <CanvasRunner config={config} exportTrigger={exportTrigger} isStarted={isStarted} />
