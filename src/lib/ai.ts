@@ -1,21 +1,9 @@
-import { GoogleGenAI, Type } from '@google/genai';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
 
-let aiInstance: GoogleGenAI | null = null;
-
-function getAiInstance() {
-  if (!aiInstance) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not set.");
-    }
-    aiInstance = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  }
-  return aiInstance;
-}
-
 export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
-  const ai = getAiInstance();
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error('GROQ_API_KEY is not set.');
 
   const availableTemplates = Object.values(templates).map(t => ({
     id: t.id,
@@ -27,62 +15,71 @@ export async function generateConfigFromPrompt(prompt: string, currentConfig: Sk
       type: p.type,
       default: p.default,
       options: p.options,
+      min: p.min,
+      max: p.max,
     }))
   }));
 
-  const systemInstruction = `You are an AI assistant for a creative coding tool called Canvas. 
-Your goal is to translate a user's natural language request into a valid template configuration.
+  const systemPrompt = `You are an AI assistant for Canvas, a generative art tool powered by p5.js.
+Translate the user's natural language request into a valid sketch configuration.
+
 Available templates:
 ${JSON.stringify(availableTemplates, null, 2)}
 
 Current configuration:
 ${JSON.stringify(currentConfig, null, 2)}
 
-If the user asks to modify the current sketch, keep the current templateId and update the relevant parameters. 
-If they ask for something entirely new, pick the best templateId and set suitable parameters.
-Always return valid parameters as per the template definition. Provide colors in HEX format. Provide numbers that fit within min/max bounds if specified.
-Provide the response strictly as valid JSON matching the schema.`;
+Rules:
+- If the user wants to modify the current sketch, keep templateId and update relevant params.
+- If they want something new, pick the best matching templateId.
+- Always return valid params matching the template's param definitions.
+- Colors must be valid HEX strings (e.g. "#ff0000").
+- Numbers must respect min/max bounds.
+- Respond ONLY with a valid JSON object with keys: "templateId" (string) and "params" (object).`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: prompt,
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          templateId: { type: Type.STRING, description: "The ID of the selected template." },
-          params: { type: Type.OBJECT, description: "Key-value pairs of parameters matching the template." }
-        },
-        required: ["templateId", "params"]
-      }
-    }
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+    }),
   });
 
-  const text = response.text || "{}";
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`xAI API error: ${response.status} ${err}`);
+  }
+
+  const json = await response.json();
+  const text = json.choices?.[0]?.message?.content ?? '{}';
+
   try {
     const data = JSON.parse(text);
-    
-    // Validate that the template exists
-    if (!templates[data.templateId]) {
-       return currentConfig; // fallback
-    }
 
-    // Merge new params with defaults to avoid missing keys
+    if (!templates[data.templateId]) return currentConfig;
+
     const template = templates[data.templateId];
     const finalParams: Record<string, any> = {};
     template.params.forEach(p => {
-      finalParams[p.id] = data.params[p.id] !== undefined ? data.params[p.id] : p.default;
+      finalParams[p.id] = data.params?.[p.id] !== undefined ? data.params[p.id] : p.default;
     });
 
     return {
       templateId: data.templateId,
       seed: Math.floor(Math.random() * 1000000),
-      params: finalParams
+      params: finalParams,
     };
   } catch (err) {
-    console.error("Failed to parse AI response:", err);
+    console.error('Failed to parse AI response:', err, text);
     throw err;
   }
 }
