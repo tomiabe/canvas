@@ -22,6 +22,7 @@ export interface Template {
   description: string;
   params: ParamDef[];
   presets?: Preset[];
+  supportsLiveParams?: boolean;
   generateCode: (params: Record<string, any>, seed: number) => string;
 }
 

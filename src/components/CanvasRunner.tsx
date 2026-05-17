@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { SketchConfig } from '../types';
 import { generateHtml } from '../engine/generator';
+import { templates } from '../templates';
 import { Sparkles } from 'lucide-react';
 
 interface CanvasRunnerProps {
@@ -12,12 +13,26 @@ interface CanvasRunnerProps {
 export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Reload the iframe when the template, seed, or custom code changes
   useEffect(() => {
-    if (!isStarted) return;
-    if (iframeRef.current) {
+    if (!isStarted || !iframeRef.current) return;
+    iframeRef.current.srcdoc = generateHtml(config);
+  }, [config.templateId, config.seed, config.customCode, isStarted]);
+
+  // For templates that support live params: postMessage instead of reload
+  // For all others: reload so param changes take effect immediately
+  useEffect(() => {
+    if (!isStarted || !iframeRef.current) return;
+    const template = config.templateId ? templates[config.templateId] : null;
+    if (template?.supportsLiveParams) {
+      iframeRef.current.contentWindow?.postMessage(
+        { type: 'params-update', params: config.params },
+        '*'
+      );
+    } else {
       iframeRef.current.srcdoc = generateHtml(config);
     }
-  }, [config, isStarted]);
+  }, [config.params, isStarted]);
 
   useEffect(() => {
     if (exportTrigger && iframeRef.current?.contentWindow) {
@@ -57,6 +72,7 @@ export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerP
         title="p5-canvas"
         className="w-full h-full border-none"
         sandbox="allow-scripts allow-downloads allow-same-origin allow-popups"
+        allow="microphone"
       />
     </div>
   );

@@ -46,6 +46,7 @@ import { perlinMountainsTemplate } from './perlinMountains';
 import { attractorsTemplate } from './attractors';
 import { painterlyTemplate } from './painterly';
 import { shatterGlassTemplate } from './shatterGlass';
+import { aquariumTemplate } from './aquarium';
 
 export const templates: Record<string, Template> = {
   // Originals
@@ -94,6 +95,9 @@ export const templates: Record<string, Template> = {
   [attractorsTemplate.id]: attractorsTemplate,
   [painterlyTemplate.id]: painterlyTemplate,
   [shatterGlassTemplate.id]: shatterGlassTemplate,
+
+  // Interactive / sensor input
+  [aquariumTemplate.id]: aquariumTemplate,
 };
 
 export const defaultTemplateId = particleSystemTemplate.id;
