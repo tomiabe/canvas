@@ -9,11 +9,15 @@ interface CodeViewerProps {
 
 export function CodeViewer({ config }: CodeViewerProps) {
   const [copied, setCopied] = React.useState(false);
-  const template = templates[config.templateId];
-  
-  if (!template) return null;
 
-  const code = template.generateCode(config.params, config.seed);
+  let code: string;
+  if (config.customCode) {
+    code = config.customCode;
+  } else {
+    const template = templates[config.templateId];
+    if (!template) return null;
+    code = template.generateCode(config.params, config.seed);
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);

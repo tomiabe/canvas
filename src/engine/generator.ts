@@ -2,10 +2,15 @@ import { SketchConfig } from '../types';
 import { templates } from '../templates';
 
 export function generateHtml(config: SketchConfig): string {
-  const template = templates[config.templateId];
-  if (!template) return '';
+  let sketchCode: string;
 
-  const sketchCode = template.generateCode(config.params, config.seed);
+  if (config.customCode) {
+    sketchCode = config.customCode;
+  } else {
+    const template = templates[config.templateId];
+    if (!template) return '';
+    sketchCode = template.generateCode(config.params, config.seed);
+  }
 
   return `
 <!DOCTYPE html>

@@ -55,7 +55,7 @@ export default function App() {
       />
 
       <div className="flex flex-1 overflow-hidden relative">
-        {isStarted && <ControlPanel config={config} onChange={handleConfigChange} />}
+        {isStarted && config.templateId && <ControlPanel config={config} onChange={handleConfigChange} />}
 
         <div className="flex-1 relative">
           <CanvasRunner config={config} exportTrigger={exportTrigger} isStarted={isStarted} />

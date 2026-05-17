@@ -29,4 +29,5 @@ export interface SketchConfig {
   templateId: string;
   seed: number;
   params: Record<string, any>;
+  customCode?: string;
 }

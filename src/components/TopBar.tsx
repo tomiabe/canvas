@@ -92,13 +92,22 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode }: T
 
         <button
           onClick={() => {
-            const template = templates[config.templateId];
-            const code = template.generateCode(config.params, config.seed);
+            let code: string;
+            let filename: string;
+            if (config.customCode) {
+              code = config.customCode;
+              filename = 'canvas-ai-generated.js';
+            } else {
+              const template = templates[config.templateId];
+              if (!template) return;
+              code = template.generateCode(config.params, config.seed);
+              filename = `canvas-${config.templateId}-${config.seed}.js`;
+            }
             const blob = new Blob([code], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `canvas-${config.templateId}-${config.seed}.js`;
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
           }}
