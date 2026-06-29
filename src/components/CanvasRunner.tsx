@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SketchConfig } from '../types';
 import { generateHtml } from '../engine/generator';
 import { templates } from '../templates';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, AlertTriangle } from 'lucide-react';
 
 interface CanvasRunnerProps {
   config: SketchConfig;
@@ -12,10 +12,12 @@ interface CanvasRunnerProps {
 
 export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [sketchError, setSketchError] = useState<string | null>(null);
 
   // Reload the iframe when the template, seed, or custom code changes
   useEffect(() => {
     if (!isStarted || !iframeRef.current) return;
+    setSketchError(null);
     iframeRef.current.srcdoc = generateHtml(config);
   }, [config.templateId, config.seed, config.customCode, isStarted]);
 
@@ -30,6 +32,7 @@ export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerP
         '*'
       );
     } else {
+      setSketchError(null);
       iframeRef.current.srcdoc = generateHtml(config);
     }
   }, [config.params, isStarted]);
@@ -39,6 +42,16 @@ export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerP
       iframeRef.current.contentWindow.postMessage({ type: 'export' }, '*');
     }
   }, [exportTrigger]);
+
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'sketch-error') {
+        setSketchError(event.data.message || 'Unknown error in generated sketch');
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
 
   if (!isStarted) {
     return (
@@ -74,6 +87,14 @@ export function CanvasRunner({ config, exportTrigger, isStarted }: CanvasRunnerP
         sandbox="allow-scripts allow-downloads allow-same-origin allow-popups"
         allow="microphone"
       />
+      {sketchError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 px-6 text-center pointer-events-none">
+          <AlertTriangle className="text-amber-400" size={28} />
+          <p className="text-sm text-white/80 font-medium">The generated sketch hit an error</p>
+          <p className="text-xs text-white/40 max-w-md font-mono">{sketchError}</p>
+          <p className="text-xs text-white/40">Try regenerating with a different description.</p>
+        </div>
+      )}
     </div>
   );
 }

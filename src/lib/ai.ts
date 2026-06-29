@@ -11,6 +11,7 @@ Rules:
 - Write animated, living art — not static images
 - Use p5.js built-ins: noise(), random(), sin(), cos(), map(), lerp(), etc.
 - Do not use any external libraries beyond p5.js
+- Keep the code concise (under ~120 lines) and skip comments — you have a limited output budget and a cut-off response will break
 - Respond ONLY with raw JavaScript code — no markdown fences, no explanation`;
 
 export async function generateSketchCode(prompt: string): Promise<string> {
@@ -23,7 +24,7 @@ export async function generateSketchCode(prompt: string): Promise<string> {
         { role: 'user', content: prompt },
       ],
       temperature: 0.9,
-      max_tokens: 2048,
+      max_tokens: 4096,
     }),
   });
 

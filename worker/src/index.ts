@@ -149,7 +149,7 @@ export default {
 
     const messages = body.messages;
     const temperature = body.temperature ?? 0.8;
-    const maxTokens = Math.min(body.max_tokens ?? 2048, 2048);
+    const maxTokens = Math.min(body.max_tokens ?? 4096, 4096);
 
     const providers: Array<{ name: string; run: () => Promise<string> }> = [
       { name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY) },
