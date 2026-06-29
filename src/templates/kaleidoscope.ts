@@ -3,76 +3,92 @@ import { Template } from '../types';
 export const kaleidoscopeTemplate: Template = {
   id: 'kaleidoscope',
   name: 'Kaleidoscope',
-  description: 'Symmetrical kaleidoscope that responds to mouse movement.',
+  description: 'Interactive kaleidoscope drawing tool with mirror symmetry.',
+  category: 'interaction',
   params: [
-    { id: 'segments', name: 'Segments', type: 'number', default: 12, min: 3, max: 24, step: 1 },
-    { id: 'palette', name: 'Colors', type: 'color-array', default: ['#ff006e', '#8338ec', '#3a86ff', '#06d6a0'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#0a0010' },
-    { id: 'speed', name: 'Spin Speed', type: 'number', default: 0.3, min: 0, max: 2, step: 0.05 },
-    { id: 'complexity', name: 'Complexity', type: 'number', default: 5, min: 2, max: 15, step: 1 },
-    { id: 'glow', name: 'Glow Effect', type: 'boolean', default: true },
+    { id: 'segments', name: 'Symmetry Segments', type: 'number', default: 12, min: 2, max: 36, step: 1, category: 'geometry', description: 'Number of mirror reflections' },
+    { id: 'brushSize', name: 'Brush Size', type: 'number', default: 30, min: 5, max: 150, step: 1, category: 'interaction', description: 'Size of drawing brush' },
+    { id: 'opacity', name: 'Opacity', type: 'number', default: 80, min: 10, max: 255, step: 5, category: 'interaction', description: 'Brush stroke opacity' },
+    { id: 'autoRotate', name: 'Auto Rotate', type: 'boolean', default: false, category: 'animation', description: 'Slowly rotate the kaleidoscope' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#ff0054', '#ffbd00', '#00e5ff', '#39ff14', '#c77dff', '#ffffff'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#000000', category: 'color' }
   ],
   presets: [
-    { name: 'Crystal', params: { segments: 16, palette: ['#00ffff', '#0080ff', '#ffffff'], bgColor: '#000020', speed: 0.2, complexity: 7, glow: true } },
-    { name: 'Fire Mandala', params: { segments: 8, palette: ['#ff4500', '#ff8c00', '#ffd700'], bgColor: '#0a0000', speed: 0.8, complexity: 4, glow: true } },
-    { name: 'Forest', params: { segments: 6, palette: ['#006400', '#32cd32', '#90ee90', '#ffd700'], bgColor: '#0a1500', speed: 0.15, complexity: 8, glow: false } },
+    {
+      name: 'Butterfly Wings',
+      params: { segments: 8, brushSize: 40, opacity: 60, autoRotate: false, palette: ['#ff6b9d', '#c77dff', '#00b4d8', '#ffd700', '#ffffff'], bgColor: '#0a0a0a' }
+    },
+    {
+      name: 'Mandala Maker',
+      params: { segments: 24, brushSize: 20, opacity: 100, autoRotate: true, palette: ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0000ff', '#8b00ff'], bgColor: '#000000' }
+    }
   ],
   generateCode: (params, seed) => `
-    let t = 0;
     let palette = ${JSON.stringify(params.palette)};
+    let currentColor;
+    let angle = 0;
+    let gBuffer;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      randomSeed(${seed});
-      colorMode(RGB, 255, 255, 255, 255);
-      angleMode(RADIANS);
+      currentColor = random(palette);
+      background('${params.bgColor}');
     }
 
     function draw() {
-      background('${params.bgColor}');
-      translate(width / 2, height / 2);
+      let seg = ${params.segments};
+      let step = TWO_PI / seg;
+      let s = ${params.brushSize};
+      let a = ${params.opacity};
 
-      let n = ${params.segments};
-      let r = min(width, height) * 0.45;
-      let comp = ${params.complexity};
+      if (${params.autoRotate}) {
+        angle += 0.002;
+      }
 
-      for (let s = 0; s < n; s++) {
+      if (mouseIsPressed && mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+        let c = color(currentColor);
+        c.setAlpha(a);
+
         push();
-        rotate((TWO_PI / n) * s + t * 0.01 * ${params.speed});
+        translate(width / 2, height / 2);
+        rotate(angle);
 
-        for (let i = 1; i <= comp; i++) {
-          let phase = t * 0.02 * ${params.speed} + i * 0.5;
-          let c = palette[(s + i) % palette.length];
-          let col = color(c);
+        for (let i = 0; i < seg; i++) {
+          push();
+          rotate(i * step);
+          // Draw the main reflection
+          let dx = mouseX - width / 2;
+          let dy = mouseY - height / 2;
+          let d = sqrt(dx * dx + dy * dy);
+          let ang = atan2(dy, dx) - angle;
+          let mx = cos(ang) * d;
+          let my = sin(ang) * d;
 
-          if (${params.glow}) {
-            for (let g = 3; g >= 0; g--) {
-              stroke(red(col), green(col), blue(col), 30 + g * 20);
-              strokeWeight(2 - g * 0.4);
-              noFill();
-              let ri = r * (i / comp);
-              let x1 = cos(phase) * ri * 0.4;
-              let y1 = sin(phase * 1.3) * ri * 0.4;
-              let x2 = cos(phase + PI * 0.5) * ri * 0.7;
-              let y2 = sin(phase * 0.7 + 1) * ri * 0.5;
-              bezier(x1, y1, x2, y2, x1 * -0.8, y2 * 0.5, x2 * 0.3, y1 * -0.8);
-            }
-          } else {
-            stroke(col);
-            strokeWeight(1.5);
-            noFill();
-            let ri = r * (i / comp);
-            let x1 = cos(phase) * ri * 0.4;
-            let y1 = sin(phase * 1.3) * ri * 0.4;
-            bezier(x1, y1, ri * 0.5, ri * 0.2, -ri * 0.3, ri * 0.6, x1 * -0.5, y1 * -0.7);
-          }
+          translate(0, 0);
+          fill(c);
+          noStroke();
+          circle(mx, my, s);
+          // Mirror
+          scale(1, -1);
+          fill(c);
+          circle(mx, my, s);
+          pop();
         }
         pop();
       }
-
-      t++;
     }
 
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); }
-  `,
+    function mousePressed() {
+      currentColor = random(palette);
+    }
+
+    function keyPressed() {
+      if (key === 'c' || key === 'C') background('${params.bgColor}');
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      background('${params.bgColor}');
+    }
+  `
 };

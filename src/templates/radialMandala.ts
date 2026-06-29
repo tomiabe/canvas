@@ -3,14 +3,15 @@ import { Template } from '../types';
 export const radialMandalaTemplate: Template = {
   id: 'radial-mandala',
   name: 'Radial Mandala',
-  description: 'Symmetrical radial patterns.',
+  description: 'Symmetrical radial patterns with layered geometry.',
+  category: 'geometry',
   params: [
-    { id: 'segments', name: 'Segments', type: 'number', default: 12, min: 3, max: 36, step: 1 },
-    { id: 'layers', name: 'Layers', type: 'number', default: 5, min: 1, max: 15, step: 1 },
-    { id: 'radius', name: 'Max Radius', type: 'number', default: 300, min: 100, max: 800, step: 10 },
-    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#00a8e8', '#007ea7', '#003459', '#00171f', '#ffffff'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#00171f' },
-    { id: 'animated', name: 'Animated', type: 'boolean', default: true }
+    { id: 'segments', name: 'Segments', type: 'number', default: 12, min: 3, max: 36, step: 1, category: 'geometry', description: 'Number of radial divisions' },
+    { id: 'layers', name: 'Layers', type: 'number', default: 5, min: 1, max: 15, step: 1, category: 'geometry', description: 'Number of concentric layers' },
+    { id: 'radius', name: 'Max Radius', type: 'number', default: 300, min: 100, max: 800, step: 10, category: 'geometry', description: 'Outer radius of the mandala' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#00a8e8', '#007ea7', '#003459', '#00171f', '#ffffff'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#00171f', category: 'color' },
+    { id: 'animated', name: 'Animated', type: 'boolean', default: true, category: 'animation', description: 'Layers rotate over time' }
   ],
   presets: [
     {

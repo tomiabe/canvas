@@ -4,13 +4,14 @@ export const gridPatternTemplate: Template = {
   id: 'grid-pattern',
   name: 'Geometric Grid',
   description: 'Structured grid with random geometric shapes.',
+  category: 'geometry',
   params: [
-    { id: 'gridSize', name: 'Grid Size', type: 'number', default: 40, min: 10, max: 100, step: 5 },
-    { id: 'padding', name: 'Padding', type: 'number', default: 5, min: 0, max: 20, step: 1 },
-    { id: 'shapeType', name: 'Shape Type', type: 'enum', default: 'mixed', options: ['mixed', 'circles', 'squares', 'triangles'] },
-    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#ffbe0b', '#fb5607', '#ff006e', '#8338ec', '#3a86ff'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#111111' },
-    { id: 'animated', name: 'Animated', type: 'boolean', default: false }
+    { id: 'gridSize', name: 'Grid Size', type: 'number', default: 40, min: 10, max: 100, step: 5, category: 'layout', suffix: 'px', description: 'Size of each grid cell' },
+    { id: 'padding', name: 'Padding', type: 'number', default: 5, min: 0, max: 20, step: 1, category: 'layout', description: 'Space between shapes and cell edges' },
+    { id: 'shapeType', name: 'Shape Type', type: 'enum', default: 'mixed', options: ['mixed', 'circles', 'squares', 'triangles'], category: 'geometry' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#ffbe0b', '#fb5607', '#ff006e', '#8338ec', '#3a86ff'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#111111', category: 'color' },
+    { id: 'animated', name: 'Animated', type: 'boolean', default: false, category: 'animation', description: 'Animate shapes rotating and pulsing' }
   ],
   presets: [
     {

@@ -2,101 +2,118 @@ import { Template } from '../types';
 
 export const gameOfLifeTemplate: Template = {
   id: 'game-of-life',
-  name: "Conway's Game of Life",
-  description: 'Cellular automaton — life emerges from simple rules.',
+  name: 'Game of Life',
+  description: "Conway's Game of Life cellular automaton simulation.",
+  category: 'simulation',
   params: [
-    { id: 'cellSize', name: 'Cell Size', type: 'number', default: 8, min: 3, max: 20, step: 1 },
-    { id: 'density', name: 'Initial Density', type: 'number', default: 0.35, min: 0.1, max: 0.7, step: 0.05 },
-    { id: 'speed', name: 'Simulation Speed', type: 'number', default: 8, min: 1, max: 30, step: 1 },
-    { id: 'aliveColor', name: 'Alive Color', type: 'color', default: '#00ff88' },
-    { id: 'deadColor', name: 'Dead Color', type: 'color', default: '#000000' },
-    { id: 'fadeTrail', name: 'Fade Trail', type: 'boolean', default: true },
-    { id: 'trailColor', name: 'Trail Color', type: 'color', default: '#003322' },
+    { id: 'cellSize', name: 'Cell Size', type: 'number', default: 8, min: 2, max: 30, step: 1, category: 'layout', description: 'Size of each cell in pixels' },
+    { id: 'speed', name: 'Sim Speed', type: 'number', default: 10, min: 1, max: 60, step: 1, category: 'animation', description: 'Frames per generation' },
+    { id: 'fillPercent', name: 'Initial Fill %', type: 'number', default: 40, min: 1, max: 99, step: 1, category: 'simulation', description: 'Percentage of alive cells at start' },
+    { id: 'aliveColor', name: 'Alive Color', type: 'color', default: '#00ff88', category: 'color', description: 'Color of living cells' },
+    { id: 'deadColor', name: 'Dead Color', type: 'color', default: '#0a0a0a', category: 'color', description: 'Color of dead cells' },
+    { id: 'gridColor', name: 'Grid Color', type: 'color', default: '#1a1a1a', category: 'color', description: 'Color of grid lines' },
+    { id: 'showGrid', name: 'Show Grid', type: 'boolean', default: false, category: 'layout', description: 'Toggle grid line visibility' }
   ],
   presets: [
-    { name: 'Matrix', params: { cellSize: 6, density: 0.3, speed: 12, aliveColor: '#00ff00', deadColor: '#000000', fadeTrail: true, trailColor: '#001500' } },
-    { name: 'Neon', params: { cellSize: 10, density: 0.4, speed: 6, aliveColor: '#ff00ff', deadColor: '#0a000a', fadeTrail: true, trailColor: '#1a001a' } },
-    { name: 'Ice', params: { cellSize: 8, density: 0.35, speed: 10, aliveColor: '#aaddff', deadColor: '#000814', fadeTrail: false, trailColor: '#001020' } },
+    {
+      name: 'Dense Soup',
+      params: { cellSize: 4, speed: 15, fillPercent: 55, aliveColor: '#ff6b6b', deadColor: '#0a0a0a', gridColor: '#1a1a1a', showGrid: false }
+    },
+    {
+      name: 'Gliders',
+      params: { cellSize: 16, speed: 5, fillPercent: 10, aliveColor: '#4d96ff', deadColor: '#000000', gridColor: '#222222', showGrid: true }
+    }
   ],
   generateCode: (params, seed) => `
-    let grid, cols, rows, frameCount2 = 0;
-    let cs = ${params.cellSize};
+    let grid, next;
+    let cols, rows;
+    let cellSize = ${params.cellSize};
+    let frameCounter = 0;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      randomSeed(${seed});
-      cols = floor(width / cs);
-      rows = floor(height / cs);
-      grid = makeGrid(true);
-    }
-
-    function makeGrid(random) {
-      let g = [];
-      for (let c = 0; c < cols; c++) {
-        g[c] = [];
-        for (let r = 0; r < rows; r++) {
-          g[c][r] = random ? (Math.random() < ${params.density} ? 1 : 0) : 0;
+      cols = floor(width / cellSize);
+      rows = floor(height / cellSize);
+      grid = make2DArray(cols, rows);
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          grid[i][j] = random(100) < ${params.fillPercent} ? 1 : 0;
         }
       }
-      return g;
+      next = make2DArray(cols, rows);
+    }
+
+    function make2DArray(cols, rows) {
+      let arr = new Array(cols);
+      for (let i = 0; i < cols; i++) arr[i] = new Array(rows).fill(0);
+      return arr;
     }
 
     function draw() {
-      background('${params.deadColor}');
-      frameCount2++;
+      frameCounter++;
+      if (frameCounter < ${params.speed}) {
+        // Just draw current state
+        drawGrid();
+        return;
+      }
+      frameCounter = 0;
 
-      for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) {
-          let x = c * cs, y = r * cs;
-          if (grid[c][r] === 1) {
-            noStroke();
-            fill('${params.aliveColor}');
-            rect(x, y, cs - 1, cs - 1);
-          } else if (${params.fadeTrail} && grid[c][r] === 2) {
-            noStroke();
-            fill('${params.trailColor}');
-            rect(x, y, cs - 1, cs - 1);
-          }
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          let state = grid[i][j];
+          let neighbors = countNeighbors(grid, i, j);
+          if (state === 0 && neighbors === 3) next[i][j] = 1;
+          else if (state === 1 && (neighbors < 2 || neighbors > 3)) next[i][j] = 0;
+          else next[i][j] = state;
         }
       }
 
-      if (frameCount2 % floor(60 / ${params.speed}) === 0) {
-        let next = makeGrid(false);
-        for (let c = 0; c < cols; c++) {
-          for (let r = 0; r < rows; r++) {
-            let n = countNeighbors(grid, c, r);
-            let alive = grid[c][r] === 1;
-            if (alive && (n === 2 || n === 3)) next[c][r] = 1;
-            else if (!alive && n === 3) next[c][r] = 1;
-            else if (alive) next[c][r] = ${params.fadeTrail} ? 2 : 0;
-            else next[c][r] = (grid[c][r] === 2) ? 0 : 0;
-          }
-        }
-        grid = next;
-      }
+      let temp = grid;
+      grid = next;
+      next = temp;
+
+      drawGrid();
     }
 
-    function countNeighbors(g, c, r) {
-      let count = 0;
+    function countNeighbors(grid, x, y) {
+      let sum = 0;
       for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-          if (i === 0 && j === 0) continue;
-          let cc = (c + i + cols) % cols, rr = (r + j + rows) % rows;
-          if (g[cc][rr] === 1) count++;
+          let col = (x + i + cols) % cols;
+          let row = (y + j + rows) % rows;
+          sum += grid[col][row];
         }
       }
-      return count;
+      sum -= grid[x][y];
+      return sum;
     }
 
-    function mousePressed() {
-      grid = makeGrid(true);
+    function drawGrid() {
+      background('${params.deadColor}');
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          if (grid[i][j] === 1) {
+            fill('${params.aliveColor}');
+            noStroke();
+            rect(i * cellSize, j * cellSize, cellSize, cellSize);
+          } else if (${params.showGrid}) {
+            noFill();
+            stroke('${params.gridColor}');
+            strokeWeight(0.5);
+            rect(i * cellSize, j * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    }
+
+    function mouseDragged() {
+      let i = floor(mouseX / cellSize);
+      let j = floor(mouseY / cellSize);
+      if (i >= 0 && i < cols && j >= 0 && j < rows) grid[i][j] = 1;
     }
 
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
-      cols = floor(width / cs);
-      rows = floor(height / cs);
-      grid = makeGrid(true);
     }
-  `,
+  `
 };

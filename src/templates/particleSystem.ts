@@ -3,15 +3,16 @@ import { Template } from '../types';
 export const particleSystemTemplate: Template = {
   id: 'particle-system',
   name: 'Particle System',
-  description: 'A swarm of particles moving organically.',
+  description: 'A swarm of particles moving organically with mouse attraction.',
+  category: 'particles',
   params: [
-    { id: 'count', name: 'Particle Count', type: 'number', default: 300, min: 10, max: 1000, step: 10 },
-    { id: 'speed', name: 'Speed', type: 'number', default: 1.2, min: 0.1, max: 5, step: 0.1 },
-    { id: 'trailLength', name: 'Trail Length', type: 'number', default: 40, min: 0, max: 255, step: 1 },
-    { id: 'gravity', name: 'Gravity', type: 'number', default: 0, min: -0.5, max: 0.5, step: 0.01 },
-    { id: 'mouseAttract', name: 'Mouse Attract', type: 'boolean', default: true },
-    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#1a1a2e', '#e94560', '#f5a623'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#0f0f1a' }
+    { id: 'count', name: 'Particle Count', type: 'number', default: 300, min: 10, max: 1000, step: 10, category: 'particles', description: 'Number of particles on screen' },
+    { id: 'speed', name: 'Speed', type: 'number', default: 1.2, min: 0.1, max: 5, step: 0.1, category: 'physics', description: 'Base movement speed' },
+    { id: 'trailLength', name: 'Trail Length', type: 'number', default: 40, min: 0, max: 255, step: 1, category: 'animation', description: 'How long particle trails persist' },
+    { id: 'gravity', name: 'Gravity', type: 'number', default: 0, min: -0.5, max: 0.5, step: 0.01, category: 'physics', description: 'Vertical pull on particles (negative = upward)' },
+    { id: 'mouseAttract', name: 'Mouse Attract', type: 'boolean', default: true, category: 'interaction', description: 'Particles follow the mouse cursor' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#1a1a2e', '#e94560', '#f5a623'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#0f0f1a', category: 'color' }
   ],
   presets: [
     {

@@ -4,6 +4,7 @@ export const aquariumTemplate: Template = {
   id: 'aquarium',
   name: 'Virtual Aquarium',
   description: 'Mic-reactive migration sim — small fish flee sound, big fish hunt toward it.',
+  category: 'audio',
   supportsLiveParams: true,
   params: [
     {
@@ -12,6 +13,8 @@ export const aquariumTemplate: Template = {
       type: 'enum',
       default: 'moderate',
       options: ['freezing', 'cold', 'moderate', 'warm', 'hot'],
+      category: 'simulation',
+      description: 'Controls swim speed and vertical drift — hot rises fast, freezing sinks slowly.',
     },
     {
       id: 'currentStrength',
@@ -21,6 +24,8 @@ export const aquariumTemplate: Template = {
       min: 0,
       max: 1,
       step: 0.05,
+      category: 'simulation',
+      description: 'Strength of the Perlin-noise water current displacing all fish.',
     },
     {
       id: 'smallFishCount',
@@ -30,6 +35,8 @@ export const aquariumTemplate: Template = {
       min: 5,
       max: 120,
       step: 5,
+      category: 'simulation',
+      description: 'Number of small schooling fish that flee from sound.',
     },
     {
       id: 'bigFishCount',
@@ -39,6 +46,8 @@ export const aquariumTemplate: Template = {
       min: 1,
       max: 12,
       step: 1,
+      category: 'simulation',
+      description: 'Number of large fish that hunt toward sound.',
     },
     {
       id: 'micSensitivity',
@@ -48,6 +57,8 @@ export const aquariumTemplate: Template = {
       min: 0.5,
       max: 4,
       step: 0.1,
+      category: 'audio',
+      description: 'How strongly microphone input drives fish behavior.',
     },
   ],
   presets: [

@@ -34,7 +34,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 // ── Gemini ────────────────────────────────────────────────────────
-async function tryGemini(messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string): Promise<string> {
+async function tryGemini(messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string, jsonMode: boolean): Promise<string> {
   const system = messages.find(m => m.role === 'system');
   const rest = messages.filter(m => m.role !== 'system');
 
@@ -48,7 +48,12 @@ async function tryGemini(messages: ChatMessage[], temperature: number, maxTokens
           role: m.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: m.content }],
         })),
-        generationConfig: { temperature, maxOutputTokens: maxTokens, thinkingConfig: { thinkingBudget: 0 } },
+        generationConfig: {
+          temperature,
+          maxOutputTokens: maxTokens,
+          thinkingConfig: { thinkingBudget: 0 },
+          ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
+        },
       }),
     }),
     15000
@@ -79,12 +84,18 @@ async function tryWorkersAI(env: Env, messages: ChatMessage[], temperature: numb
 }
 
 // ── Groq ──────────────────────────────────────────────────────────
-async function tryGroq(messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string): Promise<string> {
+async function tryGroq(messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string, jsonMode: boolean): Promise<string> {
   const res = await withTimeout(
     fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages, temperature, max_tokens: maxTokens }),
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+        ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+      }),
     }),
     15000
   );
@@ -130,7 +141,7 @@ export default {
       return new Response('Method not allowed', { status: 405, headers });
     }
 
-    let body: { messages?: ChatMessage[]; temperature?: number; max_tokens?: number };
+    let body: { messages?: ChatMessage[]; temperature?: number; max_tokens?: number; response_format?: { type: string } };
     try {
       body = await request.json();
     } catch {
@@ -150,11 +161,12 @@ export default {
     const messages = body.messages;
     const temperature = body.temperature ?? 0.8;
     const maxTokens = Math.min(body.max_tokens ?? 4096, 4096);
+    const jsonMode = body.response_format?.type === 'json_object';
 
     const providers: Array<{ name: string; run: () => Promise<string> }> = [
-      { name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY) },
+      { name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY, jsonMode) },
       { name: 'workers-ai', run: () => tryWorkersAI(env, messages, temperature, maxTokens) },
-      { name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY) },
+      { name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY, jsonMode) },
       { name: 'openrouter', run: () => tryOpenRouter(messages, temperature, maxTokens, env.OPENROUTER_API_KEY) },
     ];
 

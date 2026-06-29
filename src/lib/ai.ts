@@ -1,30 +1,63 @@
+import { templates } from '../templates';
 import { SketchConfig } from '../types';
 
 const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas-groq-proxy.tomi.workers.dev';
 
-const SYSTEM_PROMPT = `You are a creative generative art programmer. When the user describes a visual idea, write complete p5.js code that brings it to life.
+export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
+  const templateList = Object.values(templates)
+    .map(t => `${t.id}: ${t.name} — ${t.description}`)
+    .join('\n');
+
+  const currentTemplate = currentConfig.templateId ? templates[currentConfig.templateId] : null;
+  const currentParamDefs = currentTemplate
+    ? currentTemplate.params.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        default: p.default,
+        ...(p.options ? { options: p.options } : {}),
+        ...(p.min !== undefined ? { min: p.min } : {}),
+        ...(p.max !== undefined ? { max: p.max } : {}),
+      }))
+    : [];
+
+  const systemPrompt = `You are an AI assistant for Canvas, a generative art tool powered by p5.js.
+Translate the user's natural language request into a valid sketch configuration.
+
+Available templates (id: name — description):
+${templateList}
+
+Current templateId: "${currentConfig.templateId || 'none'}"
+${currentParamDefs.length ? `Current template params:\n${JSON.stringify(currentParamDefs, null, 2)}` : ''}
 
 Rules:
-- Use global mode (setup() and draw() functions, no new p5() wrapper)
-- Always call createCanvas(windowWidth, windowHeight) in setup()
-- Add windowResized() { resizeCanvas(windowWidth, windowHeight); } to support resizing
-- Write animated, living art — not static images
-- Use p5.js built-ins: noise(), random(), sin(), cos(), map(), lerp(), etc.
-- Do not use any external libraries beyond p5.js
-- Keep the code concise (under ~120 lines) and skip comments — you have a limited output budget and a cut-off response will break
-- Respond ONLY with raw JavaScript code — no markdown fences, no explanation`;
+- If the user wants to modify the current sketch, keep templateId and update relevant params.
+- If an existing template fits well, pick the best matching templateId from the list above.
+- If the request needs a feature, shape, or behavior NOT covered by any template's params
+  (e.g. a specific scene, a game, custom physics, a literal subject like an object or character),
+  use templateId "custom-sketch" and write complete, raw p5.js code into params.code.
+  Rules for params.code:
+  - Global mode only: setup() and draw() functions, no new p5() wrapper.
+  - setup() must call createCanvas(windowWidth, windowHeight).
+  - Include windowResized() { resizeCanvas(windowWidth, windowHeight); }.
+  - Keep it concise (under ~120 lines, no comments) — output is token-limited and a cut-off response breaks.
+- Colors must be valid HEX strings (e.g. "#ff0000").
+- Numbers must respect min/max bounds.
+- Respond ONLY with a valid JSON object: {"templateId": string, "params": object}.
+- Only include params you want to change; omit the rest (defaults will be used), except params.code
+  for custom-sketch which must always be the full code.`;
 
-export async function generateSketchCode(prompt: string): Promise<string> {
   const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.9,
+      temperature: 0.8,
       max_tokens: 4096,
+      response_format: { type: 'json_object' },
     }),
   });
 
@@ -33,22 +66,30 @@ export async function generateSketchCode(prompt: string): Promise<string> {
     throw new Error(`AI proxy error ${response.status}: ${text}`);
   }
 
-  const data = await response.json();
-  const code: string = data.choices?.[0]?.message?.content ?? '';
+  const responseData = await response.json();
+  let text: string = responseData.choices?.[0]?.message?.content ?? '{}';
 
   // Strip markdown fences if the model includes them anyway
-  return code
-    .replace(/^```(?:javascript|js)?\n?/i, '')
-    .replace(/\n?```$/i, '')
-    .trim();
-}
+  text = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
 
-export async function generateConfigFromPrompt(prompt: string, _currentConfig: SketchConfig): Promise<SketchConfig> {
-  const code = await generateSketchCode(prompt);
-  return {
-    templateId: '',
-    seed: 0,
-    params: {},
-    customCode: code,
-  };
+  try {
+    const data = JSON.parse(text);
+
+    if (!templates[data.templateId]) return currentConfig;
+
+    const template = templates[data.templateId];
+    const finalParams: Record<string, any> = {};
+    template.params.forEach(p => {
+      finalParams[p.id] = data.params?.[p.id] !== undefined ? data.params[p.id] : p.default;
+    });
+
+    return {
+      templateId: data.templateId,
+      seed: Math.floor(Math.random() * 1000000),
+      params: finalParams,
+    };
+  } catch (err) {
+    console.error('Failed to parse AI response:', err, text);
+    throw err;
+  }
 }

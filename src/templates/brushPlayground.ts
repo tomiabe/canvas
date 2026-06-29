@@ -4,13 +4,14 @@ export const brushPlaygroundTemplate: Template = {
   id: 'brush-playground',
   name: 'Brush Playground',
   description: 'Expressive brush strokes that follow the mouse.',
+  category: 'interaction',
   params: [
-    { id: 'brushSize', name: 'Brush Size', type: 'number', default: 40, min: 5, max: 150, step: 1 },
-    { id: 'opacity', name: 'Opacity', type: 'number', default: 150, min: 10, max: 255, step: 1 },
-    { id: 'jitter', name: 'Jitter', type: 'number', default: 10, min: 0, max: 50, step: 1 },
-    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#f0f0f0' },
-    { id: 'clearBg', name: 'Clear Background', type: 'boolean', default: false }
+    { id: 'brushSize', name: 'Brush Size', type: 'number', default: 40, min: 5, max: 150, step: 1, category: 'interaction', description: 'Size of the brush tip' },
+    { id: 'opacity', name: 'Opacity', type: 'number', default: 150, min: 10, max: 255, step: 1, category: 'color', description: 'Stroke transparency' },
+    { id: 'jitter', name: 'Jitter', type: 'number', default: 10, min: 0, max: 50, step: 1, category: 'interaction', description: 'Random scatter for organic feel' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#f0f0f0', category: 'color' },
+    { id: 'clearBg', name: 'Clear Background', type: 'boolean', default: false, category: 'interaction', description: 'Redraw background each frame (creates trail effect)' }
   ],
   presets: [
     {

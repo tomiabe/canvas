@@ -2,82 +2,47 @@ import { Template } from '../types';
 
 export const webglGeometryTemplate: Template = {
   id: 'webgl-geometry',
-  name: '3D Geometry',
-  description: 'Rotating 3D shapes with dynamic lighting in WEBGL mode.',
+  name: '3D Geometry (WEBGL)',
+  description: 'Explore 3D space, lighting, and materials.',
+  category: '3d',
   params: [
-    { id: 'shape', name: 'Shape', type: 'enum', default: 'torus', options: ['torus', 'sphere', 'box', 'cone', 'cylinder', 'torusknot'] },
-    { id: 'rotSpeed', name: 'Rotation Speed', type: 'number', default: 0.5, min: 0, max: 3, step: 0.05 },
-    { id: 'shapeColor', name: 'Shape Color', type: 'color', default: '#6c63ff' },
-    { id: 'lightColor', name: 'Light Color', type: 'color', default: '#ffffff' },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#0a0a1a' },
-    { id: 'wireframe', name: 'Wireframe', type: 'boolean', default: false },
-    { id: 'size', name: 'Size', type: 'number', default: 150, min: 50, max: 350, step: 10 },
-  ],
-  presets: [
-    { name: 'Neon Torus', params: { shape: 'torus', rotSpeed: 0.8, shapeColor: '#ff00ff', lightColor: '#00ffff', bgColor: '#000000', wireframe: false, size: 180 } },
-    { name: 'Crystal Cube', params: { shape: 'box', rotSpeed: 0.3, shapeColor: '#88ccff', lightColor: '#ffffff', bgColor: '#001122', wireframe: true, size: 200 } },
-    { name: 'Golden Sphere', params: { shape: 'sphere', rotSpeed: 0.4, shapeColor: '#f5a623', lightColor: '#fff5cc', bgColor: '#1a0a00', wireframe: false, size: 220 } },
+    { id: 'shape', name: 'Shape', type: 'enum', options: ['torus', 'box', 'sphere', 'cone', 'cylinder'], default: 'torus', category: '3d', description: '3D primitive shape' },
+    { id: 'speed', name: 'Rotation Speed', type: 'number', default: 0.01, min: 0, max: 0.1, step: 0.001, category: 'animation', description: 'How fast the shape rotates' },
+    { id: 'lightColor', name: 'Point Light', type: 'color', default: '#ff0055', category: '3d', description: 'Color of the main point light' },
+    { id: 'ambientColor', name: 'Ambient Light', type: 'color', default: '#222222', category: '3d', description: 'Color of ambient (fill) light' },
+    { id: 'materialColor', name: 'Material Color', type: 'color', default: '#ffffff', category: '3d', description: 'Color of the shape material' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#000000', category: 'color' }
   ],
   generateCode: (params, seed) => `
-    let angle = 0;
-
     function setup() {
       createCanvas(windowWidth, windowHeight, WEBGL);
-      randomSeed(${seed});
+      noStroke();
     }
-
+    
     function draw() {
       background('${params.bgColor}');
-
-      ambientLight(60);
-      pointLight(
-        red(color('${params.lightColor}')),
-        green(color('${params.lightColor}')),
-        blue(color('${params.lightColor}')),
-        200, -200, 300
-      );
-      directionalLight(
-        red(color('${params.lightColor}')) * 0.5,
-        green(color('${params.lightColor}')) * 0.5,
-        blue(color('${params.lightColor}')) * 0.5,
-        -1, 1, -1
-      );
-
-      rotateX(angle * 0.7);
-      rotateY(angle);
-      rotateZ(angle * 0.3);
-
-      if (${params.wireframe}) {
-        stroke('${params.shapeColor}');
-        strokeWeight(1);
-        noFill();
-      } else {
-        noStroke();
-        ambientMaterial(red(color('${params.shapeColor}')), green(color('${params.shapeColor}')), blue(color('${params.shapeColor}')));
-        specularMaterial(200);
-        shininess(50);
-      }
-
-      let s = ${params.size};
-      let shape = '${params.shape}';
-      if (shape === 'torus') torus(s * 0.6, s * 0.2, 64, 32);
-      else if (shape === 'sphere') sphere(s, 64, 32);
-      else if (shape === 'box') box(s, s, s);
-      else if (shape === 'cone') cone(s * 0.6, s * 1.2, 64);
-      else if (shape === 'cylinder') cylinder(s * 0.5, s * 1.2, 64);
-      else if (shape === 'torusknot') {
-        // approximate torusknot with layered tori
-        for (let i = 0; i < 3; i++) {
-          push();
-          rotateY(TWO_PI * i / 3);
-          torus(s * 0.5, s * 0.12, 48, 16);
-          pop();
-        }
-      }
-
-      angle += 0.01 * ${params.rotSpeed};
+      
+      ambientLight(color('${params.ambientColor}'));
+      
+      let locX = mouseX - width / 2;
+      let locY = mouseY - height / 2;
+      pointLight(color('${params.lightColor}'), locX, locY, 250);
+      
+      specularMaterial(color('${params.materialColor}'));
+      shininess(50);
+      
+      rotateX(frameCount * ${params.speed});
+      rotateY(frameCount * ${params.speed} * 0.8);
+      
+      if ('${params.shape}' === 'torus') torus(min(width,height)*0.2, min(width,height)*0.08);
+      else if ('${params.shape}' === 'box') box(min(width,height)*0.3);
+      else if ('${params.shape}' === 'sphere') sphere(min(width,height)*0.25);
+      else if ('${params.shape}' === 'cone') cone(min(width,height)*0.2, min(width,height)*0.4);
+      else if ('${params.shape}' === 'cylinder') cylinder(min(width,height)*0.2, min(width,height)*0.4);
     }
-
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); }
-  `,
+    
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  `
 };

@@ -1,4 +1,20 @@
-export type ParamType = 'number' | 'color' | 'boolean' | 'enum' | 'color-array';
+export type ParamType = 'number' | 'color' | 'boolean' | 'enum' | 'color-array' | 'code' | 'string';
+
+export type ParamCategory =
+  | 'particles'
+  | 'physics'
+  | 'geometry'
+  | 'color'
+  | 'animation'
+  | 'interaction'
+  | 'typography'
+  | '3d'
+  | 'noise'
+  | 'audio'
+  | 'image'
+  | 'simulation'
+  | 'layout'
+  | 'misc';
 
 export interface ParamDef {
   id: string;
@@ -9,6 +25,9 @@ export interface ParamDef {
   max?: number;
   step?: number;
   options?: string[]; // for enum
+  category?: ParamCategory;
+  description?: string;
+  suffix?: string;
 }
 
 export interface Preset {
@@ -20,6 +39,7 @@ export interface Template {
   id: string;
   name: string;
   description: string;
+  category?: ParamCategory;
   params: ParamDef[];
   presets?: Preset[];
   supportsLiveParams?: boolean;
@@ -30,5 +50,4 @@ export interface SketchConfig {
   templateId: string;
   seed: number;
   params: Record<string, any>;
-  customCode?: string;
 }

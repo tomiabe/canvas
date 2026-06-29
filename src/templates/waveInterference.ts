@@ -3,66 +3,75 @@ import { Template } from '../types';
 export const waveInterferenceTemplate: Template = {
   id: 'wave-interference',
   name: 'Wave Interference',
-  description: 'Multiple wave sources interfering to create stunning moiré-like patterns.',
+  description: 'Simulation of overlapping waves creating interference patterns.',
+  category: 'simulation',
   params: [
-    { id: 'sources', name: 'Wave Sources', type: 'number', default: 3, min: 1, max: 6, step: 1 },
-    { id: 'wavelength', name: 'Wavelength', type: 'number', default: 60, min: 20, max: 200, step: 5 },
-    { id: 'speed', name: 'Wave Speed', type: 'number', default: 2, min: 0.5, max: 8, step: 0.5 },
-    { id: 'palette', name: 'Colors', type: 'color-array', default: ['#0000aa', '#0066ff', '#00ccff', '#ffffff', '#ff6600', '#cc0000'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#000011' },
-    { id: 'resolution', name: 'Resolution', type: 'number', default: 4, min: 2, max: 10, step: 1 },
-    { id: 'animate', name: 'Animate', type: 'boolean', default: true },
+    { id: 'waveCount', name: 'Wave Sources', type: 'number', default: 3, min: 1, max: 8, step: 1, category: 'simulation', description: 'Number of wave emitters' },
+    { id: 'frequency', name: 'Frequency', type: 'number', default: 0.02, min: 0.005, max: 0.08, step: 0.003, category: 'simulation', description: 'Wave oscillation speed' },
+    { id: 'amplitude', name: 'Amplitude', type: 'number', default: 100, min: 20, max: 255, step: 5, category: 'simulation', description: 'Wave intensity' },
+    { id: 'speed', name: 'Animation Speed', type: 'number', default: 0.03, min: 0.005, max: 0.1, step: 0.005, category: 'animation', description: 'How fast waves propagate' },
+    { id: 'color1', name: 'Wave Color 1', type: 'color', default: '#ff0054', category: 'color' },
+    { id: 'color2', name: 'Wave Color 2', type: 'color', default: '#00e5ff', category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#050510', category: 'color' }
   ],
   presets: [
-    { name: 'Ripple Tank', params: { sources: 2, wavelength: 80, speed: 3, palette: ['#000033','#0044aa','#0088ff','#44ccff','#88eeff','#ffffff'], bgColor: '#000022', resolution: 4, animate: true } },
-    { name: 'Psychedelic', params: { sources: 4, wavelength: 50, speed: 5, palette: ['#ff0000','#ff8800','#ffff00','#00ff00','#0000ff','#ff00ff'], bgColor: '#000000', resolution: 5, animate: true } },
-    { name: 'Frozen', params: { sources: 5, wavelength: 70, speed: 1, palette: ['#001133','#003388','#0066cc','#4499ee','#88ccff','#ffffff'], bgColor: '#000011', resolution: 3, animate: false } },
+    {
+      name: 'Water Ripples',
+      params: { waveCount: 2, frequency: 0.015, amplitude: 150, speed: 0.02, color1: '#00b4d8', color2: '#90e0ef', bgColor: '#03045e' }
+    },
+    {
+      name: 'Quantum',
+      params: { waveCount: 6, frequency: 0.04, amplitude: 80, speed: 0.05, color1: '#39ff14', color2: '#ff00ff', bgColor: '#000000' }
+    }
   ],
   generateCode: (params, seed) => `
-    let t = 0;
     let sources = [];
-    let palette = ${JSON.stringify(params.palette)};
-    let res = ${params.resolution};
+    let t = 0;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      randomSeed(${seed});
-      placeSources();
-    }
-
-    function placeSources() {
-      sources = [];
-      for (let i = 0; i < ${params.sources}; i++) {
-        let a = (TWO_PI / ${params.sources}) * i;
-        let r = min(width, height) * 0.3;
+      pixelDensity(1);
+      for (let i = 0; i < ${params.waveCount}; i++) {
         sources.push({
-          x: width/2 + cos(a) * r,
-          y: height/2 + sin(a) * r
+          x: random(width * 0.2, width * 0.8),
+          y: random(height * 0.2, height * 0.8),
+          phase: random(TWO_PI)
         });
       }
     }
 
     function draw() {
-      for (let x = 0; x < width; x += res) {
-        for (let y = 0; y < height; y += res) {
+      loadPixels();
+      t += ${params.speed};
+
+      let c1 = color('${params.color1}');
+      let c2 = color('${params.color2}');
+
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
           let sum = 0;
           for (let s of sources) {
             let d = dist(x, y, s.x, s.y);
-            sum += sin(TWO_PI * d / ${params.wavelength} - t);
+            sum += sin(d * ${params.frequency} - t + s.phase) * ${params.amplitude};
           }
-          let norm = map(sum, -${params.sources}, ${params.sources}, 0, 1);
-          let idx = floor(norm * (palette.length - 1));
-          let frac = norm * (palette.length - 1) - idx;
-          let c1 = color(palette[min(idx, palette.length-1)]);
-          let c2 = color(palette[min(idx+1, palette.length-1)]);
-          fill(lerpColor(c1, c2, frac));
-          noStroke();
-          rect(x, y, res, res);
+          let val = sum / sources.length;
+          val = constrain(val, -${params.amplitude}, ${params.amplitude});
+          let norm = map(val, -${params.amplitude}, ${params.amplitude}, 0, 1);
+
+          let col = lerpColor(c1, c2, norm);
+
+          let idx = (x + y * width) * 4;
+          pixels[idx] = red(col);
+          pixels[idx + 1] = green(col);
+          pixels[idx + 2] = blue(col);
+          pixels[idx + 3] = 255;
         }
       }
-      if (${params.animate}) t += 0.05 * ${params.speed};
+      updatePixels();
     }
 
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); placeSources(); }
-  `,
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  `
 };

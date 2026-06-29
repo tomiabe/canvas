@@ -2,21 +2,27 @@ import { Template } from '../types';
 
 export const bouncingBallsTemplate: Template = {
   id: 'bouncing-balls',
-  name: 'Physics Balls',
-  description: 'Colorful balls bouncing with gravity, elasticity, and collisions.',
+  name: 'Bouncing Balls',
+  description: 'Physics simulation with gravity, bouncing, and collisions.',
+  category: 'physics',
   params: [
-    { id: 'count', name: 'Ball Count', type: 'number', default: 25, min: 3, max: 80, step: 1 },
-    { id: 'gravity', name: 'Gravity', type: 'number', default: 0.4, min: 0, max: 1.5, step: 0.05 },
-    { id: 'bounce', name: 'Bounciness', type: 'number', default: 0.8, min: 0.2, max: 1.0, step: 0.05 },
-    { id: 'friction', name: 'Friction', type: 'number', default: 0.98, min: 0.9, max: 1.0, step: 0.005 },
-    { id: 'palette', name: 'Ball Colors', type: 'color-array', default: ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#1dd1a1'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#0d0d0d' },
-    { id: 'trails', name: 'Motion Blur', type: 'boolean', default: false },
+    { id: 'count', name: 'Ball Count', type: 'number', default: 30, min: 3, max: 200, step: 1, category: 'physics', description: 'Number of balls in the simulation' },
+    { id: 'gravity', name: 'Gravity', type: 'number', default: 0.5, min: 0, max: 2, step: 0.1, category: 'physics', description: 'Downward acceleration force' },
+    { id: 'restitution', name: 'Bounciness', type: 'number', default: 0.7, min: 0.1, max: 1, step: 0.05, category: 'physics', description: 'How much energy is preserved on bounce' },
+    { id: 'ballSize', name: 'Ball Size', type: 'number', default: 20, min: 5, max: 60, step: 1, category: 'geometry', description: 'Diameter of each ball' },
+    { id: 'speed', name: 'Initial Speed', type: 'number', default: 3, min: 0.5, max: 10, step: 0.5, category: 'physics', description: 'Starting velocity magnitude' },
+    { id: 'palette', name: 'Ball Colors', type: 'color-array', default: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6b9d'], category: 'color', description: 'Colors assigned randomly to balls' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#0a0a0a', category: 'color' }
   ],
   presets: [
-    { name: 'Bouncy', params: { count: 20, gravity: 0.5, bounce: 0.92, friction: 0.99, palette: ['#ff6b6b','#feca57','#48dbfb','#ff9ff3'], bgColor: '#111111', trails: false } },
-    { name: 'Zero-G', params: { count: 40, gravity: 0, bounce: 1.0, friction: 1.0, palette: ['#00ffcc','#ff00cc','#ffcc00','#0099ff'], bgColor: '#000000', trails: true } },
-    { name: 'Heavy', params: { count: 15, gravity: 1.2, bounce: 0.5, friction: 0.95, palette: ['#555555','#888888','#bbbbbb','#ffffff'], bgColor: '#0a0a0a', trails: false } },
+    {
+      name: 'Zero G',
+      params: { count: 100, gravity: 0, restitution: 0.95, ballSize: 12, speed: 5, palette: ['#00d2ff', '#3a7bd5', '#00c9ff', '#92fe9d'], bgColor: '#000000' }
+    },
+    {
+      name: 'Heavy Planets',
+      params: { count: 8, gravity: 0.8, restitution: 0.3, ballSize: 50, speed: 2, palette: ['#ff6b35', '#f7c59f', '#efefd0', '#004e89', '#1a659e'], bgColor: '#0d1321' }
+    }
   ],
   generateCode: (params, seed) => `
     let balls = [];
@@ -24,63 +30,71 @@ export const bouncingBallsTemplate: Template = {
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      randomSeed(${seed});
       for (let i = 0; i < ${params.count}; i++) {
-        let r = random(10, 35);
         balls.push({
-          x: random(r, width - r),
-          y: random(r, height/2),
-          vx: random(-4, 4),
-          vy: random(-2, 2),
-          r,
-          col: palette[i % palette.length],
-          trail: [],
+          x: random(width),
+          y: random(height),
+          vx: random(-${params.speed}, ${params.speed}),
+          vy: random(-${params.speed}, ${params.speed}),
+          r: random(${params.ballSize} * 0.5, ${params.ballSize}),
+          color: random(palette),
+          mass: random(0.5, 2)
         });
       }
     }
 
     function draw() {
-      if (${params.trails}) {
-        background(0, 0, 0, 30);
-      } else {
-        background('${params.bgColor}');
-      }
+      background('${params.bgColor}');
 
       for (let b of balls) {
-        b.vy += ${params.gravity};
-        b.vx *= ${params.friction};
-        b.vy *= ${params.friction};
+        b.vy += ${params.gravity} * b.mass;
         b.x += b.vx;
         b.y += b.vy;
 
-        if (b.x - b.r < 0) { b.x = b.r; b.vx *= -${params.bounce}; }
-        if (b.x + b.r > width) { b.x = width - b.r; b.vx *= -${params.bounce}; }
-        if (b.y - b.r < 0) { b.y = b.r; b.vy *= -${params.bounce}; }
-        if (b.y + b.r > height) { b.y = height - b.r; b.vy *= -${params.bounce}; }
+        if (b.x < b.r || b.x > width - b.r) {
+          b.vx *= -${params.restitution};
+          b.x = constrain(b.x, b.r, width - b.r);
+        }
+        if (b.y < b.r || b.y > height - b.r) {
+          b.vy *= -${params.restitution};
+          b.y = constrain(b.y, b.r, height - b.r);
+        }
 
-        // Shadow
+        for (let other of balls) {
+          if (b === other) continue;
+          let dx = other.x - b.x;
+          let dy = other.y - b.y;
+          let dist = sqrt(dx * dx + dy * dy);
+          let minDist = b.r + other.r;
+          if (dist < minDist && dist > 0) {
+            let overlap = minDist - dist;
+            let nx = dx / dist;
+            let ny = dy / dist;
+            b.x -= nx * overlap * 0.5;
+            b.y -= ny * overlap * 0.5;
+            other.x += nx * overlap * 0.5;
+            other.y += ny * overlap * 0.5;
+            let relVx = b.vx - other.vx;
+            let relVy = b.vy - other.vy;
+            let relVn = relVx * nx + relVy * ny;
+            if (relVn < 0) {
+              let impulse = -(1 + ${params.restitution}) * relVn / (1/b.mass + 1/other.mass);
+              b.vx += impulse * nx / b.mass;
+              b.vy += impulse * ny / b.mass;
+              other.vx -= impulse * nx / other.mass;
+              other.vy -= impulse * ny / other.mass;
+            }
+          }
+        }
+
         noStroke();
-        fill(0, 0, 0, 60);
-        ellipse(b.x + 3, b.y + 4, b.r * 2, b.r * 1.2);
-
-        // Ball
-        fill(b.col);
+        fill(b.color);
         circle(b.x, b.y, b.r * 2);
-
-        // Highlight
-        fill(255, 255, 255, 80);
-        circle(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.5);
       }
     }
 
-    function mousePressed() {
-      for (let b of balls) {
-        let dx = mouseX - b.x, dy = mouseY - b.y;
-        let d = sqrt(dx*dx + dy*dy);
-        if (d > 0) { b.vx -= dx/d * 8; b.vy -= dy/d * 8; }
-      }
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
     }
-
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); }
-  `,
+  `
 };

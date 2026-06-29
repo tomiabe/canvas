@@ -3,73 +3,105 @@ import { Template } from '../types';
 export const truchetTilesTemplate: Template = {
   id: 'truchet-tiles',
   name: 'Truchet Tiles',
-  description: 'Randomly tiled arcs that form flowing organic patterns.',
+  description: 'Procedural tiling patterns using Truchet tile arrangements.',
+  category: 'geometry',
   params: [
-    { id: 'tileSize', name: 'Tile Size', type: 'number', default: 40, min: 15, max: 120, step: 5 },
-    { id: 'palette', name: 'Colors', type: 'color-array', default: ['#ffffff', '#000000'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#1a1a2e' },
-    { id: 'style', name: 'Style', type: 'enum', default: 'arcs', options: ['arcs', 'lines', 'quarter-circles'] },
-    { id: 'strokeW', name: 'Line Weight', type: 'number', default: 2, min: 0.5, max: 8, step: 0.5 },
-    { id: 'animate', name: 'Animate', type: 'boolean', default: false },
+    { id: 'tileSize', name: 'Tile Size', type: 'number', default: 40, min: 10, max: 120, step: 5, category: 'layout', suffix: 'px', description: 'Size of each tile' },
+    { id: 'pattern', name: 'Pattern', type: 'enum', default: 'diagonal', options: ['diagonal', 'circles', 'waves', 'crosses', 'random'], category: 'geometry', description: 'Tile pattern style' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#1a1a2e', '#e94560', '#0f3460', '#16213e'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#0f0f1a', category: 'color' },
+    { id: 'animated', name: 'Animated', type: 'boolean', default: false, category: 'animation', description: 'Slow rotation animation' }
   ],
   presets: [
-    { name: 'Classic B&W', params: { tileSize: 50, palette: ['#ffffff', '#000000'], bgColor: '#000000', style: 'arcs', strokeW: 3, animate: false } },
-    { name: 'Neon Grid', params: { tileSize: 35, palette: ['#00ffff', '#ff00ff'], bgColor: '#0a0010', style: 'arcs', strokeW: 2, animate: true } },
-    { name: 'Wood Grain', params: { tileSize: 30, palette: ['#8B4513', '#deb887', '#d2691e'], bgColor: '#5c3317', style: 'quarter-circles', strokeW: 2, animate: false } },
+    {
+      name: 'Classic',
+      params: { tileSize: 50, pattern: 'diagonal', palette: ['#2b2d42', '#8d99ae', '#edf2f4'], bgColor: '#edf2f4', animated: false }
+    },
+    {
+      name: 'Op Art',
+      params: { tileSize: 30, pattern: 'circles', palette: ['#000000', '#ffffff'], bgColor: '#000000', animated: true }
+    }
   ],
   generateCode: (params, seed) => `
-    let tiles = [];
     let palette = ${JSON.stringify(params.palette)};
-    let ts = ${params.tileSize};
-    let t = 0;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
       randomSeed(${seed});
-      generateTiles();
-      if (!${params.animate}) { noLoop(); }
+      noLoop();
+      if (${params.animated}) loop();
     }
 
-    function generateTiles() {
-      tiles = [];
-      for (let x = 0; x < width; x += ts) {
-        for (let y = 0; y < height; y += ts) {
-          tiles.push({ x, y, rot: floor(random(4)) * HALF_PI, col: random(palette) });
+    function drawTiles() {
+      background('${params.bgColor}');
+      noStroke();
+      let size = ${params.tileSize};
+      let pattern = '${params.pattern}';
+      let anim = ${params.animated};
+
+      for (let x = 0; x < width; x += size) {
+        for (let y = 0; y < height; y += size) {
+          push();
+          translate(x + size / 2, y + size / 2);
+
+          let variant = floor(random(2));
+          if (pattern === 'random') {
+            variant = floor(random(5));
+          }
+
+          if (anim) {
+            rotate(frameCount * 0.01 * (variant % 2 === 0 ? 1 : -1));
+          } else {
+            rotate(variant * HALF_PI);
+          }
+
+          let c1 = random(palette);
+          let c2 = random(palette);
+
+          if (pattern === 'diagonal' || pattern === 'random') {
+            fill(c1);
+            triangle(-size / 2, -size / 2, size / 2, -size / 2, size / 2, size / 2);
+            fill(c2);
+            triangle(-size / 2, -size / 2, -size / 2, size / 2, size / 2, size / 2);
+          }
+
+          if ((pattern === 'circles' || pattern === 'random') && variant < 2) {
+            fill(c1);
+            arc(-size / 2, -size / 2, size, size, 0, HALF_PI);
+            fill(c2);
+            arc(size / 2, size / 2, size, size, PI, PI + HALF_PI);
+          }
+
+          if ((pattern === 'crosses' || pattern === 'random') && variant < 2) {
+            fill(c1);
+            rect(-size / 4, -size / 2, size / 2, size);
+            fill(c2);
+            rect(-size / 2, -size / 4, size, size / 2);
+          }
+
+          if ((pattern === 'waves' || pattern === 'random') && variant < 2) {
+            fill(c1);
+            ellipse(-size / 4, 0, size / 2, size);
+            fill(c2);
+            ellipse(size / 4, 0, size / 2, size);
+          }
+
+          pop();
         }
       }
     }
 
     function draw() {
-      background('${params.bgColor}');
-      for (let tile of tiles) {
-        let r = ${params.animate} ? tile.rot + t * 0.02 : tile.rot;
-        drawTile(tile.x, tile.y, r, tile.col);
+      if (${params.animated}) {
+        randomSeed(${seed});
       }
-      t++;
+      drawTiles();
     }
 
-    function drawTile(x, y, r, col) {
-      push();
-      translate(x + ts/2, y + ts/2);
-      rotate(r);
-      stroke(col);
-      strokeWeight(${params.strokeW});
-      noFill();
-      let style = '${params.style}';
-      if (style === 'arcs') {
-        arc(-ts/2, -ts/2, ts, ts, 0, HALF_PI);
-        arc(ts/2, ts/2, ts, ts, PI, PI + HALF_PI);
-      } else if (style === 'lines') {
-        line(-ts/2, 0, 0, -ts/2);
-        line(0, ts/2, ts/2, 0);
-      } else {
-        arc(-ts/2, -ts/2, ts, ts, 0, HALF_PI);
-        arc(ts/2, -ts/2, ts, ts, HALF_PI, PI);
-      }
-      pop();
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      randomSeed(${seed});
+      drawTiles();
     }
-
-    function mousePressed() { randomSeed(millis()); generateTiles(); if (!${params.animate}) redraw(); }
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); generateTiles(); if (!${params.animate}) redraw(); }
-  `,
+  `
 };

@@ -4,13 +4,14 @@ export const noiseFieldTemplate: Template = {
   id: 'noise-field',
   name: 'Noise Flow Field',
   description: 'Smooth flowing lines driven by Perlin noise.',
+  category: 'noise',
   params: [
-    { id: 'count', name: 'Line Count', type: 'number', default: 1000, min: 100, max: 5000, step: 100 },
-    { id: 'noiseScale', name: 'Noise Scale', type: 'number', default: 0.01, min: 0.001, max: 0.05, step: 0.001 },
-    { id: 'speed', name: 'Speed', type: 'number', default: 1, min: 0.1, max: 5, step: 0.1 },
-    { id: 'opacity', name: 'Line Opacity', type: 'number', default: 20, min: 1, max: 255, step: 1 },
-    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#2b2d42', '#8d99ae', '#edf2f4', '#ef233c', '#d90429'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#ffffff' }
+    { id: 'count', name: 'Line Count', type: 'number', default: 1000, min: 100, max: 5000, step: 100, category: 'particles', description: 'Number of flowing lines' },
+    { id: 'noiseScale', name: 'Noise Scale', type: 'number', default: 0.01, min: 0.001, max: 0.05, step: 0.001, category: 'noise', description: 'Zoom level of the noise field (smaller = bigger features)' },
+    { id: 'speed', name: 'Speed', type: 'number', default: 1, min: 0.1, max: 5, step: 0.1, category: 'animation', description: 'How fast particles traverse the flow' },
+    { id: 'opacity', name: 'Line Opacity', type: 'number', default: 20, min: 1, max: 255, step: 1, category: 'color', description: 'Transparency of each line' },
+    { id: 'palette', name: 'Color Palette', type: 'color-array', default: ['#2b2d42', '#8d99ae', '#edf2f4', '#ef233c', '#d90429'], category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#ffffff', category: 'color' }
   ],
   presets: [
     {

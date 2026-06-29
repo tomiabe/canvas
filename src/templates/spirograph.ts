@@ -3,68 +3,68 @@ import { Template } from '../types';
 export const spirographTemplate: Template = {
   id: 'spirograph',
   name: 'Spirograph',
-  description: 'Hypotrochoid and epitrochoid curves like the classic toy.',
+  description: 'Mathematical spirograph curves using parametric equations.',
+  category: 'geometry',
   params: [
-    { id: 'R', name: 'Outer Radius', type: 'number', default: 180, min: 50, max: 300, step: 5 },
-    { id: 'r', name: 'Inner Radius', type: 'number', default: 80, min: 10, max: 200, step: 1 },
-    { id: 'd', name: 'Pen Distance', type: 'number', default: 100, min: 10, max: 250, step: 1 },
-    { id: 'speed', name: 'Draw Speed', type: 'number', default: 3, min: 1, max: 20, step: 1 },
-    { id: 'palette', name: 'Colors', type: 'color-array', default: ['#ff006e', '#ff7f00', '#ffff00', '#00ff7f', '#007fff', '#7f00ff'] },
-    { id: 'bgColor', name: 'Background', type: 'color', default: '#0a0a0a' },
-    { id: 'animated', name: 'Animate', type: 'boolean', default: true },
+    { id: 'innerRadius', name: 'Inner Radius', type: 'number', default: 80, min: 20, max: 300, step: 5, category: 'geometry', description: 'Radius of the fixed circle' },
+    { id: 'outerRadius', name: 'Outer Radius', type: 'number', default: 200, min: 50, max: 500, step: 5, category: 'geometry', description: 'Radius of the rolling circle' },
+    { id: 'distance', name: 'Pen Distance', type: 'number', default: 100, min: 0, max: 300, step: 5, category: 'geometry', description: 'Distance of pen from rolling circle center' },
+    { id: 'speed', name: 'Speed', type: 'number', default: 0.5, min: 0.1, max: 3, step: 0.1, category: 'animation', description: 'Drawing speed multiplier' },
+    { id: 'lineColor', name: 'Line Color', type: 'color', default: '#00e5ff', category: 'color' },
+    { id: 'bgColor', name: 'Background', type: 'color', default: '#0a0a0a', category: 'color' }
   ],
   presets: [
-    { name: 'Rose', params: { R: 200, r: 40, d: 120, speed: 5, palette: ['#ff1493', '#ff69b4', '#ffb6c1'], bgColor: '#0d0008', animated: true } },
-    { name: 'Star', params: { R: 180, r: 120, d: 80, speed: 3, palette: ['#ffd700', '#ff8c00'], bgColor: '#000000', animated: true } },
-    { name: 'Galaxy', params: { R: 160, r: 70, d: 160, speed: 2, palette: ['#00bfff', '#9370db', '#00ced1'], bgColor: '#000011', animated: true } },
+    {
+      name: 'Flower of Life',
+      params: { innerRadius: 100, outerRadius: 250, distance: 120, speed: 1, lineColor: '#ff6b9d', bgColor: '#0a0a0a' }
+    },
+    {
+      name: 'Galaxy Spiral',
+      params: { innerRadius: 40, outerRadius: 300, distance: 260, speed: 0.3, lineColor: '#c77dff', bgColor: '#000000' }
+    }
   ],
   generateCode: (params, seed) => `
     let t = 0;
-    let colorIdx = 0;
-    let palette = ${JSON.stringify(params.palette)};
-    let prevX, prevY;
+    let points = [];
+    let maxT = TWO_PI * 10;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      randomSeed(${seed});
       background('${params.bgColor}');
-      let pos = getPos(0);
-      prevX = pos.x;
-      prevY = pos.y;
-    }
-
-    function getPos(angle) {
-      let R = ${params.R}, r = ${params.r}, d = ${params.d};
-      let x = width/2 + (R - r) * cos(angle) + d * cos((R - r) / r * angle);
-      let y = height/2 + (R - r) * sin(angle) - d * sin((R - r) / r * angle);
-      return { x, y };
     }
 
     function draw() {
-      if (!${params.animated} && t > TWO_PI * ${params.r}) return;
-
-      for (let i = 0; i < ${params.speed}; i++) {
-        let pos = getPos(t);
-        colorIdx = floor(map(t % TWO_PI, 0, TWO_PI, 0, palette.length));
-        stroke(palette[colorIdx % palette.length]);
-        strokeWeight(1.5);
-        line(prevX, prevY, pos.x, pos.y);
-        prevX = pos.x;
-        prevY = pos.y;
-        t += 0.02;
+      if (t > maxT) {
+        noLoop();
+        return;
       }
 
-      if (t > TWO_PI * lcm(${params.R}, ${params.r}) / ${params.r}) {
-        t = 0;
-        background('${params.bgColor}');
-        let pos = getPos(0);
-        prevX = pos.x;
-        prevY = pos.y;
+      let R = ${params.innerRadius};
+      let r = ${params.outerRadius};
+      let d = ${params.distance};
+      let k = r / R;
+
+      let x = width / 2 + R * ((1 - k) * cos(t) + d * k * cos((1 - k) * t / k));
+      let y = height / 2 + R * ((1 - k) * sin(t) - d * k * sin((1 - k) * t / k));
+
+      stroke('${params.lineColor}');
+      strokeWeight(1);
+      if (t === 0) point(x, y);
+      else line(points[points.length - 1].x, points[points.length - 1].y, x, y);
+
+      points.push({ x, y });
+      t += 0.05 * ${params.speed};
+
+      if (t % 0.1 < 0.01) {
+        stroke('${params.lineColor}');
+        strokeWeight(0.2);
+        point(x, y);
       }
     }
 
-    function lcm(a, b) { return abs(a * b) / gcd(a, b); }
-    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-    function windowResized() { resizeCanvas(windowWidth, windowHeight); background('${params.bgColor}'); }
-  `,
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      background('${params.bgColor}');
+    }
+  `
 };
