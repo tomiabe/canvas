@@ -6,9 +6,10 @@ import {defineConfig, loadEnv} from 'vite';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
+    base: mode === 'production' ? '/canvas/' : '/',
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY),
+      'process.env.GROQ_PROXY_URL': JSON.stringify(env.GROQ_PROXY_URL),
     },
     resolve: {
       alias: {

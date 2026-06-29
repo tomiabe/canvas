@@ -1,16 +1,6 @@
-import Groq from 'groq-sdk';
 import { SketchConfig } from '../types';
 
-let groqInstance: Groq | null = null;
-
-function getGroq() {
-  if (!groqInstance) {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) throw new Error('GROQ_API_KEY is not set.');
-    groqInstance = new Groq({ apiKey, dangerouslyAllowBrowser: true });
-  }
-  return groqInstance;
-}
+const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas-groq-proxy.tomi.workers.dev';
 
 const SYSTEM_PROMPT = `You are a creative generative art programmer. When the user describes a visual idea, write complete p5.js code that brings it to life.
 
@@ -24,19 +14,26 @@ Rules:
 - Respond ONLY with raw JavaScript code — no markdown fences, no explanation`;
 
 export async function generateSketchCode(prompt: string): Promise<string> {
-  const groq = getGroq();
-
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: prompt },
-    ],
-    temperature: 0.9,
-    max_tokens: 2048,
+  const response = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.9,
+      max_tokens: 2048,
+    }),
   });
 
-  const code = completion.choices[0]?.message?.content ?? '';
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`AI proxy error ${response.status}: ${text}`);
+  }
+
+  const data = await response.json();
+  const code: string = data.choices?.[0]?.message?.content ?? '';
 
   // Strip markdown fences if the model includes them anyway
   return code
