@@ -1,3 +1,6 @@
 name = "canvas-groq-proxy"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
+
+[ai]
+binding = "AI"
