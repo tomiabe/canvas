@@ -1,20 +1,24 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Canvas
 
-# Run and deploy your AI Studio app
+No-code generative art playground — type a prompt and AI writes the p5.js sketch for you. Browse templates, adjust parameters live, and copy the generated code.
 
-This contains everything you need to run your app locally.
+**Features**
 
-View your app in AI Studio: https://ai.studio/apps/cb73c04d-8622-4d65-87f1-788feba80e32
+- Gallery of generative art templates to start from
+- AI-powered text-to-sketch: describe what you want, get a working p5.js sketch
+- Live canvas preview with tweakable parameters
+- Code viewer — inspect or copy the generated sketch
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js 18+, a [Gemini API key](https://aistudio.google.com) (free)
 
+```bash
+npm install
+# copy .env.example → .env.local and add your GEMINI_API_KEY
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+Built by [Tomi Abe Studio](https://studio.tomiabe.com)
