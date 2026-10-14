@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Prepares a fresh Amp orb: installs the frontend's npm dependencies.
+# Must stay non-interactive and idempotent; it also reruns on stale snapshots.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+export NPM_CONFIG_UPDATE_NOTIFIER=false
+
+echo "==> Toolchain: node $(node --version), npm $(npm --version)"
+
+echo "==> npm ci (package-lock.json)"
+start=$SECONDS
+npm ci --no-audit --no-fund
+echo "    done in $((SECONDS - start))s"
