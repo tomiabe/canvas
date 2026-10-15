@@ -1,4 +1,5 @@
 name = "canvas"
+account_id = "633967b8f33294ad08657837c6f1fbc9"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
