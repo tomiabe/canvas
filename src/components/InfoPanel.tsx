@@ -10,20 +10,21 @@ interface InfoPanelProps {
 const generalSteps = [
   { icon: Sparkles, label: 'Describe it', desc: 'Type what you want to see: a mood, a motion, a subject. AI writes the sketch for you.' },
   { icon: Wand2, label: 'Refine by prompting', desc: "Click the sparkle button (bottom center) and describe a change, like 'slower' or 'more pink'." },
-  { icon: Sliders, label: 'Adjust settings', desc: 'Open Settings in the top bar to tweak colors, speed, and other parameters.' },
+  { icon: Sliders, label: 'Adjust your artwork', desc: 'Open Adjust beside the artwork name to tweak colors, speed, and other parameters.' },
   { icon: MousePointer2, label: 'Start from an example', desc: 'Or pick one of the templates on the left and build from there.' },
   { icon: Download, label: 'Export', desc: 'Save as PNG, animated GIF, or video, or download the p5.js source code.' },
 ];
 
 export function InfoPanel({ template, onClose }: InfoPanelProps) {
   return (
-    <div className="absolute right-0 top-0 w-80 h-full glass-panel border-l border-white/10 z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col">
+    <aside aria-label="Help" className="w-80 shrink-0 h-full glass-panel border-l border-white/10 z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col">
       <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
         <h3 className="text-sm font-semibold tracking-tight">
           {template ? template.name : 'Getting Started'}
         </h3>
         <button
           onClick={onClose}
+          aria-label="Close help"
           className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors cursor-pointer active:scale-95"
         >
           <X size={14} />
@@ -58,6 +59,6 @@ export function InfoPanel({ template, onClose }: InfoPanelProps) {
           })}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

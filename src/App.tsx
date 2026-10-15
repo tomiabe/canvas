@@ -94,10 +94,8 @@ export default function App() {
   const hasTemplate = !!config.templateId && !!templates[config.templateId];
   const activeTemplate = hasTemplate ? templates[config.templateId] : null;
 
-  const [showCode, setShowCode] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [panel, setPanel] = useState<'adjust' | 'code' | 'help' | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [exportEvent, setExportEvent] = useState<{ type: 'png' | 'gif' | 'video'; duration?: number; fps?: number } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -132,45 +130,26 @@ export default function App() {
     <div className="flex flex-col h-screen w-full bg-[#000000] text-white overflow-hidden font-sans antialiased relative">
       <TopBar
         config={config}
-        onChange={handleConfigChange}
         onExport={handleExport}
-        onToggleCode={() => setShowCode(!showCode)}
-        showCode={showCode}
-        showSettings={showSettings}
-        onToggleSettings={() => setShowSettings(!showSettings)}
+        onToggleCode={() => setPanel(panel === 'code' ? null : 'code')}
+        showCode={panel === 'code'}
+        showSettings={panel === 'adjust'}
+        onToggleSettings={() => setPanel(panel === 'adjust' ? null : 'adjust')}
         previewEnabled={previewEnabled}
         onTogglePreview={() => setPreviewEnabled(!previewEnabled)}
-        onToggleInfo={() => setShowInfo(!showInfo)}
-        showInfo={showInfo}
+        onToggleInfo={() => setPanel(panel === 'help' ? null : 'help')}
+        showInfo={panel === 'help'}
         hasTemplate={hasAnyTemplate}
       />
 
       <div className="flex flex-1 overflow-hidden relative">
         <TemplateGallery config={config} onChange={handleConfigChange} />
 
-        <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showSettings && hasAnyTemplate ? 'w-80 opacity-100' : 'w-0 opacity-0'
-          }`}
-        >
-          {hasAnyTemplate && <ControlPanel config={config} onChange={handleConfigChange} />}
-        </div>
-
-        <div className="flex-1 relative">
+        <div className="flex-1 min-w-0 relative">
           <CanvasRunner config={animatedConfig} exportEvent={exportEvent} previewEnabled={previewEnabled} />
 
-          {showInfo && (
-            <InfoPanel
-              template={activeTemplate}
-              onClose={() => setShowInfo(false)}
-            />
-          )}
-
           {!hasAnyTemplate && (
-            // Stop short of the w-80 info panel so it doesn't cover the hero.
-            <div className={`absolute inset-y-0 left-0 ${showInfo ? 'right-80' : 'right-0'}`}>
-              <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating} />
-            </div>
+            <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating} />
           )}
 
           {hasAnyTemplate && !showPrompt && (
@@ -193,8 +172,16 @@ export default function App() {
           )}
         </div>
 
-        {showCode && hasAnyTemplate && (
+        {panel === 'adjust' && hasAnyTemplate && (
+          <aside aria-label="Adjust artwork" className="w-80 shrink-0 border-l border-white/10">
+            <ControlPanel config={config} onChange={handleConfigChange} />
+          </aside>
+        )}
+        {panel === 'code' && hasAnyTemplate && (
           <CodeViewer config={config} onChange={handleConfigChange} />
+        )}
+        {panel === 'help' && (
+          <InfoPanel template={activeTemplate} onClose={() => setPanel(null)} />
         )}
       </div>
     </div>

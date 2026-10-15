@@ -36,7 +36,7 @@ export function CodeViewer({ config, onChange }: CodeViewerProps) {
   };
 
   return (
-    <div className="w-1/3 min-w-[300px] max-w-[500px] glass-panel border-l border-white/10 h-full flex flex-col text-white/90 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
+    <div role="region" aria-label="Artwork code" className="w-80 lg:w-96 shrink-0 glass-panel border-l border-white/10 h-full flex flex-col text-white/90 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
       <div className="p-3 border-b border-white/10 flex items-center justify-between bg-white/5">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_8px_rgba(52,199,89,0.5)]"></span>
@@ -59,7 +59,7 @@ export function CodeViewer({ config, onChange }: CodeViewerProps) {
             spellCheck="false"
           />
         ) : (
-          <pre className="text-xs font-mono text-white/70 whitespace-pre-wrap leading-relaxed">
+          <pre className="text-xs font-mono text-white/70 whitespace-pre-wrap break-all leading-relaxed">
             {code.trim()}
           </pre>
         )}

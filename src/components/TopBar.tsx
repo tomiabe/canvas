@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
-import { Download, Code, Palette, Wand2, Settings, Eye, EyeOff, FileImage, FileVideo, FileJson, Info } from 'lucide-react';
+import { Download, Code, Palette, SlidersHorizontal, Pause, Play, FileImage, FileVideo, FileJson, CircleHelp } from 'lucide-react';
 
 interface TopBarProps {
   config: SketchConfig;
-  onChange: (config: SketchConfig) => void;
   onExport: (type: 'png' | 'gif' | 'video') => void;
   onToggleCode: () => void;
   showCode: boolean;
@@ -18,7 +17,7 @@ interface TopBarProps {
   hasTemplate: boolean;
 }
 
-export function TopBar({ config, onChange, onExport, onToggleCode, showCode, showSettings, onToggleSettings, previewEnabled, onTogglePreview, onToggleInfo, showInfo, hasTemplate }: TopBarProps) {
+export function TopBar({ config, onExport, onToggleCode, showCode, showSettings, onToggleSettings, previewEnabled, onTogglePreview, onToggleInfo, showInfo, hasTemplate }: TopBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -31,34 +30,6 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode, sho
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleSurpriseMe = () => {
-    const templateIds = Object.keys(templates).filter(id => id !== 'custom-sketch');
-    const randomTemplateId = templateIds[Math.floor(Math.random() * templateIds.length)];
-    const template = templates[randomTemplateId];
-
-    const randomParams: Record<string, any> = {};
-    template.params.forEach(p => {
-      if (p.type === 'number') {
-        const range = (p.max || 100) - (p.min || 0);
-        let val = (p.min || 0) + Math.random() * range;
-        if (p.step && p.step >= 1) val = Math.floor(val);
-        randomParams[p.id] = val;
-      } else if (p.type === 'boolean') {
-        randomParams[p.id] = Math.random() > 0.5;
-      } else if (p.type === 'enum' && p.options) {
-        randomParams[p.id] = p.options[Math.floor(Math.random() * p.options.length)];
-      } else {
-        randomParams[p.id] = p.default;
-      }
-    });
-
-    onChange({
-      templateId: randomTemplateId,
-      seed: Math.floor(Math.random() * 1000000),
-      params: randomParams
-    });
-  };
 
   const handleJsExport = () => {
     if (!hasTemplate) return;
@@ -80,53 +51,44 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode, sho
   ];
 
   return (
-    <div className="h-11 glass-panel flex items-center justify-between px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+    <header className="min-h-12 glass-panel grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
       <div className="flex items-center gap-2.5 font-semibold text-sm tracking-tight">
         <Palette className="text-white" size={18} />
         <span>Canvas</span>
-        <button
-          onClick={onToggleInfo}
-          className={`ml-1 p-1 rounded-lg transition-colors cursor-pointer active:scale-95 ${showInfo ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'}`}
-          title="Show instructions"
-        >
-          <Info size={14} />
-        </button>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div role="group" aria-label="Artwork controls" className="flex min-w-0 flex-wrap items-center justify-center gap-1.5 py-2">
         {hasTemplate && (
           <>
-            <button
-              onClick={onTogglePreview}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${previewEnabled ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90' : 'bg-white/10 border-white/20 text-white'}`}
-              title={previewEnabled ? 'Pause preview' : 'Resume preview'}
-            >
-              {previewEnabled ? <Eye size={13} /> : <EyeOff size={13} />}
-              {previewEnabled ? 'Preview' : 'Paused'}
-            </button>
+            <span className="max-w-48 truncate text-xs font-medium text-white/60 mr-3" title={templates[config.templateId]?.name}>
+              {templates[config.templateId]?.name}
+            </span>
 
             <button
               onClick={onToggleSettings}
+              aria-pressed={showSettings}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${showSettings ? 'bg-white text-black border-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'}`}
             >
-              <Settings size={13} />
-              Settings
-            </button>
-
-            <button
-              onClick={handleSurpriseMe}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer active:scale-95"
-            >
-              <Wand2 size={13} />
-              Surprise Me
+              <SlidersHorizontal size={13} />
+              Adjust
             </button>
 
             <button
               onClick={onToggleCode}
+              aria-pressed={showCode}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${showCode ? 'bg-white text-black border-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'}`}
             >
               <Code size={13} />
               Code
+            </button>
+
+            <button
+              onClick={onTogglePreview}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg bg-white/5 hover:bg-white/10 border-white/10 transition-colors cursor-pointer active:scale-95"
+              title={previewEnabled ? 'Pause preview' : 'Resume preview'}
+              aria-label={previewEnabled ? 'Pause preview' : 'Resume preview'}
+            >
+              {previewEnabled ? <Pause size={13} /> : <Play size={13} />}
             </button>
 
             <div className="h-4 w-[1px] bg-white/15 mx-1"></div>
@@ -175,6 +137,15 @@ export function TopBar({ config, onChange, onExport, onToggleCode, showCode, sho
           </>
         )}
       </div>
-    </div>
+      <button
+        onClick={onToggleInfo}
+        aria-pressed={showInfo}
+        className={`border-l border-white/10 pl-4 py-1 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showInfo ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
+        title="Help"
+      >
+        <CircleHelp size={16} />
+        Help
+      </button>
+    </header>
   );
 }
