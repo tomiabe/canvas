@@ -44,6 +44,8 @@ Each phase ships something usable on its own. Do them in order.
 
 **Done when:** a new visitor can generate a sketch without touching the gallery.
 
+**Status:** Done (2026-10-15). The empty canvas shows a centered prompt with six example prompts; the Getting Started panel starts closed.
+
 ### Phase 2 — AI writes the sketch and declares its controls
 
 - Make code generation the default path. Templates are passed to the model as optional references, not as the required output.

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Template } from '../types';
-import { X, MousePointer2, Sliders, Sparkles, Download, Eye } from 'lucide-react';
+import { X, MousePointer2, Sliders, Sparkles, Download, Wand2 } from 'lucide-react';
 
 interface InfoPanelProps {
   template: Template | null;
@@ -8,11 +8,11 @@ interface InfoPanelProps {
 }
 
 const generalSteps = [
-  { icon: MousePointer2, label: 'Select a template', desc: 'Browse the gallery on the left and pick a template that interests you.' },
-  { icon: Sliders, label: 'Adjust settings', desc: 'Open the Settings panel from the top bar to tweak parameters, colors, and presets.' },
-  { icon: Eye, label: 'Preview & pause', desc: 'Use the Preview button to pause/resume the canvas rendering at any time.' },
-  { icon: Sparkles, label: 'AI prompt', desc: 'Click the sparkle button (bottom center) to describe your design in words and let AI generate it.' },
-  { icon: Download, label: 'Export', desc: 'Export as PNG, animated GIF, video, or download the p5.js source code.' },
+  { icon: Sparkles, label: 'Describe it', desc: 'Type what you want to see: a mood, a motion, a subject. AI writes the sketch for you.' },
+  { icon: Wand2, label: 'Refine by prompting', desc: "Click the sparkle button (bottom center) and describe a change, like 'slower' or 'more pink'." },
+  { icon: Sliders, label: 'Adjust settings', desc: 'Open Settings in the top bar to tweak colors, speed, and other parameters.' },
+  { icon: MousePointer2, label: 'Start from an example', desc: 'Or pick one of the templates on the left and build from there.' },
+  { icon: Download, label: 'Export', desc: 'Save as PNG, animated GIF, or video, or download the p5.js source code.' },
 ];
 
 export function InfoPanel({ template, onClose }: InfoPanelProps) {

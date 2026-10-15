@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, X, Wand2 } from 'lucide-react';
+import { Sparkles, Loader2, X, Wand2, Sliders, Download, PanelLeft } from 'lucide-react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
 
@@ -8,6 +8,8 @@ interface PromptBarProps {
   isLoading: boolean;
   onClose?: () => void;
   config?: SketchConfig;
+  /** 'hero' is the centered prompt on the empty canvas; 'floating' edits an existing sketch. */
+  variant?: 'floating' | 'hero';
 }
 
 const suggestionMap: Record<string, string[]> = {
@@ -48,7 +50,23 @@ const defaultSuggestions = [
   'Export-ready composition',
 ];
 
-export function PromptBar({ onGenerate, isLoading, onClose, config }: PromptBarProps) {
+const examplePrompts = [
+  'Ink drops slowly spreading in water',
+  'Neon rain falling on a dark city',
+  'A flower made of rotating circles',
+  'Fireflies drifting over a pond at night',
+  'Grass swaying in the wind at sunset',
+  'Glitchy pixel waves in synthwave colors',
+];
+
+const heroSteps = [
+  { icon: Sparkles, label: 'Describe it', desc: 'A mood, a motion, a subject' },
+  { icon: Sliders, label: 'Refine it', desc: 'Keep prompting or adjust settings' },
+  { icon: Download, label: 'Export it', desc: 'PNG, GIF, video, or p5.js code' },
+];
+
+export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'floating' }: PromptBarProps) {
+  const isHero = variant === 'hero';
   const [prompt, setPrompt] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,45 +82,115 @@ export function PromptBar({ onGenerate, isLoading, onClose, config }: PromptBarP
     await onGenerate(suggestion);
   };
 
+  const inputRow = (
+    <div className="flex items-center">
+      <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white/50 bg-white/5 rounded-full">
+        {isLoading ? <Loader2 className="animate-spin w-5 h-5 text-white" /> : <Sparkles className="w-5 h-5" />}
+      </div>
+      <input
+        type="text"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder={isHero ? 'e.g. ink drops slowly spreading in water' : "Describe a change (e.g. 'slower, more pink')"}
+        aria-label="Describe your sketch"
+        autoFocus={isHero}
+        disabled={isLoading}
+        className="flex-1 bg-transparent border-none outline-none text-white placeholder-white/40 px-3 text-sm"
+      />
+      <button
+        type="submit"
+        disabled={!prompt.trim() || isLoading}
+        className={`h-9 px-5 rounded-full font-medium text-sm transition-colors cursor-pointer ${
+          prompt.trim() && !isLoading
+            ? 'bg-white text-black hover:bg-white/90'
+            : 'bg-white/10 text-white/40 cursor-not-allowed'
+        }`}
+      >
+        Generate
+      </button>
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-2 p-2 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+        >
+          <X size={16} />
+        </button>
+      )}
+    </div>
+  );
+
+  if (isHero) {
+    return (
+      <div className="absolute inset-0 z-10 flex px-6 overflow-y-auto">
+        {/* m-auto centers without clipping the top when the viewport is short. */}
+        <div className="w-full max-w-2xl py-10 m-auto">
+          <h1 className="text-2xl font-semibold tracking-tight text-white/90 text-center">
+            Describe the art you want to see
+          </h1>
+          <p className="text-sm text-white/40 text-center mt-2 mb-6">
+            Canvas turns your words into a live, animated sketch. No code required.
+          </p>
+
+          <form
+            onSubmit={handleSubmit}
+            className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
+          >
+            {inputRow}
+          </form>
+
+          <p className={`text-xs text-center mt-3 h-4 ${isLoading ? 'text-white/50' : 'text-transparent'}`} aria-live="polite">
+            {isLoading ? 'Writing your sketch…' : ''}
+          </p>
+
+          <div className="mt-3 text-[10px] text-white/30 font-medium uppercase tracking-wider text-center">
+            Try an example
+          </div>
+          <div className="flex flex-wrap justify-center gap-2 mt-2">
+            {examplePrompts.map(example => (
+              <button
+                key={example}
+                type="button"
+                disabled={isLoading}
+                onClick={() => handleSuggestion(example)}
+                className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 rounded-full border border-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {example}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mt-10">
+            {heroSteps.map(step => {
+              const Icon = step.icon;
+              return (
+                <div key={step.label} className="flex flex-col items-center text-center gap-1.5">
+                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                    <Icon size={14} className="text-white/40" />
+                  </div>
+                  <div className="text-xs font-medium text-white/60">{step.label}</div>
+                  <div className="text-[11px] text-white/30">{step.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="flex items-center justify-center gap-1.5 text-xs text-white/30 mt-8">
+            <PanelLeft size={12} />
+            Or start from one of the templates on the left.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
       <form
         onSubmit={handleSubmit}
         className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
       >
-        <div className="flex items-center">
-          <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white/50 bg-white/5 rounded-full">
-            {isLoading ? <Loader2 className="animate-spin w-5 h-5 text-white" /> : <Sparkles className="w-5 h-5" />}
-          </div>
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe your design (e.g. 'indigo organic blobs slow breathing')"
-            disabled={isLoading}
-            className="flex-1 bg-transparent border-none outline-none text-white placeholder-white/40 px-3 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={!prompt.trim() || isLoading}
-            className={`h-9 px-5 rounded-full font-medium text-sm transition-colors cursor-pointer ${
-              prompt.trim() && !isLoading
-                ? 'bg-white text-black hover:bg-white/90'
-                : 'bg-white/10 text-white/40 cursor-not-allowed'
-            }`}
-          >
-            Generate
-          </button>
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="ml-2 p-2 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
+        {inputRow}
 
         {!isLoading && (
           <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-white/10">

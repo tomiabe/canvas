@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SketchConfig } from '../types';
 import { generateHtml } from '../engine/generator';
 import { templates } from '../templates';
-import { EyeOff, MousePointer2, Sliders, Sparkles, Download, Palette, AlertTriangle } from 'lucide-react';
+import { EyeOff, AlertTriangle } from 'lucide-react';
 
 export interface ExportEvent {
   type: 'png' | 'gif' | 'video';
@@ -15,13 +15,6 @@ interface CanvasRunnerProps {
   exportEvent?: ExportEvent | null;
   previewEnabled?: boolean;
 }
-
-const blankSteps = [
-  { icon: MousePointer2, label: 'Pick a template', desc: 'Choose from 50+ templates in the gallery on the left' },
-  { icon: Sliders, label: 'Tweak settings', desc: 'Open the Settings panel to adjust colors, speeds, and more' },
-  { icon: Sparkles, label: 'AI generate', desc: 'Describe what you want and let AI create it for you' },
-  { icon: Download, label: 'Export', desc: 'Save as PNG, GIF, video, or download the p5.js source code' },
-];
 
 export function CanvasRunner({ config, exportEvent, previewEnabled = true }: CanvasRunnerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -71,36 +64,9 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
     return () => window.removeEventListener('message', handler);
   }, []);
 
+  // The empty state (hero prompt) is rendered by App on top of this background.
   if (!config.templateId) {
-    return (
-      <div className="w-full h-full bg-[#0b0b0d] overflow-hidden relative border-none flex items-center justify-center">
-        <div className="max-w-md text-center px-8">
-          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6">
-            <Palette size={32} className="text-white/30" strokeWidth={1} />
-          </div>
-          <h2 className="text-lg font-semibold text-white/60 mb-2">Welcome to Canvas</h2>
-          <p className="text-sm text-white/30 mb-8 leading-relaxed">
-            A generative art studio in your browser. No coding required.
-          </p>
-          <div className="space-y-4 text-left">
-            {blankSteps.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0">
-                    <Icon size={14} className="text-white/40" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white/60">{step.label}</div>
-                    <div className="text-xs text-white/30 mt-0.5">{step.desc}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="w-full h-full bg-[#0b0b0d]" />;
   }
 
   if (!previewEnabled) {

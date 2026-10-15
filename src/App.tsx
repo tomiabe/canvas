@@ -97,7 +97,7 @@ export default function App() {
   const [showCode, setShowCode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [showInfo, setShowInfo] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [exportEvent, setExportEvent] = useState<{ type: 'png' | 'gif' | 'video'; duration?: number; fps?: number } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -164,6 +164,13 @@ export default function App() {
               template={activeTemplate}
               onClose={() => setShowInfo(false)}
             />
+          )}
+
+          {!hasAnyTemplate && (
+            // Stop short of the w-80 info panel so it doesn't cover the hero.
+            <div className={`absolute inset-y-0 left-0 ${showInfo ? 'right-80' : 'right-0'}`}>
+              <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating} />
+            </div>
           )}
 
           {hasAnyTemplate && !showPrompt && (
