@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Check Cloudflare token
         id: credentials
@@ -43,3 +43,21 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4.90.1 deploy
+
+      - name: Sync provider API keys
+        if: steps.credentials.outputs.available == 'true'
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        # Only keys present as repository secrets are written; the Worker keeps the rest.
+        run: |
+          for name in GEMINI_API_KEY GROQ_API_KEY OPENROUTER_API_KEY; do
+            if [ -n "${!name}" ]; then
+              printf '%s' "${!name}" | npx --yes wrangler@4.90.1 secret put "$name"
+            else
+              echo "$name is not a repository secret; leaving the Worker's value unchanged."
+            fi
+          done
