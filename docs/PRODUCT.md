@@ -94,5 +94,5 @@ Each phase ships something usable on its own. Do them in order.
 ## AI worker
 
 - Deployed as the `canvas` Worker at `https://canvas.tomi.workers.dev` (the frontend default). Deploy with `cd worker && npx wrangler deploy`.
-- Providers without a key are skipped. Until `GEMINI_API_KEY` and `OPENROUTER_API_KEY` are set as Worker secrets (`npx wrangler secret put <NAME>`), requests are answered by Workers AI (Llama), which often returns invalid JSON for sketch code. Responses include a `provider` field; anything other than `gemini` means Gemini was skipped or failed.
+- Provider keys come from repository secrets; the deploy workflow copies them into the Worker. Providers without a key are skipped. Workers AI (Llama) often returns invalid JSON for sketch code, so it should only answer when every Gemini model fails. Responses include a `provider` field; `gemini` is Flash, `gemini-lite` is Flash-Lite (used when Flash is overloaded); anything else means Gemini was skipped or failed.
 - The OpenRouter key is on the free tier with no credits, so paid OpenRouter fallback models need credits first.

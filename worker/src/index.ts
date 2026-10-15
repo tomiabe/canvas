@@ -34,12 +34,12 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 // ── Gemini ────────────────────────────────────────────────────────
-async function tryGemini(messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string, jsonMode: boolean): Promise<string> {
+async function tryGemini(model: string, messages: ChatMessage[], temperature: number, maxTokens: number, apiKey: string, jsonMode: boolean): Promise<string> {
   const system = messages.find(m => m.role === 'system');
   const rest = messages.filter(m => m.role !== 'system');
 
   const res = await withTimeout(
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -51,7 +51,8 @@ async function tryGemini(messages: ChatMessage[], temperature: number, maxTokens
         generationConfig: {
           temperature,
           maxOutputTokens: maxTokens,
-          thinkingConfig: { thinkingBudget: 0 },
+          // Flash-Lite rejects thinkingBudget 0 with "invalid argument".
+          ...(model === 'gemini-flash-latest' ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
           ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
         },
       }),
@@ -168,7 +169,11 @@ export default {
       { name: 'workers-ai', run: () => tryWorkersAI(env, messages, temperature, maxTokens) },
     ];
     if (env.GEMINI_API_KEY) {
-      providers.unshift({ name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) });
+      // Flash-Lite keeps requests on Gemini when Flash is overloaded (503s are common).
+      providers.unshift(
+        { name: 'gemini', run: () => tryGemini('gemini-flash-latest', messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) },
+        { name: 'gemini-lite', run: () => tryGemini('gemini-flash-lite-latest', messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) },
+      );
     }
     if (env.GROQ_API_KEY) {
       providers.push({ name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY!, jsonMode) });
