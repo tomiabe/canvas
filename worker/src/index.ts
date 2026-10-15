@@ -1,7 +1,7 @@
 export interface Env {
-  GEMINI_API_KEY: string;
-  GROQ_API_KEY: string;
-  OPENROUTER_API_KEY: string;
+  GEMINI_API_KEY?: string;
+  GROQ_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
   AI: { run: (model: string, inputs: Record<string, unknown>) => Promise<unknown> };
 }
 
@@ -164,11 +164,17 @@ export default {
     const jsonMode = body.response_format?.type === 'json_object';
 
     const providers: Array<{ name: string; run: () => Promise<string> }> = [
-      { name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY, jsonMode) },
       { name: 'workers-ai', run: () => tryWorkersAI(env, messages, temperature, maxTokens) },
-      { name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY, jsonMode) },
-      { name: 'openrouter', run: () => tryOpenRouter(messages, temperature, maxTokens, env.OPENROUTER_API_KEY) },
     ];
+    if (env.GEMINI_API_KEY) {
+      providers.unshift({ name: 'gemini', run: () => tryGemini(messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) });
+    }
+    if (env.GROQ_API_KEY) {
+      providers.push({ name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY!, jsonMode) });
+    }
+    if (env.OPENROUTER_API_KEY) {
+      providers.push({ name: 'openrouter', run: () => tryOpenRouter(messages, temperature, maxTokens, env.OPENROUTER_API_KEY!) });
+    }
 
     const errors: string[] = [];
     for (const provider of providers) {

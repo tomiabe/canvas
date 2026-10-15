@@ -1,7 +1,7 @@
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
 
-const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas-groq-proxy.tomi.workers.dev';
+const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas.tomi.workers.dev';
 
 export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
   const templateList = Object.values(templates)

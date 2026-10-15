@@ -1,4 +1,4 @@
-name = "canvas-groq-proxy"
+name = "canvas"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 

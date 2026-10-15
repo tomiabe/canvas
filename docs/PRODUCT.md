@@ -91,6 +91,6 @@ Each phase ships something usable on its own. Do them in order.
 - **Shared sketch storage:** URL-only. Compress the sketch (prompt, code, params, seed) into the URL fragment (`#…`), so it never reaches a server, needs no storage or abuse limits, and works on GitHub Pages. Add KV storage only if real sketches outgrow practical URL lengths.
 - **Templates:** Keep all 50, as the "start from an example" gallery and as references for the model.
 
-## Known issue
+## Deployment note
 
-- As of 2026-10-15, `https://canvas-groq-proxy.tomi.workers.dev` (the frontend's default AI endpoint) returns Cloudflare error 1042: no Worker is serving that URL. AI generation on the live site is broken until the worker is redeployed (`cd worker && npx wrangler deploy`, then `wrangler secret put` for each API key) or `GROQ_PROXY_URL` points at a working deployment.
+- The AI proxy is deployed as the `canvas` Worker at `https://canvas.tomi.workers.dev`. Gemini and OpenRouter keys were unavailable during restoration, so the Worker uses its Cloudflare Workers AI binding and the configured Groq key, skipping providers without a key. Add those provider secrets later if they should be enabled.
