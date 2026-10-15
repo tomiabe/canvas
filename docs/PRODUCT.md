@@ -73,7 +73,7 @@ Each phase ships something usable on its own. Do them in order.
 ### Phase 5 — Export and share
 
 - Polish existing exports (PNG, GIF, WebM) and add "download as standalone HTML" and "open in the p5.js web editor".
-- Shareable links: encode small sketches in the URL; store larger ones server-side (e.g. Cloudflare KV next to the existing worker).
+- Shareable links: compress the sketch into the URL fragment (see Decisions); no server storage.
 - Before running shared sketches, remove `allow-same-origin` from the preview iframe (or serve sketches from a separate origin) so other people's code can't touch the app.
 - Remix: opening a shared link loads its prompt, code, and controls as a new editable sketch.
 
@@ -85,8 +85,12 @@ Each phase ships something usable on its own. Do them in order.
 - Audio-reactive and webcam inputs as first-class prompt options.
 - Accounts and cloud sync.
 
-## Open decisions
+## Decisions
 
-- **Primary model and who pays:** a stronger paid model improves quality a lot but needs rate limiting or user-provided keys.
-- **Shared sketch storage:** URL-only (free, size-limited) or KV-backed (needs abuse limits).
-- **Templates:** keep all 50, or trim to the ~15 best as examples and model references.
+- **Models:** Use the Gemini, OpenRouter, and Groq keys the owner provides; no user-supplied keys. Gemini is primary, with thinking enabled (the worker currently sets `thinkingBudget: 0`, which hurts code quality). Fallbacks, in order: OpenRouter with a strong paid coding model (not a `:free` model), then Groq for speed, then Workers AI. Confirm exact model IDs with the Phase 3 eval set.
+- **Shared sketch storage:** URL-only. Compress the sketch (prompt, code, params, seed) into the URL fragment (`#…`), so it never reaches a server, needs no storage or abuse limits, and works on GitHub Pages. Add KV storage only if real sketches outgrow practical URL lengths.
+- **Templates:** Keep all 50, as the "start from an example" gallery and as references for the model.
+
+## Known issue
+
+- As of 2026-10-15, `https://canvas-groq-proxy.tomi.workers.dev` (the frontend's default AI endpoint) returns Cloudflare error 1042: no Worker is serving that URL. AI generation on the live site is broken until the worker is redeployed (`cd worker && npx wrangler deploy`, then `wrangler secret put` for each API key) or `GROQ_PROXY_URL` points at a working deployment.
