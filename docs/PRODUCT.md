@@ -91,6 +91,8 @@ Each phase ships something usable on its own. Do them in order.
 - **Shared sketch storage:** URL-only. Compress the sketch (prompt, code, params, seed) into the URL fragment (`#…`), so it never reaches a server, needs no storage or abuse limits, and works on GitHub Pages. Add KV storage only if real sketches outgrow practical URL lengths.
 - **Templates:** Keep all 50, as the "start from an example" gallery and as references for the model.
 
-## Deployment note
+## AI worker
 
-- The AI proxy is deployed as the `canvas` Worker at `https://canvas.tomi.workers.dev`. Gemini and OpenRouter keys were unavailable during restoration, so the Worker uses its Cloudflare Workers AI binding and the configured Groq key, skipping providers without a key. Add those provider secrets later if they should be enabled.
+- Deployed as the `canvas` Worker at `https://canvas.tomi.workers.dev` (the frontend default). Deploy with `cd worker && npx wrangler deploy`.
+- Providers without a key are skipped. Until `GEMINI_API_KEY` and `OPENROUTER_API_KEY` are set as Worker secrets (`npx wrangler secret put <NAME>`), requests are answered by Workers AI (Llama), which often returns invalid JSON for sketch code. Responses include a `provider` field; anything other than `gemini` means Gemini was skipped or failed.
+- The OpenRouter key is on the free tier with no credits, so paid OpenRouter fallback models need credits first.

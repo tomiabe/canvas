@@ -78,9 +78,10 @@ async function tryWorkersAI(env: Env, messages: ChatMessage[], temperature: numb
     ),
     15000
   );
-  const text = result?.response ?? '';
-  if (!text) throw new Error('Workers AI returned empty content');
-  return text;
+  const response = result?.response ?? '';
+  if (!response) throw new Error('Workers AI returned empty content');
+  // Workers AI sometimes returns already-parsed JSON; callers expect a string.
+  return typeof response === 'string' ? response : JSON.stringify(response);
 }
 
 // ── Groq ──────────────────────────────────────────────────────────
