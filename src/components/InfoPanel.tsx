@@ -4,6 +4,7 @@ import { X, MousePointer2, Sliders, Sparkles, Download, Wand2 } from 'lucide-rea
 
 interface InfoPanelProps {
   template: Template | null;
+  title?: string;
   onClose: () => void;
 }
 
@@ -15,12 +16,12 @@ const generalSteps = [
   { icon: Download, label: 'Export', desc: 'Save as PNG, animated GIF, or video, or download the p5.js source code.' },
 ];
 
-export function InfoPanel({ template, onClose }: InfoPanelProps) {
+export function InfoPanel({ template, title, onClose }: InfoPanelProps) {
   return (
     <aside aria-label="Help" className="w-80 shrink-0 h-full glass-panel border-l border-white/10 z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col">
       <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
         <h3 className="text-sm font-semibold tracking-tight">
-          {template ? template.name : 'Getting Started'}
+          {title ?? template?.name ?? 'Getting Started'}
         </h3>
         <button
           onClick={onClose}
@@ -34,13 +35,13 @@ export function InfoPanel({ template, onClose }: InfoPanelProps) {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
         {template && (
           <div className="mb-5 pb-5 border-b border-white/10">
-            <p className="text-xs text-white/60 leading-relaxed">{template.description}</p>
+            <p className="text-xs text-white/60 leading-relaxed">{title ? 'An original AI-generated artwork with live controls in Adjust.' : template.description}</p>
           </div>
         )}
 
         <div className="space-y-4">
           <div className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">
-            {template ? `How to use "${template.name}"` : 'How to use Canvas'}
+            {template ? `How to use "${title ?? template.name}"` : 'How to use Canvas'}
           </div>
 
           {generalSteps.map((step, i) => {

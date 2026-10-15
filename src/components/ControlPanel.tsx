@@ -48,7 +48,7 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
 
   // Group params by category
   const grouped: Record<string, ParamDef[]> = { misc: [] };
-  template.params.forEach(p => {
+  (config.generated?.controls ?? template.params).forEach(p => {
     if (p.type === 'code') return;
     const cat = p.category || 'misc';
     if (!grouped[cat]) grouped[cat] = [];
@@ -90,6 +90,7 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
         return (
           <input
             type="range"
+            aria-label={param.name}
             min={param.min}
             max={param.max}
             step={param.step}
@@ -102,6 +103,9 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
         return (
           <button
             onClick={() => handleParamChange(param.id, !value)}
+            role="switch"
+            aria-label={param.name}
+            aria-checked={value}
             className={`w-12 h-6 rounded-full transition-colors ${value ? 'bg-[#34C759]' : 'bg-white/20'} relative cursor-pointer border border-white/5`}
           >
             <span className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full transition-transform shadow-sm ${value ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -112,6 +116,7 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
           <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 shadow-sm relative shrink-0">
             <input
               type="color"
+              aria-label={param.name}
               value={value}
               onChange={(e) => handleParamChange(param.id, e.target.value)}
               className="w-[200%] h-[200%] absolute top-[-50%] left-[-50%] cursor-pointer border-0 p-0 bg-transparent"
@@ -130,6 +135,7 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
       case 'enum':
         return (
           <select
+            aria-label={param.name}
             value={value}
             onChange={(e) => handleParamChange(param.id, e.target.value)}
             className="w-full bg-white/5 border border-white/10 text-white text-sm rounded-lg block p-2.5 cursor-pointer appearance-none focus:outline-none focus:border-white/30 transition-colors"
@@ -166,8 +172,10 @@ export function ControlPanel({ config, onChange }: ControlPanelProps) {
   return (
     <div className="w-80 glass-panel h-full flex flex-col overflow-hidden text-white/90 shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-20">
       <div className="p-4 border-b border-white/10">
-        <h2 className="text-lg font-semibold tracking-tight">{template.name}</h2>
-        <p className="text-xs text-white/50 mt-1.5 leading-relaxed">{template.description}</p>
+        <h2 className="text-lg font-semibold tracking-tight">{config.generated?.title ?? template.name}</h2>
+        <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
+          {config.generated ? 'Controls created for this artwork. Changes update the live sketch.' : template.description}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">

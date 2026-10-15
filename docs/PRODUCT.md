@@ -22,7 +22,7 @@
 
 **Success looks like:** A first-time visitor types one sentence and has an animated sketch they like, tweak it with sliders, and export or share it within two minutes, without seeing an error or a line of code.
 
-## Where the code is today
+## Initial baseline (before Phases 1–2)
 
 - The AI is secondary: the prompt bar only appears after a template is chosen (`src/App.tsx`), and onboarding says "Pick a template" first (`src/components/CanvasRunner.tsx`).
 - The AI mostly selects a template and sets its params (`src/lib/ai.ts`). Writing real code (`custom-sketch`) is a fallback, capped at ~120 lines, with no tunable params.
@@ -54,7 +54,13 @@ Each phase ships something usable on its own. Do them in order.
 - Raise the code length limit and drop the "no comments, under 120 lines" constraint once a stronger model is in place (Phase 3).
 - Validate the response (code present, param defaults within min/max, valid hex colours) before running it.
 
-**Done when:** "a swirling galaxy of particles" produces a custom sketch with 3–6 working sliders.
+**Done when:** "a swirling galaxy of particles" produces a custom sketch with 3–6 working controls.
+
+**Status:** Done. Prompts now return original code, a title, and validated control definitions (numbers, hex colours, toggles, and dropdowns). Adjust opens automatically. Changes are delivered to the running sketch without reloading; new code and seed changes still restart it. Follow-up prompts include the current code and control values. Copy/JS export includes the current values and runtime initialization. All 50 curated templates remain available.
+
+The 120-line/no-comments restriction is removed; the existing 4096-token response budget remains until Phase 3's model evaluation. Schema and syntax checks reject malformed output before it replaces the current artwork; they do not prove the artwork is visually correct or every generated control is used correctly. Runtime error repair is still Phase 3.
+
+Verification: `npm test` covers generation validation and live values in exported sketches; `npm run lint` and `npm run build` check types and production output. Real worker/browser checks covered galaxy generation, speed/density/colour changes without a reload, a follow-up edit, manual code editing, JS download, and the existing Noise Flow Field template.
 
 ### Phase 3 — Self-repair and reliable models
 

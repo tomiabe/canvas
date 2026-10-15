@@ -50,4 +50,8 @@ export interface SketchConfig {
   templateId: string;
   seed: number;
   params: Record<string, any>;
+  generated?: {
+    title: string;
+    controls: ParamDef[];
+  };
 }

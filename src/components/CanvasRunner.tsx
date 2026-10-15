@@ -20,12 +20,12 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [sketchError, setSketchError] = useState<string | null>(null);
 
-  // Reload the iframe when the template or seed changes
+  // Code edits/new generations reload; live control changes do not.
   useEffect(() => {
     if (!config.templateId || !previewEnabled || !iframeRef.current) return;
     setSketchError(null);
     iframeRef.current.srcdoc = generateHtml(config);
-  }, [config.templateId, config.seed, previewEnabled]);
+  }, [config.templateId, config.seed, config.params.code, previewEnabled]);
 
   // For templates that support live params: postMessage instead of reload
   // For all others: reload so param changes take effect immediately
@@ -88,6 +88,12 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
         className="w-full h-full border-none"
         sandbox="allow-scripts allow-downloads allow-same-origin allow-popups"
         allow="microphone"
+        onLoad={() => {
+          // Catch changes made while p5 and the sketch were still loading.
+          if (templates[config.templateId]?.supportsLiveParams) {
+            iframeRef.current?.contentWindow?.postMessage({ type: 'params-update', params: config.params }, '*');
+          }
+        }}
       />
       {sketchError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 px-6 text-center pointer-events-none">

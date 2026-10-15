@@ -54,7 +54,7 @@ function useAnimatedConfig(config: SketchConfig, morphDuration = 400): SketchCon
     const to = config;
     const startTime = performance.now();
 
-    if (from.templateId !== to.templateId || morphDuration <= 0 || !from.templateId || !to.templateId) {
+    if (to.templateId === 'custom-sketch' || from.templateId !== to.templateId || morphDuration <= 0 || !from.templateId || !to.templateId) {
       setDisplayed(to);
       return;
     }
@@ -110,10 +110,11 @@ export default function App() {
     try {
       const newConfig = await generateConfigFromPrompt(prompt, config);
       setConfig(newConfig);
+      setPanel('adjust');
       setConfigVersion(v => v + 1);
     } catch (error) {
       console.error("AI Generation Error:", error);
-      alert("Failed to generate sketch from prompt. Please check your console.");
+      alert(error instanceof Error ? error.message : 'Failed to generate sketch. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -181,7 +182,7 @@ export default function App() {
           <CodeViewer config={config} onChange={handleConfigChange} />
         )}
         {panel === 'help' && (
-          <InfoPanel template={activeTemplate} onClose={() => setPanel(null)} />
+          <InfoPanel template={activeTemplate} title={config.generated?.title} onClose={() => setPanel(null)} />
         )}
       </div>
     </div>

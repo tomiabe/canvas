@@ -60,8 +60,8 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
       <div role="group" aria-label="Artwork controls" className="flex min-w-0 flex-wrap items-center justify-center gap-1.5 py-2">
         {hasTemplate && (
           <>
-            <span className="max-w-48 truncate text-xs font-medium text-white/60 mr-3" title={templates[config.templateId]?.name}>
-              {templates[config.templateId]?.name}
+            <span className="max-w-48 truncate text-xs font-medium text-white/60 mr-3" title={config.generated?.title ?? templates[config.templateId]?.name}>
+              {config.generated?.title ?? templates[config.templateId]?.name}
             </span>
 
             <button
