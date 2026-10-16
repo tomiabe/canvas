@@ -70,6 +70,12 @@ Verification: `npm test` covers generation validation and live values in exporte
 
 **Done when:** at least 90% of the eval prompts produce a running sketch with no user-visible error.
 
+**Status:** Implemented locally. An initial 30-prompt Flash-Lite run rendered 27/30 on the first attempt and 29/30 after at most two repairs (34 API calls). Replaying the final saved outputs with the added loop limits passed 28/30 (93.3%); a heavy reaction-diffusion sketch was additionally rejected. The guarded replay made no additional API calls or repair attempts. These are short runtime smoke tests, not visual-fidelity or every-control correctness scores. See `docs/phase3-evaluation.md` and the JSON evidence for provider availability and limitations.
+
+Replacements run in a hidden, full-size preview before replacing the current artwork. Readiness requires a completed draw with a canvas, followed by two seconds without reported errors; CDN loading has a separate 15-second deadline. Syntax/schema failures and runtime errors send the failed output/code and error back for at most two repairs. Service outages offer Retry without wasting repair attempts. Cancel, template changes and newer requests invalidate stale results. Later runtime errors can also consume the remaining repair budget and restore the previous configuration.
+
+Generated previews now use opaque-origin sandboxes; curated media templates retain their existing permissions. Generated loops have per-invocation 100ms limits to turn accidental infinite loops into repairable errors. These limits do not provide full resource isolation: recursion, dynamic code, large allocations, and expensive built-ins are not comprehensively bounded. A canvas can still be visually blank or aesthetically wrong despite completing draw. No persistence or version-history UI is added in this phase.
+
 ### Phase 4 — Conversation and versions
 
 - Keep a per-sketch conversation: send prior turns plus the current code with each edit request, so "slower" or "add a trail" edits the existing sketch.
@@ -95,12 +101,12 @@ Verification: `npm test` covers generation validation and live values in exporte
 
 ## Decisions
 
-- **Models:** Use the Gemini, OpenRouter, and Groq keys the owner provides; no user-supplied keys. Gemini is primary, with thinking enabled (the worker currently sets `thinkingBudget: 0`, which hurts code quality). Fallbacks, in order: OpenRouter with a strong paid coding model (not a `:free` model), then Groq for speed, then Workers AI. Confirm exact model IDs with the Phase 3 eval set.
+- **Models:** Use the owner's provider keys; no visitor-supplied keys. The chosen order is Flash-Lite first, then Flash when quota permits, Groq `openai/gpt-oss-120b` at low reasoning effort, Workers AI, and OpenRouter last. Lite passed 28/30 final-output replays with loop limits; Groq is only a fallback, with a smaller and less reliable sample. The old Groq model is no longer listed for this account. OpenRouter authentication currently fails; a paid fallback cannot be evaluated until that credential is repaired. Do not infer a quality advantage from enabling thinking without a comparative test.
 - **Shared sketch storage:** URL-only. Compress the sketch (prompt, code, params, seed) into the URL fragment (`#…`), so it never reaches a server, needs no storage or abuse limits, and works on GitHub Pages. Add KV storage only if real sketches outgrow practical URL lengths.
 - **Templates:** Keep all 50, as the "start from an example" gallery and as references for the model.
 
 ## AI worker
 
 - Deployed as the `canvas` Worker at `https://canvas.tomi.workers.dev` (the frontend default). Deploy with `cd worker && npx wrangler deploy`.
-- Provider keys come from repository secrets; the deploy workflow copies them into the Worker. Providers without a key are skipped. Workers AI (Llama) often returns invalid JSON for sketch code, so it should only answer when every Gemini model fails. Responses include a `provider` field; `gemini` is Flash, `gemini-lite` is Flash-Lite (used when Flash is overloaded); anything else means Gemini was skipped or failed.
-- The OpenRouter key is on the free tier with no credits, so paid OpenRouter fallback models need credits first.
+- Provider keys come from repository secrets; the deploy workflow copies them into the Worker. Providers without a key are skipped. Responses include a `provider` field, retained with generated artwork metadata; `gemini` is Flash and `gemini-lite` is Flash-Lite. Worker routing changes remain local until pushed and deployed.
+- The orb's OpenRouter credential returned HTTP 401 (`User not found`) during Phase 3. Its current balance and paid-model access are unverified. Never paste replacement credentials into chat.

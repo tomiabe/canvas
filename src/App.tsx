@@ -8,7 +8,7 @@ import { PromptBar } from './components/PromptBar';
 import { InfoPanel } from './components/InfoPanel';
 import { SketchConfig } from './types';
 import { templates } from './templates';
-import { generateConfigFromPrompt } from './lib/ai';
+import { AIServiceError, generateConfigFromPrompt } from './lib/ai';
 import { Sparkles } from 'lucide-react';
 
 function lerpValue(a: any, b: any, t: number): any {
@@ -100,27 +100,86 @@ export default function App() {
   const [exportEvent, setExportEvent] = useState<{ type: 'png' | 'gif' | 'video'; duration?: number; fps?: number } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [configVersion, setConfigVersion] = useState(0);
+  const [candidate, setCandidate] = useState<{ config: SketchConfig; id: number } | null>(null);
+  const [status, setStatus] = useState('');
+  const [failure, setFailure] = useState('');
+  const lastPrompt = useRef('');
+  const generation = useRef(0);
+  const validation = useRef<{ id: number; resolve: () => void; reject: (error: Error) => void } | null>(null);
+  const activeRepair = useRef<{ config: SketchConfig; prompt: string; remaining: number; fallback: SketchConfig } | null>(null);
+
+  const cancelGeneration = () => {
+    generation.current++;
+    activeRepair.current = null;
+    validation.current?.reject(new Error('Cancelled'));
+    validation.current = null;
+    setCandidate(null);
+    setIsGenerating(false);
+    setStatus('');
+    setFailure('');
+  };
 
   const handleExport = (type: 'png' | 'gif' | 'video') => {
     setExportEvent({ type, duration: type === 'gif' ? 3 : 5, fps: 15 });
   };
 
-  const handleGenerate = async (prompt: string) => {
+  const handleGenerate = async (prompt: string, recovery?: { broken: SketchConfig; error: string; remaining: number; fallback: SketchConfig }) => {
+    cancelGeneration();
+    const id = generation.current;
+    lastPrompt.current = prompt;
     setIsGenerating(true);
+    let attemptConfig = recovery?.broken ?? config;
+    let repair: string | undefined = recovery?.error;
+    const fallback = recovery?.fallback ?? config;
+    const maxAttempt = recovery ? recovery.remaining - 1 : 2;
     try {
-      const newConfig = await generateConfigFromPrompt(prompt, config);
-      setConfig(newConfig);
-      setPanel('adjust');
-      setConfigVersion(v => v + 1);
+      for (let attempt = 0; attempt <= maxAttempt; attempt++) {
+        setStatus(repair ? 'Fixing your sketch…' : 'Writing your sketch…');
+        try {
+          const newConfig = await generateConfigFromPrompt(prompt, attemptConfig, repair);
+          if (id !== generation.current) return;
+          attemptConfig = newConfig;
+          setStatus('Testing your sketch…');
+          await new Promise<void>((resolve, reject) => {
+            validation.current = { id: id * 3 + attempt, resolve, reject };
+            setCandidate({ config: newConfig, id: id * 3 + attempt });
+          });
+          if (id !== generation.current) return;
+          activeRepair.current = { config: newConfig, prompt, remaining: maxAttempt - attempt, fallback };
+          setConfig(newConfig);
+          setPanel('adjust');
+          setConfigVersion(v => v + 1);
+          return;
+        } catch (error) {
+          if (id !== generation.current) return;
+          setCandidate(null);
+          validation.current = null;
+          if (error instanceof AIServiceError || attempt === maxAttempt) throw error;
+          repair = error instanceof Error ? error.message : 'The sketch failed to run.';
+        }
+      }
     } catch (error) {
-      console.error("AI Generation Error:", error);
-      alert(error instanceof Error ? error.message : 'Failed to generate sketch. Please try again.');
+      if (id !== generation.current) return;
+      setFailure(error instanceof AIServiceError
+        ? error.message
+        : 'This sketch still could not run after two repairs. Try a simpler description.');
     } finally {
-      setIsGenerating(false);
+      if (id === generation.current) {
+        setCandidate(null);
+        validation.current = null;
+        setIsGenerating(false);
+        setStatus('');
+      }
     }
   };
 
   const handleConfigChange = useCallback((newConfig: SketchConfig) => {
+    const active = activeRepair.current;
+    cancelGeneration();
+    if (active && active.config.templateId === newConfig.templateId && active.config.seed === newConfig.seed &&
+        active.config.params.code === newConfig.params.code) {
+      activeRepair.current = { ...active, config: newConfig };
+    }
     setConfig(newConfig);
     setConfigVersion(v => v + 1);
   }, []);
@@ -147,7 +206,26 @@ export default function App() {
         <TemplateGallery config={config} onChange={handleConfigChange} />
 
         <div className="flex-1 min-w-0 relative">
-          <CanvasRunner config={animatedConfig} exportEvent={exportEvent} previewEnabled={previewEnabled} />
+          <CanvasRunner config={animatedConfig} exportEvent={exportEvent} previewEnabled={previewEnabled}
+            onError={message => {
+              const active = activeRepair.current;
+              if (!active || active.config.params.code !== animatedConfig.params.code) return;
+              activeRepair.current = null;
+              setConfig(active.fallback);
+              if (active.remaining > 0) {
+                void handleGenerate(active.prompt, { broken: active.config, error: message, remaining: active.remaining, fallback: active.fallback });
+              } else {
+                setFailure('This sketch still could not run after two repairs. Try a simpler description.');
+              }
+            }} />
+
+          {candidate && (
+            <div key={candidate.id} className="absolute inset-0 opacity-0 pointer-events-none" aria-hidden="true">
+              <CanvasRunner config={candidate.config}
+                onReady={() => { if (validation.current?.id === candidate.id) validation.current.resolve(); }}
+                onError={message => { if (validation.current?.id === candidate.id) validation.current.reject(new Error(message)); }} />
+            </div>
+          )}
 
           {!hasAnyTemplate && (
             <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating} />
@@ -170,6 +248,17 @@ export default function App() {
               onClose={() => setShowPrompt(false)}
               config={config}
             />
+          )}
+
+          {(status || failure) && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[min(90%,32rem)] rounded-xl border border-white/15 bg-zinc-900/95 px-4 py-3 shadow-xl">
+              <p role={failure ? 'alert' : 'status'} className="text-sm text-white/90">{failure || status}</p>
+              {hasAnyTemplate && <p className="mt-1 text-xs text-white/50">Your previous artwork is unchanged.</p>}
+              <div className="flex gap-4 mt-2 text-xs">
+                {failure && <button className="underline cursor-pointer" onClick={() => handleGenerate(lastPrompt.current)}>Retry</button>}
+                <button className="text-white/60 hover:text-white cursor-pointer" onClick={cancelGeneration}>{failure ? 'Dismiss' : 'Cancel'}</button>
+              </div>
+            </div>
           )}
         </div>
 

@@ -14,17 +14,29 @@ interface CanvasRunnerProps {
   config: SketchConfig;
   exportEvent?: ExportEvent | null;
   previewEnabled?: boolean;
+  onReady?: () => void;
+  onError?: (message: string) => void;
 }
 
-export function CanvasRunner({ config, exportEvent, previewEnabled = true }: CanvasRunnerProps) {
+export function CanvasRunner({ config, exportEvent, previewEnabled = true, onReady, onError }: CanvasRunnerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [sketchError, setSketchError] = useState<string | null>(null);
+  const callbacks = useRef({ onReady, onError });
+  callbacks.current = { onReady, onError };
+  const runId = useRef('');
 
   // Code edits/new generations reload; live control changes do not.
   useEffect(() => {
     if (!config.templateId || !previewEnabled || !iframeRef.current) return;
     setSketchError(null);
-    iframeRef.current.srcdoc = generateHtml(config);
+    runId.current = crypto.randomUUID();
+    try {
+      iframeRef.current.srcdoc = generateHtml(config, runId.current);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid sketch code';
+      setSketchError(message);
+      callbacks.current.onError?.(message);
+    }
   }, [config.templateId, config.seed, config.params.code, previewEnabled]);
 
   // For templates that support live params: postMessage instead of reload
@@ -39,7 +51,8 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
       );
     } else {
       setSketchError(null);
-      iframeRef.current.srcdoc = generateHtml(config);
+      runId.current = crypto.randomUUID();
+      iframeRef.current.srcdoc = generateHtml(config, runId.current);
     }
   }, [config.params, previewEnabled]);
 
@@ -55,14 +68,36 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
   }, [exportEvent, previewEnabled, config.templateId]);
 
   useEffect(() => {
+    if (!config.templateId || !previewEnabled) return;
+    let settled = false;
+    let readyTimer: ReturnType<typeof setTimeout>;
+    const fail = (message: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(readyTimer);
+      setSketchError(message);
+      callbacks.current.onError?.(message);
+    };
+    // Allow CDN loading separately from the short draw probation period.
+    const deadline = setTimeout(() => fail('The sketch did not draw a canvas within 15 seconds.'), 15000);
     const handler = (event: MessageEvent) => {
+      if (event.source !== iframeRef.current?.contentWindow || event.data?.runId !== runId.current) return;
       if (event.data?.type === 'sketch-error') {
-        setSketchError(event.data.message || 'Unknown error in generated sketch');
+        fail(event.data.message || 'Unknown error in generated sketch');
+      } else if (event.data?.type === 'sketch-ready') {
+        clearTimeout(deadline);
+        readyTimer = setTimeout(() => {
+          if (!settled) callbacks.current.onReady?.();
+        }, 2000);
       }
     };
     window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, []);
+    return () => {
+      clearTimeout(deadline);
+      clearTimeout(readyTimer);
+      window.removeEventListener('message', handler);
+    };
+  }, [config.templateId, config.seed, config.params.code, previewEnabled]);
 
   // The empty state (hero prompt) is rendered by App on top of this background.
   if (!config.templateId) {
@@ -86,7 +121,9 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true }: Can
         ref={iframeRef}
         title="p5-canvas"
         className="w-full h-full border-none"
-        sandbox="allow-scripts allow-downloads allow-same-origin allow-popups"
+        sandbox={config.templateId === 'custom-sketch'
+          ? 'allow-scripts allow-downloads'
+          : 'allow-scripts allow-downloads allow-same-origin allow-popups'}
         allow="microphone"
         onLoad={() => {
           // Catch changes made while p5 and the sketch were still loading.

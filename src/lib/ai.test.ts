@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { generateConfigFromPrompt } from './ai';
+import { AIServiceError, generateConfigFromPrompt } from './ai';
 import { ParamDef, SketchConfig } from '../types';
 
 const empty: SketchConfig = { templateId: '', seed: 37, params: {} };
@@ -35,6 +35,15 @@ test('generation returns original code, editable controls, and preserves live va
   assert.equal(context.code, sketch.code);
   assert.equal(edited.seed, generated.seed);
   assert.equal(edited.params.color, '#2148ff');
+
+  await generateConfigFromPrompt('make it blue', edited, 'missingFunction is not defined');
+  assert.match(request.messages.at(-1).content, /missingFunction is not defined/);
+  assert.match(request.messages[1].content, /Blue Orbit/);
+});
+
+test('service outages are distinguished from repairable sketch failures', async t => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json({ error: 'offline' }, { status: 502 }));
+  await assert.rejects(generateConfigFromPrompt('orbit', empty), AIServiceError);
 });
 
 test('malformed model output is rejected instead of replacing an artwork with broken controls', async t => {

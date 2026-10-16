@@ -1,0 +1,311 @@
+{
+  "date": "2026-10-16T00:32:13.108Z",
+  "provider": "openai/gpt-oss-120b",
+  "notes": "8 prompts, sequential; real app validation + opaque sandbox iframe readiness and two-second probation. No visual or control correctness score. Provider calls capped at 15 seconds. Reported tokens only, billed dollars unverified.",
+  "results": [
+    {
+      "prompt": "Bioluminescent jellyfish drifting through midnight water with trailing tentacles.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2193,
+          "usage": {
+            "queue_time": 0.169994575,
+            "prompt_tokens": 1316,
+            "prompt_time": 0.081678348,
+            "completion_tokens": 847,
+            "completion_time": 1.771971258,
+            "total_tokens": 2163,
+            "total_time": 1.8536496059999998,
+            "completion_tokens_details": {
+              "reasoning_tokens": 47
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Bioluminescent Jellyfish\",\"code\":\"let jellyfish=[];\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  colorMode(HSB,360,100,100,100);\\n  initJellyfish();\\n}\\nfunction initJellyfish(){\\n  jellyfish=[];\\n  for(let i=0;i<params.count;i++){\\n    jellyfish.push({\\n      x: random(width),\\n      y: random(height),\\n      angle: random(TWO_PI),\\n      size: random(40,80),\\n      phase: random(TWO_PI)\\n    });\\n  }\\n}\\nfunction draw(){\\n  // fade background for trailing effect\\n  background(0,0,10,params.bgAlpha);\\n  noStroke();\\n  fill(params.jellyColor);\\n  for(let j of jellyfish){\\n    // move gently upward with noise\\n    let t = frameCount*0.01*params.speed;\\n    j.x += (noise(j.x*0.001, j.y*0.001, t)-0.5)*2;\\n    j.y -= (0.5+noise(j.x*0.001, j.y*0.001, t+1000))*1.5*params.speed;\\n    // wrap around\\n    if(j.y < -j.size) j.y = height + j.size;\\n    if(j.x < -j.size) j.x = width + j.size;\\n    if(j.x > width + j.size) j.x = -j.size;\\n    // draw bell\\n    push();\\n    translate(j.x,j.y);\\n    rotate(sin(t + j.phase)*0.1);\\n    ellipse(0,0,j.size*1.2,j.size);\\n    // draw tentacles\\n    stroke(params.tentacleColor);\\n    strokeWeight(2);\\n    for(let k=0;k<8;k++){\\n      let a = map(k,0,8,0,TWO_PI)+PI/8;\\n      let len = j.size*params.tentacleLength;\\n      let off = sin(t*params.speed + k)*5;\\n      let x1 = cos(a)*j.size*0.6;\\n      let y1 = sin(a)*j.size*0.6;\\n      let x2 = x1 + cos(a+off)*len;\\n      let y2 = y1 + sin(a+off)*len;\\n      line(x1,y1,x2,y2);\\n    }\\n    pop();\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\nfunction keyPressed(){\\n  if(key==='r') initJellyfish();\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":4,\"step\":0.1},{\"id\":\"jellyColor\",\"name\":\"Jellyfish Color\",\"type\":\"color\",\"default\":\"#00ffcc\"},{\"id\":\"tentacleColor\",\"name\":\"Tentacle Color\",\"type\":\"color\",\"default\":\"#66ffff\"},{\"id\":\"tentacleLength\",\"name\":\"Tentacle Length\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"count\",\"name\":\"Jellyfish Count\",\"type\":\"number\",\"default\":12,\"min\":1,\"max\":30,\"step\":1},{\"id\":\"bgAlpha\",\"name\":\"Background Fade\",\"type\":\"number\",\"default\":10,\"min\":0,\"max\":100,\"step\":1}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A murmuration of birds spirals around an invisible lighthouse.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 1556,
+          "usage": {
+            "queue_time": 0.12666429,
+            "prompt_tokens": 1312,
+            "prompt_time": 0.11165031,
+            "completion_tokens": 605,
+            "completion_time": 1.271567924,
+            "total_tokens": 1917,
+            "total_time": 1.383218234,
+            "completion_tokens_details": {
+              "reasoning_tokens": 32
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Murmuration around Lighthouse\",\"code\":\"let birds=[];\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  initBirds();\\n}\\nfunction initBirds(){\\n  birds=[];\\n  for(let i=0;i<params.count;i++){\\n    birds.push({\\n      angle: random(TWO_PI),\\n      radius: random(50, min(width,height)/2),\\n      speed: random(0.5,1.5)*params.speed,\\n      size: random(2,params.maxSize)\\n    });\\n  }\\n}\\nfunction draw(){\\n  // background with fading trail\\n  background(params.bgColor);\\n  translate(width/2,height/2);\\n  // lighthouse center (invisible)\\n  let lighthousePos=createVector(0,0);\\n  // draw birds\\n  noStroke();\\n  fill(params.birdColor);\\n  for(let i=0;i<params.count;i++){\\n    let b=birds[i];\\n    // update angle and radius\\n    let dir = p5.Vector.sub(lighthousePos,createVector(b.radius*cos(b.angle),b.radius*sin(b.angle)));\\n    let dist = dir.mag();\\n    dir.normalize();\\n    // birds spiral inward then outward cyclically\\n    b.radius += sin(frameCount*0.01 + b.angle)*0.5*params.speed;\\n    b.angle += b.speed*0.02;\\n    // keep within bounds\\n    if(b.radius<30) b.radius=30;\\n    if(b.radius>min(width,height)/2-30) b.radius=min(width,height)/2-30;\\n    let x=b.radius*cos(b.angle);\\n    let y=b.radius*sin(b.angle);\\n    ellipse(x,y,b.size,b.size);\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n  initBirds();\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":4,\"step\":0.1},{\"id\":\"count\",\"name\":\"Bird Count\",\"type\":\"number\",\"default\":200,\"min\":50,\"max\":800,\"step\":10},{\"id\":\"maxSize\",\"name\":\"Max Bird Size\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"birdColor\",\"name\":\"Bird Color\",\"type\":\"color\",\"default\":\"#ffdd33\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#001933\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Fireflies weave luminous trails through a moonlit meadow.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 1872,
+          "usage": {
+            "queue_time": 0.221209614,
+            "prompt_tokens": 1311,
+            "prompt_time": 0.086211544,
+            "completion_tokens": 720,
+            "completion_time": 1.515212024,
+            "total_tokens": 2031,
+            "total_time": 1.601423568,
+            "completion_tokens_details": {
+              "reasoning_tokens": 34
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Moonlit Fireflies\",\"code\":\"let fireflies=[];\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  colorMode(HSB,360,100,100,1);\\n  for(let i=0;i<params.count;i++) fireflies.push(new Firefly());\\n}\\nfunction draw(){\\n  background(0,0,0,0.1); // fade trails\\n  for(let f of fireflies){\\n    f.update();\\n    f.show();\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\nclass Firefly{\\n  constructor(){\\n    this.pos=createVector(random(width),random(height));\\n    this.vel=p5.Vector.random2D().mult(0.5);\\n    this.phase=random(TWO_PI);\\n  }\\n  update(){\\n    // wander with noise\\n    let angle=noise(this.pos.x*0.001, this.pos.y*0.001, frameCount*0.005*params.speed)*TWO_PI*2;\\n    let steer=p5.Vector.fromAngle(angle).setMag(0.3);\\n    this.vel.add(steer).limit(params.maxSpeed);\\n    this.pos.add(this.vel);\\n    // wrap around\\n    if(this.pos.x<0) this.pos.x+=width;\\n    if(this.pos.x>width) this.pos.x-=width;\\n    if(this.pos.y<0) this.pos.y+=height;\\n    if(this.pos.y>height) this.pos.y-=height;\\n    this.phase+=0.02*params.pulseSpeed;\\n  }\\n  show(){\\n    let glow=map(sin(this.phase),-1,1,0,1)*params.brightness;\\n    let col=color(params.hue,80,100,glow);\\n    noStroke();\\n    fill(col);\\n    ellipse(this.pos.x,this.pos.y,params.size);\\n  }\\n}\\n\",\"params\":[{\"id\":\"count\",\"name\":\"Firefly Count\",\"type\":\"number\",\"default\":120,\"min\":10,\"max\":300,\"step\":1},{\"id\":\"size\",\"name\":\"Firefly Size\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":0.5},{\"id\":\"speed\",\"name\":\"Wander Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":4,\"step\":0.1},{\"id\":\"maxSpeed\",\"name\":\"Max Speed\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":6,\"step\":0.1},{\"id\":\"pulseSpeed\",\"name\":\"Pulse Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"brightness\",\"name\":\"Brightness\",\"type\":\"number\",\"default\":0.8,\"min\":0.1,\"max\":1,\"step\":0.05},{\"id\":\"hue\",\"name\":\"Firefly Hue\",\"type\":\"color\",\"default\":\"#ffd700\",\"min\":0,\"max\":360,\"step\":1}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A school of jewel-colored fish flows around a coral silhouette.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2184,
+          "usage": {
+            "queue_time": 0.177259603,
+            "prompt_tokens": 1312,
+            "prompt_time": 0.127318242,
+            "completion_tokens": 869,
+            "completion_time": 1.830432751,
+            "total_tokens": 2181,
+            "total_time": 1.9577509929999999,
+            "completion_tokens_details": {
+              "reasoning_tokens": 58
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Jewel Fish Coral Flow\",\"code\":\"let fish=[];\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  initFish();\\n}\\nfunction initFish(){\\n  fish=[];\\n  for(let i=0;i<params.fishCount;i++){\\n    fish.push({\\n      pos:createVector(random(width),random(height)),\\n      vel:createVector(0,0),\\n      hue:random(360),\\n      size:params.fishSize\\n    });\\n  }\\n}\\nfunction draw(){\\n  background(params.bgColor);\\n  // update fish count if changed\\n  if(fish.length!==params.fishCount){\\n    initFish();\\n  }\\n  for(let f of fish){\\n    // move towards mouse with noise swirl\\n    let target=createVector(mouseX,mouseY);\\n    let dir=p5.Vector.sub(target,f.pos);\\n    dir.setMag(params.speed);\\n    // add Perlin noise for organic motion\\n    let n=noise(f.pos.x*0.005,f.pos.y*0.005,frameCount*0.01);\\n    let angle=map(n,0,1,-PI,PI);\\n    dir.rotate(angle*0.2);\\n    f.vel.lerp(dir,0.05);\\n    f.pos.add(f.vel);\\n    // wrap around edges\\n    if(f.pos.x<0)f.pos.x+=width;\\n    if(f.pos.x>width)f.pos.x-=width;\\n    if(f.pos.y<0)f.pos.y+=height;\\n    if(f.pos.y>height)f.pos.y-=height;\\n    // draw fish as jewel-colored ellipses with tail\\n    push();\\n    translate(f.pos.x,f.pos.y);\\n    rotate(f.vel.heading());\\n    let col=color(params.fishColor);\\n    col.setAlpha(200);\\n    fill(col);\\n    noStroke();\\n    // body\\n    ellipse(0,0,f.size*1.5,f.size);\\n    // tail\\n    triangle(-f.size*0.75,0,-f.size*1.2,-f.size*0.5,-f.size*1.2,f.size*0.5);\\n    pop();\\n  }\\n  // draw coral silhouette at center\\n  push();\\n  translate(width/2,height/2);\\n  fill(params.coralColor);\\n  noStroke();\\n  beginShape();\\n  let r=150;\\n  for(let a=0;a<TWO_PI;a+=PI/6){\\n    let rad=r+20*noise(a*0.5,frameCount*0.01);\\n    vertex(rad*cos(a),rad*sin(a));\\n  }\\n  endShape(CLOSE);\\n  pop();\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\n\",\"params\":[{\"id\":\"fishCount\",\"name\":\"Fish Count\",\"type\":\"number\",\"default\":120,\"min\":20,\"max\":300,\"step\":10},{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":2,\"min\":0.1,\"max\":5,\"step\":0.1},{\"id\":\"fishSize\",\"name\":\"Fish Size\",\"type\":\"number\",\"default\":12,\"min\":4,\"max\":30,\"step\":1},{\"id\":\"fishColor\",\"name\":\"Fish Color\",\"type\":\"color\",\"default\":\"#ff66aa\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#001f3f\"},{\"id\":\"coralColor\",\"name\":\"Coral Color\",\"type\":\"color\",\"default\":\"#ffb84d\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An evolving reaction-diffusion pattern resembling leopard spots.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 429,
+          "latencyMs": 39,
+          "error": "The AI service is unavailable. Please try again shortly."
+        }
+      ],
+      "success": false
+    },
+    {
+      "prompt": "A fluid ink plume curls through a bowl of milk.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 1814,
+          "usage": {
+            "queue_time": 0.172484936,
+            "prompt_tokens": 1311,
+            "prompt_time": 0.052784449,
+            "completion_tokens": 739,
+            "completion_time": 1.552737235,
+            "total_tokens": 2050,
+            "total_time": 1.605521684,
+            "completion_tokens_details": {
+              "reasoning_tokens": 32
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Ink Plume in Milk\",\"code\":\"let particles=[];\\nlet cols, rows;\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  cols = floor(width/20)+1;\\n  rows = floor(height/20)+1;\\n  // initialize max particles\\n  for(let i=0;i=params.plumeCount;i++){\\n    particles.push(new Particle());\\n  }\\n}\\nfunction draw(){\\n  background(params.bgColor);\\n  // adjust particle count dynamically\\n  while(particles.length<params.plumeCount) particles.push(new Particle());\\n  while(particles.length>params.plumeCount) particles.pop();\\n  for(let p of particles){\\n    p.update();\\n    p.show();\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\nclass Particle{\\n  constructor(){\\n    this.pos=createVector(random(width),random(height));\\n    this.vel=createVector(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  update(){\\n    // flow field based on Perlin noise\\n    let n=noise(this.pos.x*0.005, this.pos.y*0.005, frameCount*0.001*params.speed);\\n    let angle=n*TWO_PI*params.swirlIntensity;\\n    let force=p5.Vector.fromAngle(angle);\\n    force.mult(0.5);\\n    this.vel.lerp(force,0.05);\\n    this.pos.add(this.vel);\\n    this.age++;\\n    if(this.age>this.maxAge || this.pos.x<0||this.pos.x>width||this.pos.y<0||this.pos.y>height){\\n      this.reset();\\n    }\\n  }\\n  reset(){\\n    this.pos.set(random(width),random(height));\\n    this.vel.set(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  show(){\\n    noStroke();\\n    let alpha=map(this.age,0,this.maxAge,255,0);\\n    fill(params.inkColor+hex(alpha,2));\\n    ellipse(this.pos.x,this.pos.y,params.size,params.size);\\n  }\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":4,\"step\":0.1},{\"id\":\"inkColor\",\"name\":\"Ink Color\",\"type\":\"color\",\"default\":\"#000000\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#f5f5dc\"},{\"id\":\"plumeCount\",\"name\":\"Plume Count\",\"type\":\"number\",\"default\":150,\"min\":20,\"max\":500,\"step\":10},{\"id\":\"swirlIntensity\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"size\",\"name\":\"Particle Size\",\"type\":\"number\",\"default\":4,\"min\":1,\"max\":10,\"step\":0.5}]}",
+          "validated": true,
+          "error": "spawnSync agent-browser ETIMEDOUT"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2067,
+          "usage": {
+            "queue_time": 0.047612431,
+            "prompt_tokens": 2085,
+            "prompt_time": 0.118905527,
+            "completion_tokens": 764,
+            "completion_time": 1.620857483,
+            "total_tokens": 2849,
+            "total_time": 1.7397630099999999,
+            "completion_tokens_details": {
+              "reasoning_tokens": 57
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Ink Plume in Milk\",\"code\":\"let particles=[];\\nlet cols, rows;\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  cols = floor(width/20)+1;\\n  rows = floor(height/20)+1;\\n  // initialize max particles\\n  for(let i=0;i<params.plumeCount;i++){\\n    particles.push(new Particle());\\n  }\\n}\\nfunction draw(){\\n  background(params.bgColor);\\n  // adjust particle count dynamically\\n  while(particles.length<params.plumeCount) particles.push(new Particle());\\n  while(particles.length>params.plumeCount) particles.pop();\\n  for(let p of particles){\\n    p.update();\\n    p.show();\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\nclass Particle{\\n  constructor(){\\n    this.pos=createVector(random(width),random(height));\\n    this.vel=createVector(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  update(){\\n    // flow field based on Perlin noise\\n    let n=noise(this.pos.x*0.005, this.pos.y*0.005, frameCount*0.001*params.speed);\\n    let angle=n*TWO_PI*params.swirlIntensity;\\n    let force=p5.Vector.fromAngle(angle);\\n    force.mult(0.5);\\n    this.vel.lerp(force,0.05);\\n    this.pos.add(this.vel);\\n    this.age++;\\n    if(this.age>this.maxAge || this.pos.x<0||this.pos.x>width||this.pos.y<0||this.pos.y>height){\\n      this.reset();\\n    }\\n  }\\n  reset(){\\n    this.pos.set(random(width),random(height));\\n    this.vel.set(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  show(){\\n    noStroke();\\n    let alpha=map(this.age,0,this.maxAge,255,0);\\n    fill(params.inkColor+hex(alpha,2));\\n    ellipse(this.pos.x,this.pos.y,params.size,params.size);\\n  }\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":4,\"step\":0.1},{\"id\":\"inkColor\",\"name\":\"Ink Color\",\"type\":\"color\",\"default\":\"#000000\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#f5f5dc\"},{\"id\":\"plumeCount\",\"name\":\"Plume Count\",\"type\":\"number\",\"default\":150,\"min\":20,\"max\":500,\"step\":10},{\"id\":\"swirlIntensity\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"size\",\"name\":\"Particle Size\",\"type\":\"number\",\"default\":4,\"min\":1,\"max\":10,\"step\":0.5}]}",
+          "validated": true,
+          "error": "spawnSync agent-browser ETIMEDOUT"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2485,
+          "usage": {
+            "queue_time": 0.046590313,
+            "prompt_tokens": 2086,
+            "prompt_time": 0.345566576,
+            "completion_tokens": 744,
+            "completion_time": 2.044780568,
+            "total_tokens": 2830,
+            "total_time": 2.390347144,
+            "prompt_tokens_details": {
+              "cached_tokens": 1280
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 37
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Ink Plume in Milk\",\"code\":\"let particles=[];\\nlet cols, rows;\\nfunction setup(){\\n  createCanvas(windowWidth,windowHeight);\\n  cols = floor(width/20)+1;\\n  rows = floor(height/20)+1;\\n  // initialize max particles\\n  for(let i=0;i<params.plumeCount;i++){\\n    particles.push(new Particle());\\n  }\\n}\\nfunction draw(){\\n  background(params.bgColor);\\n  // adjust particle count dynamically\\n  while(particles.length<params.plumeCount) particles.push(new Particle());\\n  while(particles.length>params.plumeCount) particles.pop();\\n  for(let p of particles){\\n    p.update();\\n    p.show();\\n  }\\n}\\nfunction windowResized(){\\n  resizeCanvas(windowWidth,windowHeight);\\n}\\nclass Particle{\\n  constructor(){\\n    this.pos=createVector(random(width),random(height));\\n    this.vel=createVector(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  update(){\\n    // flow field based on Perlin noise\\n    let n=noise(this.pos.x*0.005, this.pos.y*0.005, frameCount*0.001*params.speed);\\n    let angle=n*TWO_PI*params.swirlIntensity;\\n    let force=p5.Vector.fromAngle(angle);\\n    force.mult(0.5);\\n    this.vel.lerp(force,0.05);\\n    this.pos.add(this.vel);\\n    this.age++;\\n    if(this.age>this.maxAge || this.pos.x<0||this.pos.x>width||this.pos.y<0||this.pos.y>height){\\n      this.reset();\\n    }\\n  }\\n  reset(){\\n    this.pos.set(random(width),random(height));\\n    this.vel.set(0,0);\\n    this.age=0;\\n    this.maxAge=random(200,400)/params.speed;\\n  }\\n  show(){\\n    noStroke();\\n    let alpha=map(this.age,0,this.maxAge,255,0);\\n    fill(params.inkColor+hex(alpha,2));\\n    ellipse(this.pos.x,this.pos.y,params.size,params.size);\\n  }\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":4,\"step\":0.1},{\"id\":\"inkColor\",\"name\":\"Ink Color\",\"type\":\"color\",\"default\":\"#000000\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#f5f5dc\"},{\"id\":\"plumeCount\",\"name\":\"Plume Count\",\"type\":\"number\",\"default\":150,\"min\":20,\"max\":500,\"step\":10},{\"id\":\"swirlIntensity\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"size\",\"name\":\"Particle Size\",\"type\":\"number\",\"default\":4,\"min\":1,\"max\":10,\"step\":0.5}]}",
+          "validated": true,
+          "error": "spawnSync agent-browser ETIMEDOUT"
+        }
+      ],
+      "success": false
+    },
+    {
+      "prompt": "A Gray-Scott inspired cellular labyrinth slowly morphs.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2069,
+          "usage": {
+            "queue_time": 0.174815425,
+            "prompt_tokens": 1311,
+            "prompt_time": 0.064635323,
+            "completion_tokens": 857,
+            "completion_time": 1.791793024,
+            "total_tokens": 2168,
+            "total_time": 1.856428347,
+            "completion_tokens_details": {
+              "reasoning_tokens": 44
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Gray-Scott Cellular Labyrinth\",\"code\":\"let gridA,gridB;let nextA,nextB;let cols,rows;function setup(){createCanvas(windowWidth,windowHeight);pixelDensity(1);initGrid();}function initGrid(){cols=width;rows=height;gridA=new Array(cols);gridB=new Array(cols);nextA=new Array(cols);nextB=new Array(cols);for(let x=0;x<cols;x++){gridA[x]=new Array(rows);gridB[x]=new Array(rows);nextA[x]=new Array(rows);nextB[x]=new Array(rows);for(let y=0;y<rows;y++){gridA[x][y]=1;gridB[x][y]=0;nextA[x][y]=1;nextB[x][y]=0;}} // seed a few spots let n=10;for(let i=0;i<n;i++){let x=int(random(cols));let y=int(random(rows));gridB[x][y]=1;}}function draw(){background(0);loadPixels();for(let x=0;x<cols;x++){for(let y=0;y<rows;y++){let a=gridA[x][y];let b=gridB[x][y];let lapA=laplacian(gridA,x,y);let lapB=laplacian(gridB,x,y);let reaction=a*b*b;let newA=a+ (params.diffA*lapA - reaction + params.feed*(1-a))*params.speed;let newB=b+ (params.diffB*lapB + reaction - (params.feed+params.kill)*b)*params.speed;newA=constrain(newA,0,1);newB=constrain(newB,0,1);nextA[x][y]=newA;nextB[x][y]=newB;let col=map(newA- newB, -1,1,0,255);let idx=(x+y*width)*4;pixels[idx]=col;pixels[idx+1]=col;pixels[idx+2]=col;pixels[idx+3]=255;}}gridA=nextA.map(col=>col.slice());gridB=nextB.map(col=>col.slice());updatePixels();}function laplacian(arr,x,y){let sum=0;let w=[[0,1,0],[1,-4,1],[0,1,0]];for(let i=-1;i<=1;i++){for(let j=-1;j<=1;j++){let xi=constrain(x+i,0,cols-1);let yj=constrain(y+j,0,rows-1);sum+=arr[xi][yj]*w[i+1][j+1];}}return sum;}function windowResized(){resizeCanvas(windowWidth,windowHeight);initGrid();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"feed\",\"name\":\"Feed Rate\",\"type\":\"number\",\"default\":0.055,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"kill\",\"name\":\"Kill Rate\",\"type\":\"number\",\"default\":0.062,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"diffA\",\"name\":\"Diffusion A\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":2.0,\"step\":0.1},{\"id\":\"diffB\",\"name\":\"Diffusion B\",\"type\":\"number\",\"default\":0.5,\"min\":0.1,\"max\":1.5,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Pixel Scale\",\"type\":\"number\",\"default\":1,\"min\":1,\"max\":5,\"step\":1}]}",
+          "error": "Unexpected token ')'\nFailed response: {\"title\":\"Gray-Scott Cellular Labyrinth\",\"code\":\"let gridA,gridB;let nextA,nextB;let cols,rows;function setup(){createCanvas(windowWidth,windowHeight);pixelDensity(1);initGrid();}function initGrid(){cols=width;rows=height;gridA=new Array(cols);gridB=new Array(cols);nextA=new Array(cols);nextB=new Array(cols);for(let x=0;x<cols;x++){gridA[x]=new Array(rows);gridB[x]=new Array(rows);nextA[x]=new Array(rows);nextB[x]=new Array(rows);for(let y=0;y<rows;y++){gridA[x][y]=1;gridB[x][y]=0;nextA[x][y]=1;nextB[x][y]=0;}} // seed a few spots let n=10;for(let i=0;i<n;i++){let x=int(random(cols));let y=int(random(rows));gridB[x][y]=1;}}function draw(){background(0);loadPixels();for(let x=0;x<cols;x++){for(let y=0;y<rows;y++){let a=gridA[x][y];let b=gridB[x][y];let lapA=laplacian(gridA,x,y);let lapB=laplacian(gridB,x,y);let reaction=a*b*b;let newA=a+ (params.diffA*lapA - reaction + params.feed*(1-a))*params.speed;let newB=b+ (params.diffB*lapB + reaction - (params.feed+params.kill)*b)*params.speed;newA=constrain(newA,0,1);newB=constrain(newB,0,1);nextA[x][y]=newA;nextB[x][y]=newB;let col=map(newA- newB, -1,1,0,255);let idx=(x+y*width)*4;pixels[idx]=col;pixels[idx+1]=col;pixels[idx+2]=col;pixels[idx+3]=255;}}gridA=nextA.map(col=>col.slice());gridB=nextB.map(col=>col.slice());updatePixels();}function laplacian(arr,x,y){let sum=0;let w=[[0,1,0],[1,-4,1],[0,1,0]];for(let i=-1;i<=1;i++){for(let j=-1;j<=1;j++){let xi=constrain(x+i,0,cols-1);let yj=constrain(y+j,0,rows-1);sum+=arr[xi][yj]*w[i+1][j+1];}}return sum;}function windowResized(){resizeCanvas(windowWidth,windowHeight);initGrid();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"feed\",\"name\":\"Feed Rate\",\"type\":\"number\",\"default\":0.055,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"kill\",\"name\":\"Kill Rate\",\"type\":\"number\",\"default\":0.062,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"diffA\",\"name\":\"Diffusion A\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":2.0,\"step\":0.1},{\"id\":\"diffB\",\"name\":\"Diffusion B\",\"type\":\"number\",\"default\":0.5,\"min\":0.1,\"max\":1.5,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Pixel Scale\",\"type\":\"number\",\"default\":1,\"min\":1,\"max\":5,\"step\":1}]}"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2250,
+          "usage": {
+            "queue_time": 0.169265094,
+            "prompt_tokens": 2145,
+            "prompt_time": 0.126632472,
+            "completion_tokens": 910,
+            "completion_time": 1.9064033089999999,
+            "total_tokens": 3055,
+            "total_time": 2.033035781,
+            "completion_tokens_details": {
+              "reasoning_tokens": 61
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Gray‑Scott Cellular Labyrinth\",\"code\":\"let gridA,gridB,nextA,nextB;let cols,rows;function setup(){createCanvas(windowWidth,windowHeight);pixelDensity(1);initGrid();}function initGrid(){let s=params.scale;cols=floor(width/s);rows=floor(height/s);gridA=new Array(cols);gridB=new Array(cols);nextA=new Array(cols);nextB=new Array(cols);for(let x=0;x<cols;x++){gridA[x]=new Array(rows);gridB[x]=new Array(rows);nextA[x]=new Array(rows);nextB[x]=new Array(rows);for(let y=0;y<rows;y++){gridA[x][y]=1;gridB[x][y]=0;nextA[x][y]=1;nextB[x][y]=0;}}let n=10;for(let i=0;i<n;i++){let x=floor(random(cols));let y=floor(random(rows));gridB[x][y]=1;}}function draw(){background(0);loadPixels();let s=params.scale;for(let x=0;x<cols;x++){for(let y=0;y<rows;y++){let a=gridA[x][y];let b=gridB[x][y];let lapA=laplacian(gridA,x,y);let lapB=laplacian(gridB,x,y);let reaction=a*b*b;let newA=a+(params.diffA*lapA-reaction+params.feed*(1-a))*params.speed;let newB=b+(params.diffB*lapB+reaction-(params.feed+params.kill)*b)*params.speed;newA=constrain(newA,0,1);newB=constrain(newB,0,1);nextA[x][y]=newA;nextB[x][y]=newB;let col=map(newA-newB,-1,1,0,255);let px=x*s;let py=y*s;for(let i=0;i<s;i++){for(let j=0;j<s;j++){let idx=((px+i)+(py+j)*width)*4;pixels[idx]=col;pixels[idx+1]=col;pixels[idx+2]=col;pixels[idx+3]=255;}}}}gridA=nextA.map(col=>col.slice());gridB=nextB.map(col=>col.slice());updatePixels();}function laplacian(arr,x,y){let sum=0;let w=[[0,1,0],[1,-4,1],[0,1,0]];for(let i=-1;i<=1;i++){for(let j=-1;j<=1;j++){let xi=constrain(x+i,0,cols-1);let yj=constrain(y+j,0,rows-1);sum+=arr[xi][yj]*w[i+1][j+1];}}return sum;}function windowResized(){resizeCanvas(windowWidth,windowHeight);initGrid();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"feed\",\"name\":\"Feed Rate\",\"type\":\"number\",\"default\":0.055,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"kill\",\"name\":\"Kill Rate\",\"type\":\"number\",\"default\":0.062,\"min\":0.01,\"max\":0.1,\"step\":0.001},{\"id\":\"diffA\",\"name\":\"Diffusion A\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":2.0,\"step\":0.1},{\"id\":\"diffB\",\"name\":\"Diffusion B\",\"type\":\"number\",\"default\":0.5,\"min\":0.1,\"max\":1.5,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Pixel Scale\",\"type\":\"number\",\"default\":2,\"min\":1,\"max\":5,\"step\":1}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Marbled oil slicks swirl in pastel interference bands.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2246,
+          "usage": {
+            "queue_time": 0.171502195,
+            "prompt_tokens": 1311,
+            "prompt_time": 0.003629341,
+            "completion_tokens": 943,
+            "completion_time": 2.022174807,
+            "total_tokens": 2254,
+            "total_time": 2.025804148,
+            "prompt_tokens_details": {
+              "cached_tokens": 1280
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 34
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Marbled Oil Slick\",\"code\":\"let cols, rows;let field=[];let particles=[];function setup(){createCanvas(windowWidth,windowHeight);colorMode(HSB,360,100,100,1);initField();initParticles();}function initField(){cols=floor(width/params.resolution);rows=floor(height/params.resolution);field=new Array(cols*rows);for(let i=0;i<field.length;i++){field[i]=createVector(0,0);}updateField();}function updateField(){let z=frameCount*0.001*params.speed;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){let angle=noise(x*params.scale,y*params.scale,z)*TWO_PI*params.swirl;field[x+y*cols]=p5.Vector.fromAngle(angle);}}}function initParticles(){particles=[];for(let i=0;i<params.count;i++){particles.push({pos:createVector(random(width),random(height)),prev:createVector(0,0)});} }function draw(){background(0,0,100,params.fade);updateField();for(let p of particles){let colX=floor(p.pos.x/params.resolution);let colY=floor(p.pos.y/params.resolution);let idx=colX+colY*cols;if(idx<0||idx>=field.length){continue;}let force=field[idx];p.prev.set(p.pos.x,p.pos.y);p.pos.add(force.copy().mult(params.step));strokeWeight(params.thickness);stroke(getMarbleColor(p.pos.x,p.pos.y));line(p.prev.x,p.prev.y,p.pos.x,p.pos.y);if(p.pos.x<0||p.pos.x>width||p.pos.y<0||p.pos.y>height){p.pos.set(random(width),random(height));p.prev.set(p.pos.x,p.pos.y);} } }function getMarbleColor(x,y){let h=map(noise(x*0.005,y*0.005,frameCount*0.001),0,1,params.hueStart,params.hueEnd);let s=map(sin((x+y)*0.01+frameCount*0.02),-1,1,60,100);let b=map(cos((x-y)*0.01+frameCount*0.02),-1,1,80,100);return color(h,s,b,params.opacity);}function windowResized(){resizeCanvas(windowWidth,windowHeight);initField();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Flow Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":4,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Noise Scale\",\"type\":\"number\",\"default\":0.02,\"min\":0.001,\"max\":0.1,\"step\":0.001},{\"id\":\"swirl\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0,\"max\":5,\"step\":0.1},{\"id\":\"resolution\",\"name\":\"Field Resolution\",\"type\":\"number\",\"default\":15,\"min\":5,\"max\":50,\"step\":1},{\"id\":\"count\",\"name\":\"Particle Count\",\"type\":\"number\",\"default\":1200,\"min\":100,\"max\":5000,\"step\":100},{\"id\":\"step\",\"name\":\"Particle Step\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"thickness\",\"name\":\"Line Thickness\",\"type\":\"number\",\"default\":1.2,\"min\":0.2,\"max\":5,\"step\":0.1},{\"id\":\"fade\",\"name\":\"Background Fade\",\"type\":\"number\",\"default\":0.05,\"min\":0,\"max\":0.5,\"step\":0.01},{\"id\":\"hueStart\",\"name\":\"Start Hue\",\"type\":\"number\",\"default\":200,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"hueEnd\",\"name\":\"End Hue\",\"type\":\"number\",\"default\":340,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"opacity\",\"name\":\"Stroke Opacity\",\"type\":\"number\",\"default\":0.6,\"min\":0.1,\"max\":1,\"step\":0.05}]}",
+          "error": "AI returned an incomplete sketch or controls. Please try again.\nFailed response: {\"title\":\"Marbled Oil Slick\",\"code\":\"let cols, rows;let field=[];let particles=[];function setup(){createCanvas(windowWidth,windowHeight);colorMode(HSB,360,100,100,1);initField();initParticles();}function initField(){cols=floor(width/params.resolution);rows=floor(height/params.resolution);field=new Array(cols*rows);for(let i=0;i<field.length;i++){field[i]=createVector(0,0);}updateField();}function updateField(){let z=frameCount*0.001*params.speed;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){let angle=noise(x*params.scale,y*params.scale,z)*TWO_PI*params.swirl;field[x+y*cols]=p5.Vector.fromAngle(angle);}}}function initParticles(){particles=[];for(let i=0;i<params.count;i++){particles.push({pos:createVector(random(width),random(height)),prev:createVector(0,0)});} }function draw(){background(0,0,100,params.fade);updateField();for(let p of particles){let colX=floor(p.pos.x/params.resolution);let colY=floor(p.pos.y/params.resolution);let idx=colX+colY*cols;if(idx<0||idx>=field.length){continue;}let force=field[idx];p.prev.set(p.pos.x,p.pos.y);p.pos.add(force.copy().mult(params.step));strokeWeight(params.thickness);stroke(getMarbleColor(p.pos.x,p.pos.y));line(p.prev.x,p.prev.y,p.pos.x,p.pos.y);if(p.pos.x<0||p.pos.x>width||p.pos.y<0||p.pos.y>height){p.pos.set(random(width),random(height));p.prev.set(p.pos.x,p.pos.y);} } }function getMarbleColor(x,y){let h=map(noise(x*0.005,y*0.005,frameCount*0.001),0,1,params.hueStart,params.hueEnd);let s=map(sin((x+y)*0.01+frameCount*0.02),-1,1,60,100);let b=map(cos((x-y)*0.01+frameCount*0.02),-1,1,80,100);return color(h,s,b,params.opacity);}function windowResized(){resizeCanvas(windowWidth,windowHeight);initField();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Flow Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":4,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Noise Scale\",\"type\":\"number\",\"default\":0.02,\"min\":0.001,\"max\":0.1,\"step\":0.001},{\"id\":\"swirl\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0,\"max\":5,\"step\":0.1},{\"id\":\"resolution\",\"name\":\"Field Resolution\",\"type\":\"number\",\"default\":15,\"min\":5,\"max\":50,\"step\":1},{\"id\":\"count\",\"name\":\"Particle Count\",\"type\":\"number\",\"default\":1200,\"min\":100,\"max\":5000,\"step\":100},{\"id\":\"step\",\"name\":\"Particle Step\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"thickness\",\"name\":\"Line Thickness\",\"type\":\"number\",\"default\":1.2,\"min\":0.2,\"max\":5,\"step\":0.1},{\"id\":\"fade\",\"name\":\"Background Fade\",\"type\":\"number\",\"default\":0.05,\"min\":0,\"max\":0.5,\"step\":0.01},{\"id\":\"hueStart\",\"name\":\"Start Hue\",\"type\":\"number\",\"default\":200,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"hueEnd\",\"name\":\"End Hue\",\"type\":\"number\",\"default\":340,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"opacity\",\"name\":\"Stroke Opacity\",\"type\":\"number\",\"default\":0.6,\"min\":0.1,\"max\":1,\"step\":0.05}]}"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2488,
+          "usage": {
+            "queue_time": 0.223230319,
+            "prompt_tokens": 2248,
+            "prompt_time": 0.112525418,
+            "completion_tokens": 1005,
+            "completion_time": 2.10982491,
+            "total_tokens": 3253,
+            "total_time": 2.222350328,
+            "completion_tokens_details": {
+              "reasoning_tokens": 85
+            }
+          },
+          "model": "openai/gpt-oss-120b",
+          "content": "{\"title\":\"Marbled Oil Slick\",\"code\":\"let cols, rows;let field=[];let particles=[];function setup(){createCanvas(windowWidth,windowHeight);colorMode(HSB,360,100,100,1);initField();initParticles();}function initField(){cols=floor(width/params.resolution);rows=floor(height/params.resolution);field=new Array(cols*rows);for(let i=0;i<field.length;i++){field[i]=createVector(0,0);}updateField();}function updateField(){let z=frameCount*0.001*params.speed;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){let angle=noise(x*params.scale,y*params.scale,z)*TWO_PI*params.swirl;field[x+y*cols]=p5.Vector.fromAngle(angle);}}}function initParticles(){particles=[];for(let i=0;i<params.count;i++){particles.push({pos:createVector(random(width),random(height)),prev:createVector(0,0)});} }function draw(){background(0,0,100,params.fade);updateField();if(particles.length!==params.count){initParticles();}for(let p of particles){let colX=floor(p.pos.x/params.resolution);let colY=floor(p.pos.y/params.resolution);let idx=colX+colY*cols;if(idx<0||idx>=field.length){continue;}let force=field[idx];p.prev.set(p.pos.x,p.pos.y);p.pos.add(force.copy().mult(params.step));strokeWeight(params.thickness);stroke(getMarbleColor(p.pos.x,p.pos.y));line(p.prev.x,p.prev.y,p.pos.x,p.pos.y);if(p.pos.x<0||p.pos.x>width||p.pos.y<0||p.pos.y>height){p.pos.set(random(width),random(height));p.prev.set(p.pos.x,p.pos.y);} } }function getMarbleColor(x,y){let h=map(noise(x*0.005,y*0.005,frameCount*0.001),0,1,params.hueStart,params.hueEnd);let s=map(sin((x+y)*0.01+frameCount*0.02),-1,1,60,100);let b=map(cos((x-y)*0.01+frameCount*0.02),-1,1,80,100);return color(h,s,b,params.opacity);}function windowResized(){resizeCanvas(windowWidth,windowHeight);initField();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Flow Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":4,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Noise Scale\",\"type\":\"number\",\"default\":0.02,\"min\":0.001,\"max\":0.1,\"step\":0.001},{\"id\":\"swirl\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0,\"max\":5,\"step\":0.1},{\"id\":\"resolution\",\"name\":\"Field Resolution\",\"type\":\"number\",\"default\":15,\"min\":5,\"max\":50,\"step\":1},{\"id\":\"count\",\"name\":\"Particle Count\",\"type\":\"number\",\"default\":1200,\"min\":100,\"max\":5000,\"step\":100},{\"id\":\"step\",\"name\":\"Particle Step\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"thickness\",\"name\":\"Line Thickness\",\"type\":\"number\",\"default\":1.2,\"min\":0.2,\"max\":5,\"step\":0.1},{\"id\":\"fade\",\"name\":\"Background Fade\",\"type\":\"number\",\"default\":0.05,\"min\":0,\"max\":0.5,\"step\":0.01},{\"id\":\"hueStart\",\"name\":\"Start Hue\",\"type\":\"number\",\"default\":200,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"hueEnd\",\"name\":\"End Hue\",\"type\":\"number\",\"default\":340,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"opacity\",\"name\":\"Stroke Opacity\",\"type\":\"number\",\"default\":0.6,\"min\":0.1,\"max\":1,\"step\":0.05}]}",
+          "error": "AI returned an incomplete sketch or controls. Please try again.\nFailed response: {\"title\":\"Marbled Oil Slick\",\"code\":\"let cols, rows;let field=[];let particles=[];function setup(){createCanvas(windowWidth,windowHeight);colorMode(HSB,360,100,100,1);initField();initParticles();}function initField(){cols=floor(width/params.resolution);rows=floor(height/params.resolution);field=new Array(cols*rows);for(let i=0;i<field.length;i++){field[i]=createVector(0,0);}updateField();}function updateField(){let z=frameCount*0.001*params.speed;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){let angle=noise(x*params.scale,y*params.scale,z)*TWO_PI*params.swirl;field[x+y*cols]=p5.Vector.fromAngle(angle);}}}function initParticles(){particles=[];for(let i=0;i<params.count;i++){particles.push({pos:createVector(random(width),random(height)),prev:createVector(0,0)});} }function draw(){background(0,0,100,params.fade);updateField();if(particles.length!==params.count){initParticles();}for(let p of particles){let colX=floor(p.pos.x/params.resolution);let colY=floor(p.pos.y/params.resolution);let idx=colX+colY*cols;if(idx<0||idx>=field.length){continue;}let force=field[idx];p.prev.set(p.pos.x,p.pos.y);p.pos.add(force.copy().mult(params.step));strokeWeight(params.thickness);stroke(getMarbleColor(p.pos.x,p.pos.y));line(p.prev.x,p.prev.y,p.pos.x,p.pos.y);if(p.pos.x<0||p.pos.x>width||p.pos.y<0||p.pos.y>height){p.pos.set(random(width),random(height));p.prev.set(p.pos.x,p.pos.y);} } }function getMarbleColor(x,y){let h=map(noise(x*0.005,y*0.005,frameCount*0.001),0,1,params.hueStart,params.hueEnd);let s=map(sin((x+y)*0.01+frameCount*0.02),-1,1,60,100);let b=map(cos((x-y)*0.01+frameCount*0.02),-1,1,80,100);return color(h,s,b,params.opacity);}function windowResized(){resizeCanvas(windowWidth,windowHeight);initField();}\",\"params\":[{\"id\":\"speed\",\"name\":\"Flow Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":4,\"step\":0.1},{\"id\":\"scale\",\"name\":\"Noise Scale\",\"type\":\"number\",\"default\":0.02,\"min\":0.001,\"max\":0.1,\"step\":0.001},{\"id\":\"swirl\",\"name\":\"Swirl Intensity\",\"type\":\"number\",\"default\":2,\"min\":0,\"max\":5,\"step\":0.1},{\"id\":\"resolution\",\"name\":\"Field Resolution\",\"type\":\"number\",\"default\":15,\"min\":5,\"max\":50,\"step\":1},{\"id\":\"count\",\"name\":\"Particle Count\",\"type\":\"number\",\"default\":1200,\"min\":100,\"max\":5000,\"step\":100},{\"id\":\"step\",\"name\":\"Particle Step\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"thickness\",\"name\":\"Line Thickness\",\"type\":\"number\",\"default\":1.2,\"min\":0.2,\"max\":5,\"step\":0.1},{\"id\":\"fade\",\"name\":\"Background Fade\",\"type\":\"number\",\"default\":0.05,\"min\":0,\"max\":0.5,\"step\":0.01},{\"id\":\"hueStart\",\"name\":\"Start Hue\",\"type\":\"number\",\"default\":200,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"hueEnd\",\"name\":\"End Hue\",\"type\":\"number\",\"default\":340,\"min\":0,\"max\":360,\"step\":1},{\"id\":\"opacity\",\"name\":\"Stroke Opacity\",\"type\":\"number\",\"default\":0.6,\"min\":0.1,\"max\":1,\"step\":0.05}]}"
+        },
+        {
+          "repair": true,
+          "httpStatus": 429,
+          "latencyMs": 42,
+          "error": "The AI service is unavailable. Please try again shortly."
+        }
+      ],
+      "success": false
+    }
+  ]
+}

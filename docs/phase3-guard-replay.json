@@ -1,0 +1,396 @@
+{
+  "date": "2026-10-16T00:37:19.711Z",
+  "provider": "gemini-flash-lite-latest",
+  "notes": "30 prompts, sequential; real app validation + opaque sandbox iframe readiness and two-second probation. No visual or control correctness score. Replays final saved attempts without API calls, with current loop guard.",
+  "results": [
+    {
+      "prompt": "Bioluminescent jellyfish drifting through midnight water with trailing tentacles.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A murmuration of birds spirals around an invisible lighthouse.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Fireflies weave luminous trails through a moonlit meadow.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A school of jewel-colored fish flows around a coral silhouette.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An evolving reaction-diffusion pattern resembling leopard spots.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "error": "Uncaught Error: Sketch loop exceeded 100ms. Reduce the work or fix the loop condition.",
+            "success": false
+          },
+          "error": "Uncaught Error: Sketch loop exceeded 100ms. Reduce the work or fix the loop condition."
+        }
+      ],
+      "success": false
+    },
+    {
+      "prompt": "A fluid ink plume curls through a bowl of milk.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A Gray-Scott inspired cellular labyrinth slowly morphs.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Marbled oil slicks swirl in pastel interference bands.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A rotating three-dimensional wireframe torus with neon edges using WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A low-poly mountain landscape scrolling toward the viewer in WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A crystalline rotating 3D sculpture lit by moving colored lights.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An orbital mobile of wireframe 3D polyhedra in WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A recursive fern grows and sways in a gentle wind.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A fractal tree blossoms in seasonal colors as its branches sway.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An animated Sierpinski triangle dissolves into luminous dust.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A recursive coral fan unfurls with branching rhythmic motion.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A typographic rain of the word DREAM with rippling letter spacing.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Kinetic typography: ORBIT arranged along moving circular paths.",
+      "attempts": [
+        {
+          "repair": false,
+          "error": "Expected 1–8 controls, received 9. Reduce the controls to 3–6 and update the code to match.\nFailed response: {\"title\":\"Kinetic Orbit Typography\",\"code\":\"function setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}"
+        }
+      ],
+      "success": false
+    },
+    {
+      "prompt": "A field of ASCII characters forms animated ocean waves.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "The word CANVAS stretches like elastic ribbons in a breeze.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An interactive constellation connects nearby stars and responds to the mouse.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A springy elastic grid bends toward the mouse and relaxes.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Mouse movements create fading ripples in a luminous pond.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A swarm of neon particles avoids the cursor and reforms a ring.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A geometric Bauhaus poster animated with bouncing circles and stripes.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A monochrome op-art checkerboard breathes and twists.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Animated Truchet tiles form flowing interlocking ribbons.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A minimal Swiss-style grid of oscillating red and black bars.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A double-pendulum traces chaotic gold trails on a charcoal background.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A Lorenz attractor rotates while tracing colored trajectories.",
+      "attempts": [
+        {
+          "repair": false,
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    }
+  ]
+}

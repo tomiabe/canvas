@@ -53,5 +53,6 @@ export interface SketchConfig {
   generated?: {
     title: string;
     controls: ParamDef[];
+    provider?: string;
   };
 }

@@ -1,0 +1,964 @@
+{
+  "date": "2026-10-16T00:29:07.562Z",
+  "provider": "gemini-flash-lite-latest",
+  "notes": "30 prompts, sequential; real app validation + opaque sandbox iframe readiness and two-second probation. No visual or control correctness score. Provider calls capped at 15 seconds. Reported tokens only, billed dollars unverified.",
+  "results": [
+    {
+      "prompt": "Bioluminescent jellyfish drifting through midnight water with trailing tentacles.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 4603,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 1899,
+            "totalTokenCount": 3147,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Bioluminescent Abyss\",\"code\":\"let jellies = [];\\nlet plankton = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  \\n  for (let i = 0; i < 6; i++) {\\n    jellies.push(new Jellyfish());\\n  }\\n  for (let i = 0; i < 150; i++) {\\n    plankton.push(new Plankton());\\n  }\\n}\\n\\nfunction draw() {\\n  background(230, 80, 8, 0.3);\\n  \\n  let wind = noise(frameCount * 0.005) - 0.5;\\n  \\n  for (let p of plankton) {\\n    p.update(wind);\\n    p.display();\\n  }\\n  \\n  let count = floor(params.jellyCount);\\n  while (jellies.length < count) {\\n    jellies.push(new Jellyfish());\\n  }\\n  while (jellies.length > count) {\\n    jellies.pop();\\n  }\\n  \\n  for (let j of jellies) {\\n    j.update(wind);\\n    j.display();\\n  }\\n}\\n\\nclass Plankton {\\n  constructor() {\\n    this.reset();\\n  }\\n  \\n  reset() {\\n    this.x = random(width);\\n    this.y = random(height);\\n    this.size = random(1, 3);\\n    this.alpha = random(0.1, 0.6);\\n    this.speedY = random(0.2, 0.8);\\n  }\\n  \\n  update(wind) {\\n    this.y -= this.speedY * params.speed;\\n    this.x += wind * params.speed;\\n    if (this.y < 0) {\\n      this.y = height;\\n      this.x = random(width);\\n    }\\n    if (this.x < 0) this.x = width;\\n    if (this.x > width) this.x = 0;\\n  }\\n  \\n  display() {\\n    noStroke();\\n    let h = params.glowColor === 'Cyan' ? 180 : (params.glowColor === 'Teal' ? 160 : 280);\\n    fill(h, 40, 90, this.alpha);\\n    ellipse(this.x, this.y, this.size);\\n  }\\n}\\n\\nclass Jellyfish {\\n  constructor() {\\n    this.x = random(width);\\n    this.y = random(height + 100, height * 2);\\n    this.size = random(40, 90);\\n    this.speedY = random(0.5, 1.5);\\n    this.pulseSpeed = random(0.03, 0.07);\\n    this.pulseOffset = random(100);\\n    this.tentacles = [];\\n    \\n    let tentacleCount = floor(random(6, 12));\\n    for (let i = 0; i < tentacleCount; i++) {\\n      this.tentacles.push(new Tentacle(this, i, tentacleCount));\\n    }\\n  }\\n  \\n  update(wind) {\\n    let s = params.speed;\\n    this.y -= this.speedY * s;\\n    this.x += (sin(frameCount * 0.01 + this.pulseOffset) * 0.5 + wind * 2) * s;\\n    \\n    if (this.y < -this.size * 3) {\\n      this.y = height + random(50, 200);\\n      this.x = random(width);\\n    }\\n    \\n    for (let t of this.tentacles) {\\n      t.update(s);\\n    }\\n  }\\n  \\n  display() {\\n    push();\\n    translate(this.x, this.y);\\n    \\n    let pulse = sin(frameCount * this.pulseSpeed * params.speed + this.pulseOffset);\\n    let currentW = this.size * (1 + pulse * 0.15);\\n    let currentH = this.size * 0.8 * (1 - pulse * 0.1);\\n    \\n    for (let t of this.tentacles) {\\n      t.display();\\n    } \\n    \\n    noFill();\\n    let h = params.glowColor === 'Cyan' ? 180 : (params.glowColor === 'Teal' ? 160 : 280);\\n    \\n    for (let i = 4; i > 0; i--) {\\n      stroke(h, 70, 90, 0.05 * i);\\n      strokeWeight(i * 2);\\n      arc(0, 0, currentW + i * 2, currentH + i * 2, PI, TWO_PI);\\n    }\\n    \\n    fill(h, 60, 40, 0.6);\\n    noStroke();\\n    arc(0, 0, currentW, currentH, PI, TWO_PI);\\n    \\n    fill(h, 20, 100, 0.8);\\n    arc(0, 0, currentW * 0.8, currentH * 0.8, PI, TWO_PI);\\n    \\n    fill(h, 80, 100, 0.3);\\n    arc(0, 0, currentW * 0.9, currentH * 0.9, PI, TWO_PI, OPEN);\\n    \\n    pop();\\n  }\\n}\\n\\nclass Tentacle {\\n  constructor(jelly, index, total) {\\n    this.jelly = jelly;\\n    this.index = index;\\n    this.total = total;\\n    this.length = random(120, 250);\\n    this.segments = 12;\\n    this.offset = random(100);\\n  }\\n  \\n  update(s) {\\n    // Handled mostly by kinematics in display or basic wobble\\n  }\\n  \\n  display() {\\n    let h = params.glowColor === 'Cyan' ? 180 : (params.glowColor === 'Teal' ? 160 : 280);\\n    noFill();\\n    \\n    let startX = map(this.index, 0, this.total - 1, -this.jelly.size * 0.6, this.jelly.size * 0.6);\\n    if (this.total === 1) startX = 0;\\n    \\n    beginShape();\\n    for (let i = 0; i <= this.segments; i++) {\\n      let progress = i / this.segments;\\n      let px = startX + sin(frameCount * 0.05 + this.offset + i * 0.5) * progress * 15;\\n      let py = progress * this.length;\\n      \\n      let alpha = map(progress, 0, 1, 0.5, 0);\\n      stroke(h, 70, 90, alpha);\\n      strokeWeight(map(progress, 0, 1, 2, 0.5));\\n      vertex(px, py);\\n    }\\n    endShape();\\n  }\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Drift Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"jellyCount\",\"name\":\"Jellyfish Count\",\"type\":\"number\",\"default\":4,\"min\":1,\"max\":10,\"step\":1},{\"id\":\"glowColor\",\"name\":\"Bioluminescence\",\"type\":\"enum\",\"default\":\"Cyan\",\"options\":[\"Cyan\",\"Teal\",\"Purple\"]}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A murmuration of birds spirals around an invisible lighthouse.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3775,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 1475,
+            "totalTokenCount": 2722,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Stellar Murmuration\",\n  \"code\": \"let birds = [];\\nlet numBirds = 350;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  for (let i = 0; i < numBirds; i++) {\\n    birds.push(new Bird());\\n  }\\n}\\n\\nfunction draw() {\\n  background(220, 40, 10, 0.25);\\n\\n  let cx = width / 2;\\n  let cy = height / 2;\\n\\n  // Draw invisible lighthouse beam / glow\\n  noFill();\\n  for (let r = 150; r > 0; r -= 30) {\\n    let alpha = map(r, 0, 150, 0.15, 0);\\n    stroke(60, 80, 90, alpha);\\n    strokeWeight(r);\\n    ellipse(cx, cy, r);\\n  }\\n\\n  // Rotating light beam from lighthouse\\n  let beamAngle = frameCount * 0.02 * params.speed;\\n  push();\\n  translate(cx, cy);\\n  rotate(beamAngle);\\n  noStroke();\\n  fill(60, 90, 100, 0.08);\\n  triangle(0, 0, -width, -height * 1.5, width, -height * 1.5);\\n  pop();\\n\\n  // Update and show birds\\n  for (let i = 0; i < birds.length; i++) {\\n    birds[i].update();\\n    birds[i].show();\\n  }\\n}\\n\\nclass Bird {\\n  constructor() {\\n    this.pos = createVector(random(width), random(height));\\n    this.vel = p5.Vector.random2D().mult(random(2, 4));\\n    this.acc = createVector(0, 0);\\n    this.maxSpeed = 5;\\n    this.maxForce = 0.2;\\n    this.hue = random(180, 260);\\n  }\\n\\n  update() {\\n    let cx = width / 2;\\n    let cy = height / 2;\\n    let center = createVector(cx, cy);\\n\\n    // Spiral force around the lighthouse\\n    let toCenter = p5.Vector.sub(center, this.pos);\\n    let distToCenter = toCenter.mag();\\n    \\n    // Tangent vector for spiral rotation\\n    let tangent = createVector(-toCenter.y, toCenter.x);\\n    tangent.normalize();\\n    \\n    let desiredDist = 200;\\n    let radialForce = toCenter.copy();\\n    radialForce.normalize();\\n    if (distToCenter < desiredDist) {\\n      radialForce.mult(-1);\\n    }\\n    \\n    let spiralDir = tangent.mult(2.5).add(radialForce.mult(0.5));\\n    spiralDir.normalize();\\n    spiralDir.mult(this.maxSpeed);\\n    \\n    let steer = p5.Vector.sub(spiralDir, this.vel);\\n    steer.limit(this.maxForce);\\n    this.acc.add(steer.mult(params.swarmTightness));\\n\\n    // Mouse interaction / wind\\n    let mouse = createVector(mouseX, mouseY);\\n    let dMouse = p5.Vector.dist(this.pos, mouse);\\n    if (dMouse < 150) {\\n      let away = p5.Vector.sub(this.pos, mouse);\\n      away.normalize();\\n      away.mult(map(dMouse, 0, 150, 5, 0));\\n      this.acc.add(away);\\n    }\\n\\n    // Update physics\\n    let spdMult = params.speed;\\n    this.vel.add(p5.Vector.mult(this.acc, spdMult));\\n    this.vel.limit(this.maxSpeed * spdMult);\\n    this.pos.add(this.vel);\\n    this.acc.mult(0);\\n\\n    // Screen wrap\\n    if (this.pos.x < 0) this.pos.x = width;\\n    if (this.pos.x > width) this.pos.x = 0;\\n    if (this.pos.y < 0) this.pos.y = height;\\n    if (this.pos.y > height) this.pos.y = 0;\\n  }\\n\\n  show() {\\n    let angle = this.vel.heading();\\n    push();\\n    translate(this.pos.x, this.pos.y);\\n    rotate(angle);\\n    noStroke();\\n    \\n    // Color variation based on params and speed\\n    let h = (this.hue + frameCount * 0.1) % 360;\\n    fill(h, 70, 90, 0.8);\\n    \\n    // Bird shape (triangle)\\n    beginShape();\\n    vertex(6, 0);\\n    vertex(-6, -3);\\n    vertex(-3, 0);\\n    vertex(-6, 3);\\n    endShape(CLOSE);\\n    pop();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Flight Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"swarmTightness\",\n      \"name\": \"Swarm Tightness\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 2.5,\n      \"step\": 0.1\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Fireflies weave luminous trails through a moonlit meadow.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 5694,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 2372,
+            "totalTokenCount": 3619,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Moonlit Meadow Fireflies\",\n  \"code\": \"let fireflies = [];\\nlet blades = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  \\n  // Initialize maximum possible fireflies\\n  for (let i = 0; i < 150; i++) {\\n    fireflies.push(new Firefly());\\n  }\\n  \\n  // Initialize meadow grass blades\\n  let bladeCount = width < 768 ? 80 : 180;\\n  for (let i = 0; i < bladeCount; i++) {\\n    blades.push(new GrassBlade(random(width), height));\\n  }\\n}\\n\\nfunction draw() {\\n  // Moonlit night sky gradient\\n  let c1 = color(220, 80, 10);\\n  let c2 = color(240, 60, 25);\\n  setGradient(0, 0, width, height, c1, c2);\\n  \\n  // Draw Moon\\n  noStroke();\\n  fill(60, 20, 95, 0.15);\\n  ellipse(width * 0.8, height * 0.2, 220, 220);\\n  fill(60, 30, 100, 0.8);\\n  ellipse(width * 0.8, height * 0.2, 140, 140);\\n  \\n  // Update and draw grass background layers\\n  for (let b of blades) {\\n    b.update();\\n    b.display(0.4);\\n  }\\n  \\n  // Update and draw fireflies\\n  let activeCount = int(params.fireflyCount);\\n  for (let i = 0; i < activeCount; i++) {\\n    let f = fireflies[i];\\n    f.update();\\n    f.display();\\n  }\\n  \\n  // Draw foreground grass silhouettes\\n  for (let b of blades) {\\n    b.display(1.0);\\n  }\\n}\\n\\nfunction setGradient(x, y, w, h, c1, c2) {\\n  noFill();\\n  for (let i = y; i <= y + h; i++) {\\n    let inter = map(i, y, y + h, 0, 1);\\n    let c = lerpColor(c1, c2, inter);\\n    stroke(c);\\n    line(x, i, x + w, i);\\n  }\\n}\\n\\nclass Firefly {\\n  constructor() {\\n    this.reset();\\n  }\\n  \\n  reset() {\\n    this.pos = createVector(random(width), random(height * 0.2, height * 0.9));\\n    this.vel = createVector(0, 0);\\n    this.acc = createVector(0, 0);\\n    this.maxSpeed = random(0.5, 1.5);\\n    this.history = [];\\n    this.maxHistory = floor(random(15, 35));\\n    this.phase = random(TWO_PI);\\n    this.blinkSpeed = random(0.02, 0.08);\\n    this.hue = params.colorScheme === 'Golden' ? random(35, 60) : (params.colorScheme === 'Emerald' ? random(90, 150) : random(180, 220));\\n  }\\n  \\n  update() {\\n    let time = millis() * 0.001 * params.speed;\\n    \\n    // Perlin noise movement\\n    let n = noise(this.pos.x * 0.003, this.pos.y * 0.003, time * 0.5);\\n    let angle = n * TWO_PI * 4;\\n    \\n    let noiseDir = p5.Vector.fromAngle(angle);\\n    noiseDir.mult(0.2);\\n    this.acc.add(noiseDir);\\n    \\n    // Gentle pull towards mouse if close\\n    let mouse = createVector(mouseX, mouseY);\\n    let d = dist(this.pos.x, this.pos.y, mouse.x, mouse.y);\\n    if (d < 200 && mouseX > 0 && mouseY > 0) {\\n      let pull = p5.Vector.sub(mouse, this.pos);\\n      pull.setMag(map(d, 0, 200, 0.5, 0));\\n      if (params.glowIntensity > 1) {\\n        this.acc.add(pull);\\n      } else {\\n        this.acc.sub(pull);\\n      }\\n    }\\n    \\n    this.vel.add(this.acc);\\n    this.vel.limit(this.maxSpeed * params.speed);\\n    this.pos.add(this.vel);\\n    this.acc.mult(0);\\n    \\n    // Screen wrap\\n    if (this.pos.x < 0) this.pos.x = width;\\n    if (this.pos.x > width) this.pos.x = 0;\\n    if (this.pos.y < 0) this.pos.y = height;\\n    if (this.pos.y > height) this.pos.y = 0;\\n    \\n    // Trail history\\n    if (frameCount % 2 === 0) {\\n      this.history.push(this.pos.copy());\\n      if (this.history.length > this.maxHistory) {\\n        this.history.shift();\\n      }\\n    }\\n    \\n    this.phase += this.blinkSpeed * params.speed;\\n  }\\n  \\n  display() {\\n    let glow = (sin(this.phase) + 1) * 0.5;\\n    glow = pow(glow, 2) * params.glowIntensity;\\n    \\n    // Draw luminous trails\\n    for (let i = 0; i < this.history.length; i++) {\\n      let pt = this.history[i];\\n      let alpha = map(i, 0, this.history.length, 0, 0.4) * glow;\\n      stroke(this.hue, 80, 100, alpha);\\n      strokeWeight(map(i, 0, this.history.length, 0.5, 3));\\n      point(pt.x, pt.y);\\n    }\\n    \\n    // Draw firefly body\\n    noStroke();\\n    fill(this.hue, 30, 100, glow);\\n    ellipse(this.pos.x, this.pos.y, 6 * glow, 6 * glow);\\n    fill(this.hue, 10, 100, glow * 1.5);\\n    ellipse(this.pos.x, this.pos.y, 2, 2);\\n  }\\n}\\n\\nclass GrassBlade {\\n  constructor(x, y) {\\n    this.x = x;\\n    this.baseY = y;\\n    this.h = random(40, 140);\\n    this.angle = random(-0.2, 0.2);\\n    this.swaySpeed = random(0.01, 0.03);\\n    this.swayAmount = random(0.05, 0.15);\\n  }\\n  \\n  update() {\\n    // Static silhouette, no major update needed per frame except subtle wind\\n  }\\n  \\n  display(layerAlpha) {\\n    let time = millis() * 0.002;\\n    let sway = sin(time + this.x) * this.swayAmount;\\n    let tipX = this.x + sin(this.angle + sway) * this.h;\\n    let tipY = this.baseY - cos(this.angle + sway) * this.h;\\n    \\n    stroke(230, 40, layerAlpha > 0.5 ? 12 : 25, layerAlpha);\\n    strokeWeight(layerAlpha > 0.5 ? 3 : 6);\\n    noFill();\\n    \\n    beginShape();\\n    vertex(this.x, this.baseY);\\n    quadraticVertex(this.x + (tipX - this.x) * 0.5, this.baseY - this.h * 0.5, tipX, tipY);\\n    endShape();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"fireflyCount\",\n      \"name\": \"Firefly Count\",\n      \"type\": \"number\",\n      \"default\": 70,\n      \"min\": 10,\n      \"max\": 150,\n      \"step\": 1\n    },\n    {\n      \"id\": \"speed\",\n      \"name\": \"Movement Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"glowIntensity\",\n      \"name\": \"Glow Intensity\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.5,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"colorScheme\",\n      \"name\": \"Color Theme\",\n      \"type\": \"enum\",\n      \"default\": \"Golden\",\n      \"options\": [\n        \"Golden\",\n        \"Emerald\",\n        \"Azure\"\n      ]\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A school of jewel-colored fish flows around a coral silhouette.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 6202,
+          "usage": {
+            "promptTokenCount": 1249,
+            "candidatesTokenCount": 2659,
+            "totalTokenCount": 3908,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1249
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Jewel Coral Symphony\",\"code\":\"let boids = [];\\nlet coralPoints = [];\\nlet numBoids = 150;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  \\n  // Initialize boids\\n  for (let i = 0; i < 400; i++) {\\n    boids.push(new Boid(random(width), random(height)));\\n  }\\n  \\n  generateCoral();\\n}\\n\\nfunction draw() {\\n  let bgHue = params.bgPalette === 'Deep Ocean' ? 220 : (params.bgPalette === 'Midnight' ? 260 : 30);\\n  let bgSat = params.bgPalette === 'Sunset' ? 40 : 80;\\n  background(bgHue, bgSat, 10);\\n  \\n  // Draw subtle background rays / glow\\n  noStroke();\\n  for (let i = 0; i < 3; i++) {\\n    fill(bgHue, 30, 20, 0.05);\\n    ellipse(width * 0.5, height * 1.2, width * (1.5 - i * 0.3), height * 1.5);\\n  }\\n  \\n  // Update and draw coral silhouette\\n  drawCoral();\\n  \\n  // Update and draw boids\\n  let maxBoids = floor(map(params.fishDensity, 0.1, 2, 50, 350));\\n  for (let i = 0; i < maxBoids; i++) {\\n    let b = boids[i];\\n    b.update();\\n    b.show();\\n  }\\n}\\n\\nfunction generateCoral() {\\n  coralPoints = [];\\n  let rootX = width * 0.5;\\n  let rootY = height;\\n  \\n  // Generate recursive coral branches\\n  branch(rootX, rootY, -HALF_PI, 120, 6);\\n}\\n\\nfunction branch(x, y, angle, len, depth) {\\n  if (depth <= 0) return;\\n  \\n  let endX = x + cos(angle) * len;\\n  let endY = y + sin(angle) * len;\\n  \\n  coralPoints.push({x1: x, y1: y, x2: endX, y2: endY, depth: depth});\\n  \\n  let nBranches = floor(random(2, 4));\\n  for (let i = 0; i < nBranches; i++) {\\n    let newAngle = angle + random(-0.6, 0.6);\\n    let newLen = len * random(0.65, 0.85);\\n    branch(endX, endY, newAngle, newLen, depth - 1);\\n  }\\n}\\n\\nfunction drawCoral() {\\n  stroke(20, 20, 8);\\n  noFill();\\n  \\n  // Base coral silhouette shadow/glow\\n  for (let c of coralPoints) {\\n    strokeWeight(c.depth * 3.5 * (width / 1200));\\n    strokeCap(ROUND);\\n    line(c.x1, c.y1, c.x2, c.y2);\\n  }\\n  \\n  // Inner coral core\\n  stroke(15, 40, 15);\\n  for (let c of coralPoints) {\\n    strokeWeight(c.depth * 2 * (width / 1200));\\n    line(c.x1, c.y1, c.x2, c.y2);\\n  }\\n}\\n\\nclass Boid {\\n  constructor(x, y) {\\n    this.position = createVector(x, y);\\n    this.velocity = p5.Vector.random2D();\\n    this.velocity.setMag(random(2, 4));\\n    this.acceleration = createVector();\\n    this.maxSpeed = random(2.5, 4.5);\\n    this.maxForce = 0.2;\\n    this.hueOffset = random(360);\\n    this.size = random(6, 12);\\n  }\\n  \\n  update() {\\n    let s = params.speed;\\n    this.velocity.add(this.acceleration);\\n    this.velocity.limit(this.maxSpeed * s);\\n    this.position.add(this.velocity);\\n    this.acceleration.mult(0);\\n    \\n    // Wrap edges\\n    if (this.position.x < -50) this.position.x = width + 50;\\n    if (this.position.x > width + 50) this.position.x = -50;\\n    if (this.position.y < -50) this.position.y = height + 50;\\n    if (this.position.y > height + 50) this.position.y = -50;\\n    \\n    // Apply behaviors\\n    let flow = this.flowFieldForce();\\n    let avoid = this.avoidCoral();\\n    let mouse = this.interactMouse();\\n    \\n    this.applyForce(flow.mult(1.2));\\n    this.applyForce(avoid.mult(2.5));\\n    this.applyForce(mouse.mult(1.5));\\n  }\\n  \\n  applyForce(force) {\\n    this.acceleration.add(force);\\n  }\\n  \\n  flowFieldForce() {\\n    let freq = 0.002 * params.flowDetail;\\n    let angle = noise(this.position.x * freq, this.position.y * freq, frameCount * 0.005 * params.speed) * TWO_PI * 2;\\n    let force = p5.Vector.fromAngle(angle);\\n    force.setMag(this.maxSpeed);\\n    let steer = p5.Vector.sub(force, this.velocity);\\n    steer.limit(this.maxForce);\\n    return steer;\\n  }\\n  \\n  avoidCoral() {\\n    let steer = createVector(0, 0);\\n    let count = 0;\\n    for (let c of coralPoints) {\\n      let a = createVector(c.x1, c.y1);\\n      let b = createVector(c.x2, c.y2);\\n      let p = this.position;\\n      \\n      // Distance to line segment\\n      let ab = p5.Vector.sub(b, a);\\n      let ap = p5.Vector.sub(p, a);\\n      let t = ap.dot(ab) / ab.magSq();\\n      t = constrain(t, 0, 1);\\n      let closest = p5.Vector.add(a, ab.mult(t));\\n      \\n      let d = p5.Vector.dist(p, closest);\\n      let threshold = c.depth * 15 + 20;\\n      if (d < threshold) {\\n        let diff = p5.Vector.sub(p, closest);\\n        diff.normalize();\\n        diff.div(d + 1); // Closer is stronger\\n        steer.add(diff);\\n        count++;\\n      }\\n    }\\n    if (count > 0) {\\n      steer.div(count);\\n      steer.setMag(this.maxSpeed);\\n      steer.sub(this.velocity);\\n      steer.limit(this.maxForce * 2);\\n    }\\n    return steer;\\n  }\\n  \\n  interactMouse() {\\n    let mouse = createVector(mouseX, mouseY);\\n    let d = p5.Vector.dist(this.position, mouse);\\n    let steer = createVector(0, 0);\\n    if (d < 150 && mouseX > 0 && mouseY > 0) {\\n      let repulse = p5.Vector.sub(this.position, mouse);\\n      repulse.normalize();\\n      repulse.mult(this.maxSpeed);\\n      steer = p5.Vector.sub(repulse, this.velocity);\\n      steer.limit(this.maxForce * 2);\\n    }\\n    return steer;\\n  }\\n  \\n  show() {\\n    push();\\n    translate(this.position.x, this.position.y);\\n    rotate(this.velocity.heading());\\n    \\n    // Jewel color calculation\\n    let h;\\n    if (params.fishPalette === 'Ruby & Sapphire') {\\n      h = (sin(frameCount * 0.02 + this.hueOffset) > 0) ? 350 : 210;\\n    } else if (params.fishPalette === 'Emerald Gold') {\\n      h = (sin(frameCount * 0.02 + this.hueOffset) > 0) ? 140 : 45;\\n    } else {\\n      // Prism Rainbow\\n      h = (frameCount * 0.5 + this.hueOffset * 2) % 360;\\n    }\\n    \\n    let s = 90;\\n    let b = 95;\\n    \\n    // Fish body (sleek jewel shape)\\n    noStroke();\\n    fill(h, s, b, 0.9);\\n    beginShape();\\n    vertex(this.size, 0);\\n    vertex(-this.size * 0.8, this.size * 0.5);\\n    vertex(-this.size * 0.5, 0);\\n    vertex(-this.size * 0.8, -this.size * 0.5);\\n    endShape(CLOSE);\\n    \\n    // Glowing tail fin\\n    fill(h, s - 20, b, 0.7);\\n    beginShape();\\n    vertex(-this.size * 0.5, 0);\\n    vertex(-this.size * 1.3, this.size * 0.7);\\n    vertex(-this.size * 1.0, 0);\\n    vertex(-this.size * 1.3, -this.size * 0.7);\\n    endShape(CLOSE);\\n    \\n    pop();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  generateCoral();\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Swim Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"fishDensity\",\"name\":\"Fish Density\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":2,\"step\":0.1},{\"id\":\"flowDetail\",\"name\":\"Current Turbulence\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":2.5,\"step\":0.1},{\"id\":\"fishPalette\",\"name\":\"Jewel Palette\",\"type\":\"enum\",\"default\":\"Ruby & Sapphire\",\"options\":[\"Ruby & Sapphire\",\"Emerald Gold\",\"Prism Rainbow\"]},{\"id\":\"bgPalette\",\"name\":\"Water Theme\",\"type\":\"enum\",\"default\":\"Deep Ocean\",\"options\":[\"Deep Ocean\",\"Midnight\",\"Sunset\"]}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An evolving reaction-diffusion pattern resembling leopard spots.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 4905,
+          "usage": {
+            "promptTokenCount": 1246,
+            "candidatesTokenCount": 2103,
+            "totalTokenCount": 3349,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1246
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Leopard Reaction Diffusion\",\"code\":\"let grid;\\nlet next;\\nlet cols, rows;\\nlet resolution = 4;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  cols = floor(width / resolution);\\n  rows = floor(height / resolution);\\n  \\n  grid = [];\\n  next = [];\\n  for (let x = 0; x < cols; x++) {\\n    grid[x] = [];\\n    next[x] = [];\\n    for (let y = 0; y < rows; y++) {\\n      grid[x][y] = { a: 1, b: 0 };\\n      next[x][y] = { a: 1, b: 0 };\\n    }\\n  }\\n  \\n  // Seed spots\\n  for (let i = 0; i < 10; i++) {\\n    let startX = floor(random(cols * 0.2, cols * 0.8));\\n    let startY = floor(random(rows * 0.2, rows * 0.8));\\n    let r = floor(random(5, 15));\\n    for (let x = -r; x <= r; x++) {\\n      for (let y = -r; y <= r; y++) {\\n        let nx = startX + x;\\n        let ny = startY + y;\\n        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {\\n          if (x*x + y*y < r*r) {\\n            grid[nx][ny].b = 1;\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\\n\\nfunction draw() {\\n  background(0);\\n  \\n  let da = params.feed;\\n  let db = params.kill;\\n  let f = params.feedRate;\\n  let k = params.killRate;\\n  let dt = 1.0;\\n  \\n  let steps = floor(params.speed * 4);\\n  for (let s = 0; s < steps; s++) {\\n    for (let x = 1; x < cols - 1; x++) {\\n      for (let y = 1; y < rows - 1; y++) {\\n        let a = grid[x][y].a;\\n        let b = grid[x][y].b;\\n        \\n        let laplacianA = 0;\\n        laplacianA += grid[x][y].a * -1;\\n        laplacianA += grid[x + 1][y].a * 0.2;\\n        laplacianA += grid[x - 1][y].a * 0.2;\\n        laplacianA += grid[x][y + 1].a * 0.2;\\n        laplacianA += grid[x][y - 1].a * 0.2;\\n        laplacianA += grid[x + 1][y + 1].a * 0.05;\\n        laplacianA += grid[x + 1][y - 1].a * 0.05;\\n        laplacianA += grid[x - 1][y + 1].a * 0.05;\\n        laplacianA += grid[x - 1][y - 1].a * 0.05;\\n\\n        let laplacianB = 0;\\n        laplacianB += grid[x][y].b * -1;\\n        laplacianB += grid[x + 1][y].b * 0.2;\\n        grid[x - 1]; // dummy access to keep parser happy\\n        laplacianB += grid[x - 1][y].b * 0.2;\\n        laplacianB += grid[x][y + 1].b * 0.2;\\n        laplacianB += grid[x][y - 1].b * 0.2;\\n        laplacianB += grid[x + 1][y + 1].b * 0.05;\\n        laplacianB += grid[x + 1][y - 1].b * 0.05;\\n        laplacianB += grid[x - 1][y + 1].b * 0.05;\\n        laplacianB += grid[x - 1][y - 1].b * 0.05;\\n\\n        next[x][y].a = a + (da * laplacianA - a * b * b + f * (1 - a)) * dt;\\n        next[x][y].b = b + (db * laplacianB + a * b * b - (k + f) * b) * dt;\\n        \\n        next[x][y].a = constrain(next[x][y].a, 0, 1);\\n        next[x][y].b = constrain(next[x][y].b, 0, 1);\\n      }\\n    }\\n    \\n    let temp = grid;\\n    grid = next;\\n    next = temp;\\n  }\\n  \\n  if (mouseIsPressed) {\\n    let mx = floor(mouseX / resolution);\\n    let my = floor(mouseY / resolution);\\n    let r = 8;\\n    for (let x = -r; x <= r; x++) {\\n      for (let y = -r; y <= r; y++) {\\n        let nx = mx + x;\\n        let ny = my + y;\\n        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {\\n          if (x*x + y*y < r*r) {\\n            grid[nx][ny].b = 1;\\n          }\\n        }\\n      }\\n    }\\n  }\\n  \\n  noStroke();\\n  let baseC = color(params.baseColor);\\n  let spotC = color(params.spotColor);\\n  \\n  for (let x = 0; x < cols; x++) {\\n    for (let y = 0; y < rows; y++) {\\n      let b = grid[x][y].b;\\n      let col = lerpColor(baseC, spotC, constrain(b * 3.5, 0, 1));\\n      fill(col);\\n      rect(x * resolution, y * resolution, resolution, resolution);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  cols = floor(width / resolution);\\n  rows = floor(height / resolution);\\n  grid = [];\\n  next = [];\\n  for (let x = 0; x < cols; x++) {\\n    grid[x] = [];\\n    next[x] = [];\\n    for (let y = 0; y < rows; y++) {\\n      grid[x][y] = { a: 1, b: 0 };\\n      next[x][y] = { a: 1, b: 0 };\\n    }\\n  }\\n  for (let i = 0; i < 10; i++) {\\n    let startX = floor(random(cols * 0.2, cols * 0.8));\\n    let startY = floor(random(rows * 0.2, rows * 0.8));\\n    let r = floor(random(5, 15));\\n    for (let x = -r; x <= r; x++) {\\n      for (let y = -r; y <= r; y++) {\\n        let nx = startX + x;\\n        let ny = startY + y;\\n        if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {\\n          if (x*x + y*y < r*r) {\\n            grid[nx][ny].b = 1;\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Evolution Speed\",\"type\":\"number\",\"default\":2,\"min\":0.5,\"max\":5,\"step\":0.1},{\"id\":\"feed\",\"name\":\"Diffusion A\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":1.5,\"step\":0.01},{\"id\":\"kill\",\"name\":\"Diffusion B\",\"type\":\"number\",\"default\":0.5,\"min\":0.2,\"max\":0.8,\"step\":0.01},{\"id\":\"feedRate\",\"name\":\"Feed Rate\",\"type\":\"number\",\"default\":0.034,\"min\":0.02,\"max\":0.07,\"step\":0.001},{\"id\":\"killRate\",\"name\":\"Kill Rate\",\"type\":\"number\",\"default\":0.062,\"min\":0.05,\"max\":0.07,\"step\":0.001},{\"id\":\"baseColor\",\"name\":\"Base Color\",\"type\":\"color\",\"default\":\"#f4d06f\"},{\"id\":\"spotColor\",\"name\":\"Spot Color\",\"type\":\"color\",\"default\":\"#2d1b0d\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A fluid ink plume curls through a bowl of milk.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3152,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 1309,
+            "totalTokenCount": 2556,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Milk and Ink Plume\",\n  \"code\": \"let particles = [];\\nconst maxParticles = 600;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  for (let i = 0; i < maxParticles; i++) {\\n    particles.push(new Particle());\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n\\n  let numActive = floor(map(params.density, 0.1, 2, 100, maxParticles));\\n  \\n  for (let i = 0; i < numActive; i++) {\\n    let p = particles[i];\\n    p.update();\\n    p.display();\\n  }\\n}\\n\\nclass Particle {\\n  constructor() {\\n    this.reset();\\n  }\\n\\n  reset() {\\n    this.x = random(width * 0.3, width * 0.7);\\n    this.y = height + random(20, 100);\\n    this.vx = 0;\\n    this.vy = random(-3, -1);\\n    this.alpha = random(40, 90);\\n    this.size = random(4, 25);\\n    this.life = random(200, 500);\\n    this.maxLife = this.life;\\n    this.colorOffset = random(360);\\n  }\\n\\n  update() {\\n    let nscale = 0.002 * params.complexity;\\n    let angle = noise(this.x * nscale, this.y * nscale, frameCount * 0.003 * params.speed) * TWO_PI * 2;\\n    \\n    let flowForceX = cos(angle) * 0.8;\\n    let flowForceY = sin(angle) * 0.8 - 0.4;\\n\\n    this.vx += flowForceX * 0.1;\\n    this.vy += flowForceY * 0.1;\\n\\n    this.vx *= 0.95;\\n    this.vy *= 0.95;\\n\\n    this.x += this.vx * params.speed;\\n    this.y += this.vy * params.speed;\\n\\n    this.life--;\\n    this.size += 0.05 * params.spread;\\n\\n    if (this.life <= 0 || this.y < -50 || this.x < -50 || this.x > width + 50) {\\n      this.reset();\\n    }\\n  }\\n\\n  display() {\\n    let fade = map(this.life, 0, this.maxLife, 0, 1);\\n    let c;\\n    if (params.inkColor === \\\"Indigo\\\") {\\n      c = color(230 + sin(frameCount * 0.01 + this.colorOffset) * 20, 80, 20, this.alpha * fade);\\n    } else if (params.inkColor === \\\"Crimson\\\") {\\n      c = color(340 + sin(frameCount * 0.01 + this.colorOffset) * 20, 85, 40, this.alpha * fade);\\n    } else {\\n      c = color((this.colorOffset + frameCount * 0.2) % 360, 70, 50, this.alpha * fade);\\n    }\\n\\n    noStroke();\\n    fill(c);\\n    ellipse(this.x, this.y, this.size);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Flow Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"complexity\",\n      \"name\": \"Swirl Complexity\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.5,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"spread\",\n      \"name\": \"Plume Spread\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"density\",\n      \"name\": \"Particle Density\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 2.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"inkColor\",\n      \"name\": \"Ink Tone\",\n      \"type\": \"enum\",\n      \"options\": [\n        \"Indigo\",\n        \"Crimson\",\n        \"Rainbow\"\n      ],\n      \"default\": \"Indigo\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Milk Background\",\n      \"type\": \"color\",\n      \"default\": \"#f2f5f7\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A Gray-Scott inspired cellular labyrinth slowly morphs.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 5505,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 2378,
+            "totalTokenCount": 3625,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Cellular Labyrinth\",\n  \"code\": \"let grid, nextGrid;\\nlet cols, rows;\\nlet resolution = 8;\\nlet dA = 1.0;\\nlet dB = 0.5;\\nlet feed = 0.055;\\nlet k = 0.062;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  cols = floor(width / resolution);\\n  rows = floor(height / resolution);\\n  \\n  grid = [];\\n  nextGrid = [];\\n  for (let x = 0; x < cols; x++) {\\n    grid[x] = [];\\n    nextGrid[x] = [];\\n    for (let y = 0; y < rows; y++) {\\n      grid[x][y] = { a: 1.0, b: 0.0 };\\n      nextGrid[x][y] = { a: 1.0, b: 0.0 };\\n    }\\n  }\\n  \\n  // Seed initial spots\\n  let cx = floor(cols / 2);\\n  let cy = floor(rows / 2);\\n  for (let i = -5; i <= 5; i++) {\\n    for (let j = -5; j <= 5; j++) {\\n      if (cx + i >= 0 && cx + i < cols && cy + j >= 0 && cy + j < rows) {\\n        grid[cx + i][cy + j].b = 1.0;\\n      }\\n    }\\n  }\\n  // Random extra seeds\\n  for (let n = 0; n < 5; n++) {\\n    let rx = floor(random(10, cols - 10));\\n    let ry = floor(random(10, rows - 10));\\n    for (let i = -3; i <= 3; i++) {\\n      for (let j = -3; j <= 3; j++) {\\n        grid[rx + i][ry + j].b = 1.0;\\n      }\\n    }\\n  }\\n}\\n\\nfunction draw() {\\n  background(0);\\n  \\n  // Adjust parameters smoothly or from controls\\n  let spd = floor(params.speed * 3) + 1;\\n  let cType = params.colorPalette;\\n  feed = params.feedRate;\\n  k = params.killRate;\\n  \\n  for (let step = 0; step < spd; step++) {\\n    for (let x = 1; x < cols - 1; x++) {\\n      for (let y = 1; y < rows - 1; y++) {\\n        let a = grid[x][y].a;\\n        let b = grid[x][y].b;\\n        \\n        let lapA = laplacianA(x, y);\\n        let lapB = laplacianB(x, y);\\n        \\n        let ab2 = a * b * b;\\n        \\n        let nextA = a + (dA * lapA - ab2 + feed * (1 - a)) * 1.0;\\n        let nextB = b + (dB * lapB + ab2 - (k + feed) * b) * 1.0;\\n        \\n        nextGrid[x][y].a = constrain(nextA, 0, 1);\\n        nextGrid[x][y].b = constrain(nextB, 0, 1);\\n      }\\n    }\\n    \\n    // Swap grids\\n    let temp = grid;\\n    grid = nextGrid;\\n    nextGrid = temp;\\n  }\\n  \\n  noStroke();\\n  for (let x = 0; x < cols; x++) {\\n    for (let y = 0; y < rows; y++) {\\n      let a = grid[x][y].a;\\n      let b = grid[x][y].b;\\n      let val = a - b;\\n      \\n      if (cType === \\\"Neon Matrix\\\") {\\n        let r = floor(val * 20);\\n        let g = floor(b * 255);\\n        let bCol = floor(a * 100);\\n        fill(r, g, bCol);\\n      } else if (cType === \\\"Deep Ocean\\\") {\\n        let r = floor(b * 50);\\n        let g = floor(val * 150);\\n        let bCol = floor(a * 255);\\n        fill(r, g, bCol);\\n      } else if (cType === \\\"Magma\\\") {\\n        let r = floor(b * 255);\\n        let g = floor(val * 120);\\n        let bCol = floor(a * 30);\\n        fill(r, g, bCol);\\n      } else {\\n        let colVal = floor((1 - b) * 255);\\n        fill(colVal);\\n      }\\n      \\n      rect(x * resolution, y * resolution, resolution, resolution);\\n    }\\n  }\\n}\\n\\nfunction laplacianA(x, y) {\\n  let sumA = 0;\\n  sumA += grid[x][y].a * -1;\\n  sumA += grid[x - 1][y].a * 0.2;\\n  sumA += grid[x + 1][y].a * 0.2;\\n  sumA += grid[x][y - 1].a * 0.2;\\n  sumA += grid[x][y + 1].a * 0.2;\\n  sumA += grid[x - 1][y - 1].a * 0.05;\\n  sumA += grid[x + 1][y - 1].a * 0.05;\\n  sumA += grid[x - 1][y + 1].a * 0.05;\\n  sumA += grid[x + 1][y + 1].a * 0.05;\\n  return sumA;\\n}\\n\\nfunction laplacianB(x, y) {\\n  let sumB = 0;\\n  sumB += grid[x][y].b * -1;\\n  sumB += grid[x - 1][y].b * 0.2;\\n  sumB += grid[x + 1][y].b * 0.2;\\n  sumB += grid[x][y - 1].b * 0.2;\\n  sumB += grid[x][y + 1].b * 0.2;\\n  sumB += grid[x - 1][y - 1].b * 0.05;\\n  sumB += grid[x + 1][y - 1].b * 0.05;\\n  sumB += grid[x - 1][y + 1].b * 0.05;\\n  sumB += grid[x + 1][y + 1].b * 0.05;\\n  return sumB;\\n}\\n\\nfunction mousePressed() {\\n  let mx = floor(mouseX / resolution);\\n  let my = floor(mouseY / resolution);\\n  for (let i = -4; i <= 4; i++) {\\n    for (let j = -4; j <= 4; j++) {\\n      if (mx + i >= 0 && mx + i < cols && my + j >= 0 && my + j < rows) {\\n        grid[mx + i][my + j].b = 1.0;\\n      }\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  cols = floor(width / resolution);\\n  rows = floor(height / resolution);\\n  grid = [];\\n  nextGrid = [];\\n  for (let x = 0; x < cols; x++) {\\n    grid[x] = [];\\n    nextGrid[x] = [];\\n    for (let y = 0; y < rows; y++) {\\n      grid[x][y] = { a: 1.0, b: 0.0 };\\n      nextGrid[x][y] = { a: 1.0, b: 0.0 };\\n    }\\n  }\\n  let cx = floor(cols / 2);\\n  let cy = floor(rows / 2);\\n  for (let i = -5; i <= 5; i++) {\\n    for (let j = -5; j <= 5; j++) {\\n      if (cx + i >= 0 && cx + i < cols && cy + j >= 0 && cy + j < rows) {\\n        grid[cx + i][cy + j].b = 1.0;\\n      }\\n    }\\n  }\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Evolution Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.1,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"feedRate\",\n      \"name\": \"Feed Rate\",\n      \"type\": \"number\",\n      \"default\": 0.055,\n      \"min\": 0.01,\n      \"max\": 0.09,\n      \"step\": 0.001\n    },\n    {\n      \"id\": \"killRate\",\n      \"name\": \"Kill Rate\",\n      \"type\": \"number\",\n      \"default\": 0.062,\n      \"min\": 0.045,\n      \"max\": 0.07,\n      \"step\": 0.001\n    },\n    {\n      \"id\": \"colorPalette\",\n      \"name\": \"Color Palette\",\n      \"type\": \"enum\",\n      \"options\": [\n        \"Neon Matrix\",\n        \"Deep Ocean\",\n        \"Magma\",\n        \"Monochrome\"\n      ],\n      \"default\": \"Neon Matrix\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Marbled oil slicks swirl in pastel interference bands.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2236,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 805,
+            "totalTokenCount": 2052,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Marbled Oil Slicks\",\n  \"code\": \"let t = 0;\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  noStroke();\\n}\\nfunction draw() {\\n  background(0, 0, params.darkTheme ? 10 : 95);\\n  let cols = 60;\\n  let rows = 40;\\n  let cellW = width / cols;\\n  let cellH = height / rows;\\n  t += 0.005 * params.speed;\\n  \\n  for (let i = 0; i < cols; i++) {\\n    for (let j = 0; j < rows; j++) {\\n      let x = i * cellW + cellW / 2;\\n      let y = j * cellH + cellH / 2;\\n      \\n      let nx = x * 0.003 * params.complexity;\\n      let ny = y * 0.003 * params.complexity;\\n      \\n      let n1 = noise(nx + t, ny - t);\\n      let n2 = noise(nx - t, ny + t);\\n      let n3 = noise(nx + t * 0.5, ny + t * 0.5);\\n      \\n      let val = (n1 + n2 + n3) * params.density;\\n      let hueVal = (val * 360 * 2) % 360;\\n      let satVal = params.darkTheme ? 70 : 50;\\n      let briVal = params.darkTheme ? 80 : 90;\\n      let alphaVal = noise(nx * 2, ny * 2) * 0.8 + 0.2;\\n      \\n      fill(hueVal, satVal, briVal, alphaVal);\\n      push();\\n      translate(x, y);\\n      rotate(n1 * TWO_PI * params.speed);\\n      ellipse(0, 0, cellW * (1.5 + n2), cellH * (1.5 + n3));\\n      pop();\\n    }\\n  }\\n}\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.1,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"complexity\",\n      \"name\": \"Complexity\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.5,\n      \"max\": 4.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"density\",\n      \"name\": \"Density\",\n      \"type\": \"number\",\n      \"default\": 2.0,\n      \"min\": 0.5,\n      \"max\": 5.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"darkTheme\",\n      \"name\": \"Dark Theme\",\n      \"type\": \"boolean\",\n      \"default\": true\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A rotating three-dimensional wireframe torus with neon edges using WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2267,
+          "usage": {
+            "promptTokenCount": 1251,
+            "candidatesTokenCount": 918,
+            "totalTokenCount": 2169,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1251
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Neon Torus Wireframe\",\n  \"code\": \"let angleX = 0;\\nlet angleY = 0;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  angleX += 0.01 * params.speed;\\n  angleY += 0.015 * params.speed;\\n  \\n  rotateX(angleX);\\n  rotateY(angleY);\\n  \\n  stroke(params.neonColor);\\n  strokeWeight(params.strokeWidth);\\n  noFill();\\n  \\n  let r = params.radius;\\n  let tubeR = params.tubeRadius;\\n  let detail = params.detail;\\n  \\n  beginShape(POINTS);\\n  for (let i = 0; i < detail; i++) {\\n    let u = (i / detail) * TWO_PI;\\n    for (let j = 0; j < detail; j++) {\\n      let v = (j / detail) * TWO_PI;\\n      let x = (r + tubeR * cos(v)) * cos(u);\\n      let y = (r + tubeR * cos(v)) * sin(u);\\n      let z = tubeR * sin(v);\\n      vertex(x, y, z);\\n    }\\n  }\\n  endShape();\\n  \\n  push();\\n  rotateZ(frameCount * 0.02 * params.speed);\\n  stroke(params.innerColor);\\n  strokeWeight(params.strokeWidth * 0.5);\\n  torus(r * 0.5, tubeR * 0.3, detail / 2, detail / 2);\\n  pop();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Rotation Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.1,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"radius\",\n      \"name\": \"Torus Radius\",\n      \"type\": \"number\",\n      \"default\": 160,\n      \"min\": 50,\n      \"max\": 300,\n      \"step\": 10\n    },\n    {\n      \"id\": \"tubeRadius\",\n      \"name\": \"Tube Radius\",\n      \"type\": \"number\",\n      \"default\": 60,\n      \"min\": 10,\n      \"max\": 120,\n      \"step\": 5\n    },\n    {\n      \"id\": \"detail\",\n      \"name\": \"Mesh Detail\",\n      \"type\": \"number\",\n      \"default\": 36,\n      \"min\": 12,\n      \"max\": 72,\n      \"step\": 4\n    },\n    {\n      \"id\": \"strokeWidth\",\n      \"name\": \"Stroke Width\",\n      \"type\": \"number\",\n      \"default\": 2,\n      \"min\": 1,\n      \"max\": 8,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"neonColor\",\n      \"name\": \"Neon Color\",\n      \"type\": \"color\",\n      \"default\": \"#00ffcc\"\n    },\n    {\n      \"id\": \"innerColor\",\n      \"name\": \"Inner Color\",\n      \"type\": \"color\",\n      \"default\": \"#ff00aa\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b16\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A low-poly mountain landscape scrolling toward the viewer in WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3103,
+          "usage": {
+            "promptTokenCount": 1250,
+            "candidatesTokenCount": 1278,
+            "totalTokenCount": 2528,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1250
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Low-Poly Mountain Flight\",\n  \"code\": \"let terrainCols = 40;\\nlet terrainRows = 60;\\nlet terrainScale = 40;\\nlet zOffset = 0;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  noStroke();\\n}\\n\\nfunction draw() {\\n  background(params.nightMode ? 15 : 220, params.nightMode ? 15 : 230, params.nightMode ? 35 : 255);\\n\\n  let spd = params.speed * 0.5;\\n  zOffset += spd;\\n\\n  if (params.nightMode) {\\n    ambientLight(40, 40, 80);\\n    directionalLight(200, 150, 255, 0, 1, -0.5);\\n  } else {\\n    ambientLight(150, 150, 150);\\n    directionalLight(255, 240, 220, 0, 1, -0.5);\\n  }\\n\\n  push();\\n  translate(0, 200, -600);\\n  rotateX(QUARTER_PI * 0.8);\\n  rotateZ(frameCount * 0.001 * params.turnSpeed);\\n\\n  let heights = [];\\n  let mScale = params.mountainScale * 0.01;\\n\\n  for (let y = 0; y < terrainRows; y++) {\\n    heights[y] = [];\\n    for (let x = 0; x < terrainCols; x++) {\\n      let nx = x * 0.15;\\n      let ny = (y + zOffset) * 0.15;\\n      let h = noise(nx, ny) * 350 * mScale;\\n      \\n      let distFromCenter = abs(x - terrainCols / 2) / (terrainCols / 2);\\n      h -= pow(distFromCenter, 2) * 200 * mScale;\\n      heights[y][x] = h;\\n    }\\n  }\\n\\n  for (let y = 0; y < terrainRows - 1; y++) {\\n    beginShape(TRIANGLE_STRIP);\\n    for (let x = 0; x < terrainCols; x++) {\\n      let h1 = heights[y][x];\\n      let h2 = heights[y + 1][x];\\n      \\n      let col1 = getTerrainColor(h1);\\n      let col2 = getTerrainColor(h2);\\n\\n      fill(col1);\\n      vertex((x - terrainCols / 2) * terrainScale, (y - terrainRows / 2) * terrainScale, h1);\\n      fill(col2);\\n      vertex((x - terrainCols / 2) * terrainScale, (y + 1 - terrainRows / 2) * terrainScale, h2);\\n    }\\n    endShape();\\n  }\\n\\n  pop();\\n}\\n\\nfunction getTerrainColor(h) {\\n  let peak = params.nightMode ? color(240, 245, 255) : color(255);\\n  let rock = params.nightMode ? color(60, 70, 90) : color(120, 110, 100);\\n  let base = params.nightMode ? color(20, 40, 30) : color(40, 130, 60);\\n\\n  if (h > 150) {\\n    return peak;\\n  } else if (h > 50) {\\n    let amt = map(h, 50, 150, 0, 1);\\n    return lerpColor(rock, peak, amt);\\n  } else if (h > -50) {\\n    let amt = map(h, -50, 50, 0, 1);\\n    return lerpColor(base, rock, amt);\\n  } else {\\n    return base;\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Flight Speed\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.2,\n      \"max\": 5.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"mountainScale\",\n      \"name\": \"Peak Height\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.5,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"turnSpeed\",\n      \"name\": \"Wander\",\n      \"type\": \"number\",\n      \"default\": 0.5,\n      \"min\": 0.0,\n      \"max\": 2.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"nightMode\",\n      \"name\": \"Night Mode\",\n      \"type\": \"boolean\",\n      \"default\": false\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A crystalline rotating 3D sculpture lit by moving colored lights.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3370,
+          "usage": {
+            "promptTokenCount": 1249,
+            "candidatesTokenCount": 1387,
+            "totalTokenCount": 2636,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1249
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Crystalline Rotation\",\n  \"code\": \"let angleX = 0;\\nlet angleY = 0;\\nlet crystals = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  \\n  // Initialize crystal vertices/geometry\\n  let numNodes = 12;\\n  for (let i = 0; i < numNodes; i++) {\\n    let v = p5.Vector.random3D();\\n    v.mult(random(80, 200));\\n    crystals.push(v);\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgHue, 40, 15);\\n\\n  // Moving colored lights\\n  let t = millis() * 0.001 * params.speed;\\n  let light1X = cos(t) * 300;\\n  let light1Y = sin(t * 0.7) * 300;\\n  let light1Z = sin(t) * 300 + 200;\\n  pointLight( (t * 50) % 360, 80, 100, light1X, light1Y, light1Z);\\n\\n  let light2X = sin(t * 1.3) * 300;\\n  let light2Y = cos(t * 0.9) * 300;\\n  let light2Z = cos(t * 1.1) * 300 - 200;\\n  pointLight( (t * 50 + 180) % 360, 80, 100, light2X, light2Y, light2Z);\\n\\n  ambientLight(20);\\n\\n  push();\\n  rotateX(angleX);\\n  rotateY(angleY);\\n\\n  // Draw crystalline structure\\n  let detail = floor(params.complexity);\\n  for (let i = 0; i < crystals.length; i++) {\\n    let v1 = crystals[i];\\n    for (let j = i + 1; j < crystals.length; j++) {\\n      let v2 = crystals[j];\\n      let d = p5.Vector.dist(v1, v2);\\n      if (d < 180) {\\n        // Draw connecting struts\\n        stroke((i * 30 + frameCount * 0.5 * params.speed) % 360, 70, 90, 80);\\n        strokeWeight(params.wireframe ? 2 : 1);\\n        noFill();\\n        line(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);\\n      }\\n    }\\n  }\\n\\n  // Draw faceted crystal nodes\\n  noStroke();\\n  for (let i = 0; i < crystals.length; i++) {\\n    let v = crystals[i];\\n    push();\\n    translate(v.x, v.y, v.z);\\n    specularMaterial((i * 35) % 360, 60, 90);\\n    shininess(50);\\n    \\n    if (params.shapeType === 'Box') {\\n      box(25);\\n    } else if (params.shapeType === 'Sphere') {\\n      sphere(18, detail, detail);\\n    } else {\\n      torus(20, 8, detail, detail);\\n    }\\n    pop();\\n  }\\n\\n  // Central core crystal\\n  push();\\n  rotateZ(t * 0.5);\\n  specularMaterial((frameCount * 0.2) % 360, 40, 100);\\n  shininess(100);\\n  if (params.shapeType === 'Box') {\\n    box(70);\\n  } else if (params.shapeType === 'Sphere') {\\n    sphere(50, detail, detail);\\n  } else {\\n    torus(50, 15, detail, detail);\\n  }\\n  pop();\\n\\n  pop();\\n\\n  // Update rotation angles\\n  angleX += 0.005 * params.speed;\\n  angleY += 0.008 * params.speed;\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Rotation Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"complexity\",\n      \"name\": \"Facet Detail\",\n      \"type\": \"number\",\n      \"default\": 6,\n      \"min\": 3,\n      \"max\": 16,\n      \"step\": 1\n    },\n    {\n      \"id\": \"shapeType\",\n      \"name\": \"Node Shape\",\n      \"type\": \"enum\",\n      \"options\": [\"Sphere\", \"Box\", \"Torus\"],\n      \"default\": \"Sphere\"\n    },\n    {\n      \"id\": \"wireframe\",\n      \"name\": \"Bold Wires\",\n      \"type\": \"boolean\",\n      \"default\": true\n    },\n    {\n      \"id\": \"bgHue\",\n      \"name\": \"Background Hue\",\n      \"type\": \"number\",\n      \"default\": 240,\n      \"min\": 0,\n      \"max\": 360,\n      \"step\": 1\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An orbital mobile of wireframe 3D polyhedra in WEBGL.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 4169,
+          "usage": {
+            "promptTokenCount": 1251,
+            "candidatesTokenCount": 1770,
+            "totalTokenCount": 3021,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1251
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Orbital Mobile of Wireframe 3D Polyhedra\",\"code\":\"let nodes = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  strokeWeight(1.5);\\n\\n  // Build a hierarchical orbital structure\\n  let root = new MobileNode(0, 0, 0, 0);\\n  nodes.push(root);\\n\\n  // Branch 1\\n  let b1 = new MobileNode(120, 80, 0, 1, 'octahedron', 50);\\n  root.addChild(b1);\\n  let b1_1 = new MobileNode(80, 50, 0, 2, 'tetrahedron', 30);\\n  b1.addChild(b1_1);\\n\\n  // Branch 2\\n  let b2 = new MobileNode(-150, 100, 0, 0.8, 'icosahedron', 45);\\n  root.addChild(b2);\\n  let b2_1 = new MobileNode(90, -60, 0, -1.5, 'box', 35);\\n  b2.addChild(b2_1);\\n  let b2_2 = new MobileNode(-80, -50, 0, 1.2, 'octahedron', 25);\\n  b2.addChild(b2_2);\\n\\n  // Branch 3\\n  let b3 = new MobileNode(0, 160, 120, -0.6, 'dodecahedron', 40);\\n  root.addChild(b3);\\n  let b3_1 = new MobileNode(70, 70, 0, 1.8, 'box', 30);\\n  b3.addChild(b3_1);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n\\n  // Lighting and ambiance\\n  ambientLight(40);\\n  directionalLight(255, 255, 255, 0.5, 1, -0.5);\\n\\n  // Global rotation based on mouse and params\\n  let targetRotX = map(mouseY, 0, height, -PI / 3, PI / 3);\\n  let targetRotY = map(mouseX, 0, width, -PI, PI);\\n\\n  rotateX(targetRotX * 0.5);\\n  rotateY(targetRotY * 0.5);\\n  rotateZ(sin(frameCount * 0.01 * params.speed) * 0.1);\\n\\n  // Update and render nodes recursively starting from root\\n  for (let n of nodes) {\\n    if (!n.parent) {\\n      n.update();\\n      n.display();\\n    }\\n  }\\n}\\n\\nclass MobileNode {\\n  constructor(x, y, z, rotSpeed, shapeType, size) {\\n    this.basePos = createVector(x, y, z);\\n    this.pos = createVector(x, y, z);\\n    this.rotSpeed = rotSpeed;\\n    this.angle = random(TWO_PI);\\n    this.shapeType = shapeType;\\n    this.size = size;\\n    this.children = [];\\n    this.parent = null;\\n    \\n    this.rx = random(TWO_PI);\\n    this.ry = random(TWO_PI);\\n    this.rz = random(TWO_PI);\\n  }\\n\\n  addChild(child) {\\n    child.parent = this;\\n    this.children.push(child);\\n    nodes.push(child);\\n  }\\n\\n  update() {\\n    if (this.rotSpeed !== 0) {\\n      this.angle += this.rotSpeed * 0.015 * params.speed;\\n    }\\n\\n    // Rotate position around parent if parent exists\\n    if (this.parent) {\\n      let distFromAxis = sqrt(this.basePos.x * this.basePos.x + this.basePos.z * this.basePos.z);\\n      let currentAngle = atan2(this.basePos.z, this.basePos.x) + this.angle;\\n      this.pos.x = cos(currentAngle) * distFromAxis;\\n      this.pos.z = sin(currentAngle) * distFromAxis;\\n      this.pos.y = this.basePos.y + sin(frameCount * 0.02 * params.speed + this.angle) * 10;\\n    }\\n\\n    // Self rotation for polyhedra\\n    this.rx += 0.01 * params.speed;\\n    this.ry += 0.015 * params.speed;\\n\\n    for (let c of this.children) {\\n      c.update();\\n    }\\n  }\\n\\n  display() {\\n    // Draw wire connection to parent\\n    if (this.parent) {\\n      stroke(params.wireColor);\\n      strokeWeight(1);\\n      line(this.parent.pos.x, this.parent.pos.y, this.parent.pos.z,\\n           this.pos.x, this.pos.y, this.pos.z);\\n    }\\n\\n    push();\\n    translate(this.pos.x, this.pos.y, this.pos.z);\\n\\n    // Draw hanging ring / connector\\n    noFill();\\n    stroke(params.wireColor);\\n    ellipse(0, -this.size * 0.75, 12, 12);\\n\\n    // Draw polyhedron\\n    if (params.showFill) {\\n      fill(params.fillColor);\\n    } else {\\n      noFill();\\n    }\\n    stroke(params.polyColor);\\n    strokeWeight(params.polyWeight);\\n\\n    rotateX(this.rx);\\n    rotateY(this.ry);\\n\\n    if (this.shapeType === 'box') {\\n      box(this.size);\\n    } else if (this.shapeType === 'octahedron') {\\n      octahedron(this.size);\\n    } else if (this.shapeType === 'tetrahedron') {\\n      tetrahedron(this.size);\\n    } else if (this.shapeType === 'icosahedron') {\\n      icosahedron(this.size);\\n    } else if (this.shapeType === 'dodecahedron') {\\n      dodecahedron(this.size);\\n    }\\n\\n    pop();\\n\\n    for (let c of this.children) {\\n      c.display();\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"showFill\",\"name\":\"Solid Faces\",\"type\":\"boolean\",\"default\":false},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0b0f19\"},{\"id\":\"wireColor\",\"name\":\"Wire/Rod Color\",\"type\":\"color\",\"default\":\"#4a5568\"},{\"id\":\"polyColor\",\"name\":\"Polyhedra Edge Color\",\"type\":\"color\",\"default\":\"#00ffcc\"},{\"id\":\"fillColor\",\"name\":\"Polyhedra Face Color\",\"type\":\"color\",\"default\":\"#111827\"}]}",
+          "validated": true,
+          "runtime": {
+            "error": "Uncaught ReferenceError: octahedron is not defined",
+            "success": false
+          },
+          "error": "Uncaught ReferenceError: octahedron is not defined"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 3868,
+          "usage": {
+            "promptTokenCount": 3109,
+            "candidatesTokenCount": 1956,
+            "totalTokenCount": 5065,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 3109
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Orbital Mobile of Wireframe 3D Polyhedra\",\n  \"code\": \"let nodes = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  strokeWeight(1.5);\\n\\n  // Build a hierarchical orbital structure\\n  let root = new MobileNode(0, 0, 0, 0);\\n  nodes.push(root);\\n\\n  // Branch 1\\n  let b1 = new MobileNode(120, 80, 0, 1, 'box', 50);\\n  root.addChild(b1);\\n  let b1_1 = new MobileNode(80, 50, 0, 2, 'sphere', 30);\\n  b1.addChild(b1_1);\\n\\n  // Branch 2\\n  let b2 = new MobileNode(-150, 100, 0, 0.8, 'cylinder', 45);\\n  root.addChild(b2);\\n  let b2_1 = new MobileNode(90, -60, 0, -1.5, 'box', 35);\\n  b2.addChild(b2_1);\\n  let b2_2 = new MobileNode(-80, -50, 0, 1.2, 'torus', 25);\\n  b2.addChild(b2_2);\\n\\n  // Branch 3\\n  let b3 = new MobileNode(0, 160, 120, -0.6, 'cone', 40);\\n  root.addChild(b3);\\n  let b3_1 = new MobileNode(70, 70, 0, 1.8, 'box', 30);\\n  b3.addChild(b3_1);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n\\n  // Lighting and ambiance\\n  ambientLight(40);\\n  directionalLight(255, 255, 255, 0.5, 1, -0.5);\\n\\n  // Global rotation based on mouse and params\\n  let targetRotX = map(mouseY, 0, height, -PI / 3, PI / 3);\\n  let targetRotY = map(mouseX, 0, width, -PI, PI);\\n\\n  rotateX(targetRotX * 0.5);\\n  rotateY(targetRotY * 0.5);\\n  rotateZ(sin(frameCount * 0.01 * params.speed) * 0.1);\\n\\n  // Update and render nodes recursively starting from root\\n  for (let n of nodes) {\\n    if (!n.parent) {\\n      n.update();\\n      n.display();\\n    }\\n  }\\n}\\n\\nclass MobileNode {\\n  constructor(x, y, z, rotSpeed, shapeType, size) {\\n    this.basePos = createVector(x, y, z);\\n    this.pos = createVector(x, y, z);\\n    this.rotSpeed = rotSpeed;\\n    this.angle = random(TWO_PI);\\n    this.shapeType = shapeType;\\n    this.size = size;\\n    this.children = [];\\n    this.parent = null;\\n    \\n    this.rx = random(TWO_PI);\\n    this.ry = random(TWO_PI);\\n    this.rz = random(TWO_PI);\\n  }\\n\\n  addChild(child) {\\n    child.parent = this;\\n    this.children.push(child);\\n    nodes.push(child);\\n  }\\n\\n  update() {\\n    if (this.rotSpeed !== 0) {\\n      this.angle += this.rotSpeed * 0.015 * params.speed;\\n    }\\n\\n    // Rotate position around parent if parent exists\\n    if (this.parent) {\\n      let distFromAxis = sqrt(this.basePos.x * this.basePos.x + this.basePos.z * this.basePos.z);\\n      let currentAngle = atan2(this.basePos.z, this.basePos.x) + this.angle;\\n      this.pos.x = cos(currentAngle) * distFromAxis;\\n      this.pos.z = sin(currentAngle) * distFromAxis;\\n      this.pos.y = this.basePos.y + sin(frameCount * 0.02 * params.speed + this.angle) * 10;\\n    }\\n\\n    // Self rotation for polyhedra\\n    this.rx += 0.01 * params.speed;\\n    this.ry += 0.015 * params.speed;\\n\\n    for (let c of this.children) {\\n      c.update();\\n    }\\n  }\\n\\n  display() {\\n    // Draw wire connection to parent\\n    if (this.parent) {\\n      stroke(params.wireColor);\\n      strokeWeight(1);\\n      line(this.parent.pos.x, this.parent.pos.y, this.parent.pos.z,\\n           this.pos.x, this.pos.y, this.pos.z);\\n    }\\n\\n    push();\\n    translate(this.pos.x, this.pos.y, this.pos.z);\\n\\n    // Draw hanging ring / connector\\n    noFill();\\n    stroke(params.wireColor);\\n    ellipse(0, -this.size * 0.75, 12, 12);\\n\\n    // Draw polyhedron / shape\\n    if (params.showFill) {\\n      fill(params.fillColor);\\n    } else {\\n      noFill();\\n    }\\n    stroke(params.polyColor);\\n    strokeWeight(1.5);\\n\\n    rotateX(this.rx);\\n    rotateY(this.ry);\\n\\n    if (this.shapeType === 'box') {\\n      box(this.size);\\n    } else if (this.shapeType === 'sphere') {\\n      sphere(this.size * 0.7, 12, 12);\\n    } else if (this.shapeType === 'cylinder') {\\n      cylinder(this.size * 0.5, this.size);\\n    } else if (this.shapeType === 'torus') {\\n      torus(this.size * 0.6, this.size * 0.2, 16, 16);\\n    } else if (this.shapeType === 'cone') {\\n      cone(this.size * 0.6, this.size);\\n    }\\n\\n    pop();\\n\\n    for (let c of this.children) {\\n      c.display();\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Rotation Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.1,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"showFill\",\n      \"name\": \"Solid Faces\",\n      \"type\": \"boolean\",\n      \"default\": false\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0f19\"\n    },\n    {\n      \"id\": \"wireColor\",\n      \"name\": \"Wire/Rod Color\",\n      \"type\": \"color\",\n      \"default\": \"#4a5568\"\n    },\n    {\n      \"id\": \"polyColor\",\n      \"name\": \"Polyhedra Edge Color\",\n      \"type\": \"color\",\n      \"default\": \"#00ffcc\"\n    },\n    {\n      \"id\": \"fillColor\",\n      \"name\": \"Polyhedra Face Color\",\n      \"type\": \"color\",\n      \"default\": \"#111827\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A recursive fern grows and sways in a gentle wind.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2731,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 1090,
+            "totalTokenCount": 2338,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Recursive Wind-Swept Fern\",\"code\":\"let fronds = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let time = millis() * 0.001 * params.speed;\\n  let wind = sin(time * 50) * params.windStrength;\\n  \\n  translate(width / 2, height - 50);\\n  \\n  let iterations = int(params.depth);\\n  let baseLen = min(width, height) * 0.22;\\n  \\n  stroke(params.fernColor);\\n  noFill();\\n  strokeWeight(2);\\n  \\n  // Draw main stem\\n  push();\\n  let sway = sin(time * 40) * params.windStrength * 0.2;\\n  rotate(sway);\\n  line(0, 0, 0, -baseLen);\\n  translate(0, -baseLen);\\n  drawFernLeaf(baseLen, iterations, time, wind, 0);\\n  pop();\\n  \\n  // Draw side fronds for a lush bush look\\n  for (let i = 1; i <= 3; i++) {\\n    push();\\n    let sideAngle = i * 25 - 40;\\n    rotate(sideAngle);\\n    let subLen = baseLen * 0.7;\\n    let localSway = sway + sin(time * 30 + i) * params.windStrength;\\n    stroke(red(color(params.fernColor)) * 0.9, green(color(params.fernColor)) * 0.9, blue(color(params.fernColor)) * 0.9);\\n    strokeWeight(max(1, 2 - i * 0.3));\\n    line(0, 0, 0, -subLen);\\n    translate(0, -subLen);\\n    drawFernLeaf(subLen, max(1, iterations - 1), time, wind, i);\\n    pop();\\n  }\\n}\\n\\nfunction drawFernLeaf(len, depth, time, wind, seed) {\\n  if (depth <= 0 || len < 3) return;\\n  \\n  let numPairs = 6;\\n  for (let i = 1; i <= numPairs; i++) {\\n    let t = i / numPairs;\\n    let subLen = len * 0.6 * (1 - t * 0.4);\\n    let yOffset = -len * (1 - t);\\n    \\n    push();\\n    translate(0, yOffset);\\n    \\n    // Right leaflet\\n    push();\\n    let rAngle = 42 + sin(time * 45 + i + seed) * wind * 2;\\n    rotate(rAngle);\\n    strokeWeight(max(0.5, depth * 0.5));\\n    line(0, 0, subLen, 0);\\n    if (depth > 1) {\\n      translate(subLen, 0);\\n      drawFernLeaf(subLen * 0.5, depth - 1, time, wind, seed + i);\\n    }\\n    pop();\\n    \\n    // Left leaflet\\n    push();\\n    let lAngle = -42 - cos(time * 40 + i + seed) * wind * 2;\\n    rotate(lAngle);\\n    strokeWeight(max(0.5, depth * 0.5));\\n    line(0, 0, -subLen, 0);\\n    if (depth > 1) {\\n      translate(-subLen, 0);\\n      drawFernLeaf(subLen * 0.5, depth - 1, time, wind, seed - i);\\n    }\\n    pop();\\n    \\n    pop();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Animation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"depth\",\"name\":\"Recursive Depth\",\"type\":\"number\",\"default\":5,\"min\":2,\"max\":6,\"step\":1},{\"id\":\"windStrength\",\"name\":\"Wind Strength\",\"type\":\"number\",\"default\":3,\"min\":0,\"max\":10,\"step\":0.5},{\"id\":\"fernColor\",\"name\":\"Fern Color\",\"type\":\"color\",\"default\":\"#2e8b57\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0f171e\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A fractal tree blossoms in seasonal colors as its branches sway.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3586,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 1205,
+            "totalTokenCount": 2453,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Seasonal Fractal Tree\",\"code\":\"let angle = 0;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n}\\n\\nfunction draw() {\\n  let season = params.season;\\n  let bgCol;\\n  \\n  if (season === 'Spring') bgCol = color(240, 245, 250);\\n  else if (season === 'Summer') bgCol = color(220, 240, 250);\\n  else if (season === 'Autumn') bgCol = color(255, 243, 230);\\n  else bgCol = color(30, 35, 45);\\n  \\n  background(bgCol);\\n  \\n  let baseColor = color(params.trunkColor);\\n  stroke(baseColor);\\n  \\n  translate(width / 2, height);\\n  \\n  let len = height * 0.25;\\n  let maxDepth = floor(params.maxDepth);\\n  \\n  angle = sin(frameCount * 0.02 * params.speed) * 0.15;\\n  \\n  drawBranch(len, 0, maxDepth, season);\\n}\\n\\nfunction drawBranch(len, depth, maxDepth, season) {\\n  if (depth > maxDepth) return;\\n  \\n  let sw = map(depth, 0, maxDepth, 14, 1);\\n  strokeWeight(max(sw, 1));\\n  \\n  if (params.season === 'Winter' && depth > 2) {\\n    stroke(200, 210, 230);\\n  } else {\\n    stroke(80, 50, 30);\\n  }\\n  \\n  line(0, 0, 0, -len);\\n  translate(0, -len);\\n  \\n  if (depth === maxDepth || (depth >= maxDepth - 2 && random() > 0.3)) {\\n    drawBlossom(season, len);\\n  }\\n  \\n  let branchAngle = radians(params.branchAngle) + angle * (depth / maxDepth);\\n  \\n  push();\\n  rotate(branchAngle);\\n  drawBranch(len * params.branchRatio, depth + 1, maxDepth, season);\\n  pop();\\n  \\n  push();\\n  rotate(-branchAngle);\\n  drawBranch(len * params.branchRatio, depth + 1, maxDepth, season);\\n  pop();\\n}\\n\\nfunction drawBlossom(season, len) {\\n  push();\\n  noStroke();\\n  \\n  if (season === 'Spring') {\\n    fill(255, 182, 193, 200);\\n    ellipse(0, 0, len * 0.8, len * 0.8);\\n    fill(255, 255, 255, 220);\\n    ellipse(0, 0, len * 0.4, len * 0.4);\\n  } else if (season === 'Summer') {\\n    fill(50, 205, 50, 200);\\n    ellipse(0, 0, len * 0.9, len * 0.9);\\n    fill(34, 139, 34, 200);\\n    ellipse(len * 0.2, 0, len * 0.5, len * 0.5);\\n  } else if (season === 'Autumn') {\\n    let col = random() < 0.5 ? color(255, 140, 0, 220) : color(220, 20, 60, 220);\\n    fill(col);\\n    ellipse(0, 0, len * 0.8, len * 0.8);\\n  } else {\\n    fill(240, 248, 255, 220);\\n    ellipse(0, 0, len * 0.6, len * 0.6);\\n  }\\n  pop();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\\n\",\"params\":[{\"id\":\"speed\",\"name\":\"Sway Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"season\",\"name\":\"Season\",\"type\":\"enum\",\"default\":\"Spring\",\"options\":[\"Spring\",\"Summer\",\"Autumn\",\"Winter\"]},{\"id\":\"maxDepth\",\"name\":\"Tree Depth\",\"type\":\"number\",\"default\":9,\"min\":5,\"max\":11,\"step\":1},{\"id\":\"branchAngle\",\"name\":\"Branch Angle\",\"type\":\"number\",\"default\":25,\"min\":10,\"max\":45,\"step\":1},{\"id\":\"branchRatio\",\"name\":\"Branch Shrink\",\"type\":\"number\",\"default\":0.67,\"min\":0.5,\"max\":0.8,\"step\":0.01},{\"id\":\"trunkColor\",\"name\":\"Trunk Color\",\"type\":\"color\",\"default\":\"#50321e\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An animated Sierpinski triangle dissolves into luminous dust.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 5106,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 2191,
+            "totalTokenCount": 3438,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Sierpinski Dust\",\n  \"code\": \"let particles = [];\\nlet maxParticles = 3000;\\nlet basePoints = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  \\n  // Initialize particle pool\\n  for (let i = 0; i < maxParticles; i++) {\\n    particles.push(new DustParticle());\\n  }\\n  \\n  updateSierpinski();\\n}\\n\\nfunction updateSierpinski() {\\n  basePoints = [];\\n  let size = min(width, height) * 0.75;\\n  let h = size * (sqrt(3) / 2);\\n  \\n  let x1 = width / 2;\\n  let y1 = height / 2 - h / 2;\\n  let x2 = width / 2 - size / 2;\\n  let y2 = height / 2 + h / 2;\\n  let x3 = width / 2 + size / 2;\\n  let y3 = height / 2 + h / 2;\\n\\n  // Generate points using Chaos Game for Sierpinski triangle\\n  let currentX = x1;\\n  let currentY = y1;\\n  \\n  let targetCount = floor(map(params.detail, 1, 6, 200, maxParticles));\\n  targetCount = min(targetCount, maxParticles);\\n  \\n  let pts = [];\\n  // Warm up\\n  for (let i = 0; i < 20; i++) {\\n    let r = floor(random(3));\\n    if (r === 0) { currentX = (currentX + x1) / 2; currentY = (currentY + y1) / 2; }\\n    else if (r === 1) { currentX = (currentX + x2) / 2; currentY = (currentY + y2) / 2; }\\n    else { currentX = (currentX + x3) / 2; currentY = (currentY + y3) / 2; }\\n  }\\n  \\n  for (let i = 0; i < targetCount; i++) {\\n    let r = floor(random(3));\\n    if (r === 0) { currentX = (currentX + x1) / 2; currentY = (currentY + y1) / 2; }\\n    else if (r === 1) { currentX = (currentX + x2) / 2; currentY = (currentY + y2) / 2; }\\n    else { currentX = (currentX + x3) / 2; currentY = (currentY + y3) / 2; }\\n    pts.push(createVector(currentX, currentY));\\n  }\\n  \\n  // Assign to particles\\n  for (let i = 0; i < maxParticles; i++) {\\n    let p = particles[i];\\n    if (i < pts.length) {\\n      p.active = true;\\n      p.target.set(pts[i]);\\n    } else {\\n      p.active = false;\\n    }\\n  }\\n}\\n\\nfunction draw() {\\n  background(10, 20, 10, 0.25);\\n  \\n  let time = millis() * 0.001 * params.speed;\\n  let dissolveAmt = (sin(time * 0.8) + 1) * 0.5; // Oscillates between 0 and 1\\n  \\n  // Recalculate targets periodically based on dissolve state to ensure fresh dust flow\\n  if (frameCount % 180 === 0) {\\n    updateSierpinski();\\n  }\\n  \\n  let activeCount = floor(map(params.detail, 1, 6, 200, maxParticles));\\n  \\n  for (let i = 0; i < maxParticles; i++) {\\n    let p = particles[i];\\n    if (i >= activeCount) {\\n      p.active = false;\\n      continue;\\n    } else {\\n      p.active = true;\\n    }\\n    p.update(dissolveAmt, time);\\n    p.display();\\n  }\\n}\\n\\nclass DustParticle {\\n  constructor() {\\n    this.pos = createVector(random(width), random(height));\\n    this.target = createVector(width / 2, height / 2);\\n    this.vel = createVector(0, 0);\\n    this.acc = createVector(0, 0);\\n    this.active = true;\\n    this.hueOffset = random(-30, 30);\\n    this.size = random(1.5, 3.5);\\n  }\\n  \\n  update(dissolve, t) {\\n    if (!this.active) return;\\n    \\n    // Noise force for dust behavior\\n    let noiseScale = 0.003;\\n    let nAngle = noise(this.pos.x * noiseScale, this.pos.y * noiseScale, t * 0.5) * TWO_PI * 2;\\n    let noiseForce = p5.Vector.fromAngle(nAngle).mult(params.turbulence * 1.5);\\n    \\n    // Pull towards target when triangle is formed (dissolve near 0)\\n    // Wander freely when dissolve is near 1\\n    let desired = p5.Vector.sub(this.target, this.pos);\\n    let d = desired.mag();\\n    \\n    let formWeight = map(dissolve, 0, 1, 1.0, 0.05);\\n    desired.normalize();\\n    let speedFactor = map(d, 0, width, 2, 20);\\n    desired.mult(speedFactor * formWeight);\\n    \\n    this.acc.set(0, 0);\\n    this.acc.add(desired);\\n    this.acc.add(noiseForce);\\n    \\n    // Add subtle mouse repulsion\\n    let mouse = createVector(mouseX, mouseY);\\n    let mouseDist = p5.Vector.dist(this.pos, mouse);\\n    if (mouseDist < 150) {\\n      let push = p5.Vector.sub(this.pos, mouse);\\n      push.normalize();\\n      push.mult((150 - mouseDist) * 0.1);\\n      this.acc.add(push);\\n    }\\n    \\n    this.vel.add(this.acc);\\n    this.vel.mult(0.85); // Damping\\n    this.pos.add(this.vel);\\n  }\\n  \\n  display() {\\n    if (!this.active) return;\\n    let baseHue = params.colorScheme === 'Neon Blue' ? 200 :\\n                  params.colorScheme === 'Solar Gold' ? 45 :\\n                  params.colorScheme === 'Cyber Pink' ? 320 : 160;\\n                  \\n    let h = (baseHue + this.hueOffset + frameCount * 0.05) % 360;\\n    let alpha = map(this.vel.mag(), 0, 10, 0.4, 0.9);\\n    \\n    noStroke();\\n    fill(h, 80, 100, constrain(alpha, 0.2, 1.0));\\n    ellipse(this.pos.x, this.pos.y, this.size);\\n    \\n    // Luminous glow center\\n    fill(0, 0, 100, alpha * 0.5);\\n    ellipse(this.pos.x, this.pos.y, this.size * 0.5);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  updateSierpinski();\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Dissolve Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"detail\",\n      \"name\": \"Triangle Detail\",\n      \"type\": \"number\",\n      \"default\": 4,\n      \"min\": 1,\n      \"max\": 6,\n      \"step\": 1\n    },\n    {\n      \"id\": \"turbulence\",\n      \"name\": \"Dust Turbulence\",\n      \"type\": \"number\",\n      \"default\": 2.5,\n      \"min\": 0.0,\n      \"max\": 6.0,\n      \"step\": 0.2\n    },\n    {\n      \"id\": \"colorScheme\",\n      \"name\": \"Color Theme\",\n      \"type\": \"enum\",\n      \"default\": \"Neon Blue\",\n      \"options\": [\n        \"Neon Blue\",\n        \"Solar Gold\",\n        \"Cyber Pink\",\n        \"Matrix Emerald\"\n      ]\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A recursive coral fan unfurls with branching rhythmic motion.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2528,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 903,
+            "totalTokenCount": 2150,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Coral Fan\",\"code\":\"let maxDepth = 7;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(RADIANS);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let baseAngle = radians(params.spread);\\n  let len = height * 0.22 * params.size;\\n  \\n  push();\\n  translate(width / 2, height * 0.9);\\n  \\n  let branches = int(params.branches);\\n  let angleStep = branches > 1 ? baseAngle / (branches - 1) : 0;\\n  let startAngle = -baseAngle / 2;\\n  \\n  for (let i = 0; i < branches; i++) {\\n    let a = startAngle + i * angleStep;\\n    push();\\n    rotate(a);\\n    drawBranch(len, 1, params.depth);\\n    pop();\\n  }\\n  \\n  pop();\\n}\\n\\nfunction drawBranch(len, depth, maxD) {\\n  if (depth > maxD) return;\\n  \\n  let timeOffset = frameCount * 0.02 * params.speed + depth * 0.5;\\n  let sway = sin(timeOffset) * 0.08 * (depth / maxD);\\n  \\n  let currentLen = len * (1.1 - depth * 0.08);\\n  \\n  stroke(params.coralColor);\\n  strokeWeight(max(1, (maxD - depth + 1) * 1.8 * params.thickness));\\n  noFill();\\n  \\n  beginShape();\\n  vertex(0, 0);\\n  bezierVertex(\\n    0, -currentLen * 0.3,\\n    sway * currentLen * 2, -currentLen * 0.7,\\n    sway * currentLen * 3, -currentLen\\n  );\\n  endShape();\\n  \\n  translate(sway * currentLen * 3, -currentLen);\\n  rotate(sway);\\n  \\n  let subBranches = 3;\\n  let subSpread = 0.8 + sin(frameCount * 0.01 * params.speed) * 0.1;\\n  \\n  for (let i = 0; i < subBranches; i++) {\\n    let subAngle = map(i, 0, subBranches - 1, -subSpread, subSpread);\\n    push();\\n    rotate(subAngle);\\n    drawBranch(len * 0.7, depth + 1, maxD);\\n    pop();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Sway Speed\",\"type\":\"number\",\"default\":1.0,\"min\":0.1,\"max\":3.0,\"step\":0.1},{\"id\":\"depth\",\"name\":\"Branching Depth\",\"type\":\"number\",\"default\":5,\"min\":2,\"max\":7,\"step\":1},{\"id\":\"branches\",\"name\":\"Base Branches\",\"type\":\"number\",\"default\":5,\"min\":3,\"max\":9,\"step\":2},{\"id\":\"spread\",\"name\":\"Fan Spread\",\"type\":\"number\",\"default\":90,\"min\":30,\"max\":160,\"step\":5},{\"id\":\"size\",\"name\":\"Scale\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":1.5,\"step\":0.05},{\"id\":\"thickness\",\"name\":\"Thickness\",\"type\":\"number\",\"default\":1.0,\"min\":0.5,\"max\":2.0,\"step\":0.1},{\"id\":\"coralColor\",\"name\":\"Coral Color\",\"type\":\"color\",\"default\":\"#ff6b6b\"},{\"id\":\"bgColor\",\"name\":\"Background\",\"type\":\"color\",\"default\":\"#0b132b\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A typographic rain of the word DREAM with rippling letter spacing.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2987,
+          "usage": {
+            "promptTokenCount": 1249,
+            "candidatesTokenCount": 1208,
+            "totalTokenCount": 2457,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1249
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Typographic Rain\",\n  \"code\": \"let drops = [];\\nconst maxDrops = 150;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  textAlign(CENTER, CENTER);\\n  textFont('sans-serif');\\n  \\n  for (let i = 0; i < maxDrops; i++) {\\n    drops.push(new Drop());\\n  }\\n}\\n\\nfunction draw() {\\n  let bgCol = color(params.bgColor);\\n  background(red(bgCol), green(bgCol), blue(bgCol), 40);\\n  \\n  let activeCount = floor(map(params.density, 1, 10, 20, maxDrops));\\n  \\n  for (let i = 0; i < activeCount; i++) {\\n    drops[i].update();\\n    drops[i].display();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\\n\\nclass Drop {\\n  constructor() {\\n    this.reset();\\n  }\\n\\n  reset() {\\n    this.x = random(width);\\n    this.y = random(-height, 0);\\n    this.speed = random(2, 6);\\n    this.size = random(12, 36);\\n    this.word = params.wordText;\\n    this.phase = random(TWO_PI);\\n    this.charColor = color(params.textColor);\\n  }\\n\\n  update() {\\n    this.y += this.speed * params.speed;\\n    \\n    if (this.y > height + 100) {\\n      this.reset();\\n      this.y = random(-200, -50);\\n    }\\n  }\\n\\n  display() {\\n    push();\\n    translate(this.x, this.y);\\n    textSize(this.size);\\n    fill(this.charColor);\\n    noStroke();\\n    \\n    let letters = this.word.split('');\\n    let baseSpacing = this.size * 0.8 * params.spacing;\\n    \\n    for (let i = 0; i < letters.length; i++) {\\n      let ripple = sin(frameCount * 0.05 * params.rippleSpeed + this.phase + i * 0.5) * 8 * params.rippleAmount;\\n      let yOffset = i * baseSpacing + ripple;\\n      \\n      // Fade out letters towards the end of the word for depth\\n      let alpha = map(i, 0, letters.length, 255, 100);\\n      let c = color(this.charColor);\\n      c.setAlpha(alpha);\\n      fill(c);\\n      \\n      text(letters[i], 0, yOffset);\\n    }\\n    pop();\\n  }\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Fall Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"density\",\n      \"name\": \"Rain Density\",\n      \"type\": \"number\",\n      \"default\": 6,\n      \"min\": 1,\n      \"max\": 10,\n      \"step\": 1\n    },\n    {\n      \"id\": \"spacing\",\n      \"name\": \"Letter Spacing\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.5,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"rippleSpeed\",\n      \"name\": \"Ripple Speed\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.1,\n      \"max\": 4.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"rippleAmount\",\n      \"name\": \"Ripple Amplitude\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.0,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"wordText\",\n      \"name\": \"Word\",\n      \"type\": \"enum\",\n      \"options\": [\n        \"DREAM\",\n        \"AWAKE\",\n        \"SPACE\",\n        \"FLOW\",\n        \"NEON\"\n      ],\n      \"default\": \"DREAM\"\n    },\n    {\n      \"id\": \"textColor\",\n      \"name\": \"Text Color\",\n      \"type\": \"color\",\n      \"default\": \"#80e5ff\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b1a\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Kinetic typography: ORBIT arranged along moving circular paths.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2656,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 964,
+            "totalTokenCount": 2212,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Kinetic Orbit Typography\",\"code\":\"let font;\\nlet paths = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}",
+          "error": "AI returned an incomplete sketch or controls. Please try again.\nFailed response: {\"title\":\"Kinetic Orbit Typography\",\"code\":\"let font;\\nlet paths = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2085,
+          "usage": {
+            "promptTokenCount": 2248,
+            "candidatesTokenCount": 952,
+            "totalTokenCount": 3200,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 2248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Kinetic Orbit Typography\",\"code\":\"function setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}",
+          "error": "AI returned an incomplete sketch or controls. Please try again.\nFailed response: {\"title\":\"Kinetic Orbit Typography\",\"code\":\"function setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}"
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2242,
+          "usage": {
+            "promptTokenCount": 2236,
+            "candidatesTokenCount": 952,
+            "totalTokenCount": 3188,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 2236
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Kinetic Orbit Typography\",\"code\":\"function setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}",
+          "error": "AI returned an incomplete sketch or controls. Please try again.\nFailed response: {\"title\":\"Kinetic Orbit Typography\",\"code\":\"function setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(DEGREES);\\n  textAlign(CENTER, CENTER);\\n  rectMode(CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let numRings = int(params.rings);\\n  let word = params.text.toUpperCase();\\n  if (word.length === 0) word = \\\"ORBIT\\\";\\n  \\n  let baseRadius = min(width, height) * 0.1;\\n  let maxRadius = min(width, height) * 0.45;\\n  \\n  for (let i = 0; i < numRings; i++) {\\n    let t = numRings > 1 ? i / (numRings - 1) : 0.5;\\n    let r = lerp(baseRadius, maxRadius, t);\\n    \\n    let dir = (i % 2 === 0) ? 1 : -1;\\n    let speedFactor = params.speed * dir * (1 + i * 0.2);\\n    let angleOffset = frameCount * speedFactor + i * 45;\\n    \\n    let count = int(map(r, baseRadius, maxRadius, 6, 24));\\n    let stepAngle = 360 / count;\\n    \\n    for (let j = 0; j < count; j++) {\\n      let angle = j * stepAngle + angleOffset;\\n      let x = width / 2 + r * cos(angle);\\n      let y = height / 2 + r * sin(angle);\\n      \\n      let charIndex = (i + j) % word.length;\\n      let letter = word.charAt(charIndex);\\n      \\n      push();\\n      translate(x, y);\\n      \\n      if (params.rotateText) {\\n        rotate(angle + 90 * dir);\\n      } else {\\n        rotate(frameCount * params.speed * 0.5);\\n      }\\n      \\n      let sz = map(r, baseRadius, maxRadius, 12, 36) * params.textSize;\\n      textSize(sz);\\n      textStyle(BOLD);\\n      \\n      let col = lerpColor(color(params.color1), color(params.color2), i / max(1, numRings - 1));\\n      fill(col);\\n      noStroke();\\n      \\n      text(letter, 0, 0);\\n      pop();\\n    }\\n    \\n    if (params.showOrbits) {\\n      noFill();\\n      stroke(params.color1);\\n      strokeWeight(0.5);\\n      drawingContext.setLineDash([4, 8]);\\n      ellipse(width / 2, height / 2, r * 2);\\n      drawingContext.setLineDash([]);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"text\",\"name\":\"Text Word\",\"type\":\"enum\",\"options\":[\"ORBIT\",\"CYBER\",\"MOTION\",\"SPIN\",\"FUTURE\"],\"default\":\"ORBIT\"},{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":0.5,\"min\":-2,\"max\":2,\"step\":0.05},{\"id\":\"rings\",\"name\":\"Ring Count\",\"type\":\"number\",\"default\":6,\"min\":2,\"max\":12,\"step\":1},{\"id\":\"textSize\",\"name\":\"Text Scale\",\"type\":\"number\",\"default\":1,\"min\":0.5,\"max\":2,\"step\":0.1},{\"id\":\"rotateText\",\"name\":\"Tangent Rotation\",\"type\":\"boolean\",\"default\":true},{\"id\":\"showOrbits\",\"name\":\"Show Orbit Lines\",\"type\":\"boolean\",\"default\":true},{\"id\":\"color1\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#00ffff\"},{\"id\":\"color2\",\"name\":\"Secondary Color\",\"type\":\"color\",\"default\":\"#ff00ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0d0d15\"}]}"
+        }
+      ],
+      "success": false
+    },
+    {
+      "prompt": "A field of ASCII characters forms animated ocean waves.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2255,
+          "usage": {
+            "promptTokenCount": 1246,
+            "candidatesTokenCount": 780,
+            "totalTokenCount": 2026,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1246
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"ASCII Ocean Waves\",\"code\":\"let font;\\nlet cols, rows;\\nlet fontSize = 16;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  textFont('monospace');\\n  textSize(fontSize);\\n  textAlign(CENTER, CENTER);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  cols = floor(width / (fontSize * 0.7));\\n  rows = floor(height / fontSize);\\n  \\n  let time = millis() * 0.001 * params.speed;\\n  let waveChars = \\\" .:-=+*#%@\\\";\\n  if (params.charSet === \\\"binary\\\") {\\n    waveChars = \\\" 01\\\";\\n  } else if (params.charSet === \\\"minimal\\\") {\\n    waveChars = \\\" .~+=\\\";\\n  } else if (params.charSet === \\\"symbols\\\") {\\n    waveChars = \\\" ░▒▓█\\\";\\n  }\\n  \\n  let density = waveChars.length;\\n  \\n  for (let j = 0; j < rows; j++) {\\n    for (let i = 0; i < cols; i++) {\\n      let x = i * (width / cols);\\n      let y = j * (height / rows);\\n      \\n      // Multi-frequency wave calculation\\n      let nx = i * 0.05;\\n      let ny = j * 0.05;\\n      let wave1 = sin(nx * params.frequency + time);\\n      let wave2 = cos(ny * params.frequency * 0.8 - time * 1.2);\\n      let noiseVal = noise(nx * 0.5, ny * 0.5, time * 0.3);\\n      \\n      let combined = (wave1 + wave2 + noiseVal * 2) * 0.5;\\n      let charIndex = floor(map(combined, -1, 1, 0, density));\\n      charIndex = constrain(charIndex, 0, density - 1);\\n      \\n      let c = waveChars.charAt(charIndex);\\n      \\n      // Color mapping\\n      let colMix = map(combined, -1, 1, 0, 1);\\n      let tintColor = lerpColor(color(params.colorLow), color(params.colorHigh), colMix);\\n      \\n      fill(tintColor);\\n      text(c, x, y);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Wave Speed\",\"type\":\"number\",\"default\":1.2,\"min\":0.1,\"max\":4,\"step\":0.1},{\"id\":\"frequency\",\"name\":\"Frequency\",\"type\":\"number\",\"default\":2.5,\"min\":0.5,\"max\":6,\"step\":0.1},{\"id\":\"charSet\",\"name\":\"Character Set\",\"type\":\"enum\",\"default\":\"standard\",\"options\":[\"standard\",\"binary\",\"minimal\",\"symbols\"]},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0b0f19\"},{\"id\":\"colorLow\",\"name\":\"Deep Wave Color\",\"type\":\"color\",\"default\":\"#224488\"},{\"id\":\"colorHigh\",\"name\":\"Peak Wave Color\",\"type\":\"color\",\"default\":\"#66ccff\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "The word CANVAS stretches like elastic ribbons in a breeze.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3403,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 1309,
+            "totalTokenCount": 2556,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Elastic Ribbons Canvas\",\n  \"code\": \"let points = [];\\nlet numRibbons = 24;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  textFont('sans-serif');\\n  textStyle(BOLD);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let t = millis() * 0.001 * params.speed;\\n  let stretch = params.stretch;\\n  \\n  // Generate word 'CANVAS' as points or use dynamic wavy strips\\n  let msg = \\\"CANVAS\\\";\\n  let baseSize = min(width, height) * 0.16;\\n  textSize(baseSize);\\n  textAlign(CENTER, CENTER);\\n  \\n  push();\\n  translate(width / 2, height / 2);\\n  \\n  // Draw elastic ribbons warping across the screen\\n  noFill();\\n  strokeWeight(params.ribbonWidth);\\n  \\n  for (let i = 0; i < numRibbons; i++) {\\n    let nVal = map(i, 0, numRibbons, 0, 1);\\n    \\n    // Color interpolation\\n    let c1 = color(params.color1);\\n    let c2 = color(params.color2);\\n    let c = lerpColor(c1, c2, nVal);\\n    stroke(red(c), green(c), blue(c), params.opacity);\\n    \\n    beginShape();\\n    let yOffset = map(i, 0, numRibbons, -height * 0.4, height * 0.4);\\n    \\n    for (let x = -width * 0.6; x <= width * 0.6; x += 20) {\\n      let noiseFactor = noise(x * 0.003, i * 0.2, t * 0.5);\\n      let wave = sin(x * 0.005 * stretch + t + i) * 60 * noiseFactor;\\n      let mouseDist = dist(x, yOffset, mouseX - width/2, mouseY - height/2);\\n      let mouseEffect = 0;\\n      if (mouseDist < 250) {\\n        mouseEffect = (1 - mouseDist / 250) * 80 * sin(t * 4);\\n      }\\n      \\n      let y = yOffset + wave + mouseEffect;\\n      vertex(x, y);\\n    }\\n    endShape();\\n  }\\n  \\n  // Elastic text stretched by breeze\\n  let textStretchX = 1 + sin(t * 0.8) * 0.2 * (stretch - 1);\\n  let textSkew = cos(t * 0.5) * 0.3;\\n  \\n  push();\\n  shearX(textSkew);\\n  scale(textStretchX, 1);\\n  \\n  // Glowing text shadow / multiple layers for elastic depth\\n  for (let layer = 5; layer > 0; layer--) {\\n    fill(0, 0, 0, 20);\\n    text(msg, layer * 2, layer * 2 + sin(t + layer) * 10);\\n  }\\n  \\n  fill(params.textColor);\\n  noStroke();\\n  text(msg, 0, sin(t * 1.5) * 20);\\n  \\n  pop();\\n  pop();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Breeze Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.1,\n      \"max\": 4.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"stretch\",\n      \"name\": \"Elastic Stretch\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.5,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"ribbonWidth\",\n      \"name\": \"Ribbon Width\",\n      \"type\": \"number\",\n      \"default\": 6,\n      \"min\": 1,\n      \"max\": 20,\n      \"step\": 1\n    },\n    {\n      \"id\": \"opacity\",\n      \"name\": \"Ribbon Opacity\",\n      \"type\": \"number\",\n      \"default\": 180,\n      \"min\": 20,\n      \"max\": 255,\n      \"step\": 5\n    },\n    {\n      \"id\": \"color1\",\n      \"name\": \"Ribbon Color A\",\n      \"type\": \"color\",\n      \"default\": \"#ff3366\"\n    },\n    {\n      \"id\": \"color2\",\n      \"name\": \"Ribbon Color B\",\n      \"type\": \"color\",\n      \"default\": \"#33ccff\"\n    },\n    {\n      \"id\": \"textColor\",\n      \"name\": \"Text Color\",\n      \"type\": \"color\",\n      \"default\": \"#ffffff\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b14\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "An interactive constellation connects nearby stars and responds to the mouse.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3564,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 1383,
+            "totalTokenCount": 2631,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Interactive Constellation\",\n  \"code\": \"let stars = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  let maxStars = 150;\\n  for (let i = 0; i < maxStars; i++) {\\n    stars.push(new Star());\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let currentCount = floor(params.starCount);\\n  let maxDist = params.connectionDistance;\\n  let speed = params.speed;\\n  let starColor = color(params.starColor);\\n  let lineColor = color(params.lineColor);\\n  \\n  for (let i = 0; i < currentCount; i++) {\\n    let s = stars[i];\\n    s.update(speed);\\n    s.display(starColor);\\n    \\n    for (let j = i + 1; j < currentCount; j++) {\\n      let other = stars[j];\\n      let d = dist(s.pos.x, s.pos.y, other.pos.x, other.pos.y);\\n      if (d < maxDist) {\\n        let alpha = map(d, 0, maxDist, 255, 0);\\n        stroke(red(lineColor), green(lineColor), blue(lineColor), alpha);\\n        strokeWeight(map(d, 0, maxDist, 1.5, 0.2));\\n        line(s.pos.x, s.pos.y, other.pos.x, other.pos.y);\\n      }\\n    }\\n    \\n    let md = dist(s.pos.x, s.pos.y, mouseX, mouseY);\\n    if (md < maxDist * 1.2 && (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height)) {\\n      let alpha = map(md, 0, maxDist * 1.2, 255, 0);\\n      stroke(255, 200, 50, alpha);\\n      strokeWeight(1);\\n      line(s.pos.x, s.pos.y, mouseX, mouseY);\\n      \\n      // Slight pull towards mouse\\n      let force = p5.Vector.sub(createVector(mouseX, mouseY), s.pos);\\n      force.mult(0.0005 * params.mouseAttraction);\\n      s.vel.add(force);\\n    }\\n  }\\n}\\n\\nclass Star {\\n  constructor() {\\n    this.pos = createVector(random(width), random(height));\\n    this.vel = p5.Vector.random2D().mult(random(0.2, 1));\\n    this.size = random(1.5, 4);\\n  }\\n  \\n  update(speed) {\\n    let noiseVal = noise(this.pos.x * 0.005, this.pos.y * 0.005, frameCount * 0.005);\\n    let angle = noiseVal * TWO_PI * 2;\\n    let flowForce = p5.Vector.fromAngle(angle).mult(0.1);\\n    \\n    this.vel.add(flowForce);\\n    this.vel.limit(2);\\n    \\n    let sMove = p5.Vector.mult(this.vel, speed);\\n    this.pos.add(sMove);\\n    \\n    if (this.pos.x < 0) this.pos.x = width;\\n    if (this.pos.x > width) this.pos.x = 0;\\n    if (this.pos.y < 0) this.pos.y = height;\\n    if (this.pos.y > height) this.pos.y = 0;\\n  }\\n  \\n  display(col) {\\n    noStroke();\\n    fill(col);\\n    ellipse(this.pos.x, this.pos.y, this.size);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"starCount\",\n      \"name\": \"Star Count\",\n      \"type\": \"number\",\n      \"default\": 80,\n      \"min\": 20,\n      \"max\": 150,\n      \"step\": 1\n    },\n    {\n      \"id\": \"connectionDistance\",\n      \"name\": \"Connection Distance\",\n      \"type\": \"number\",\n      \"default\": 120,\n      \"min\": 50,\n      \"max\": 250,\n      \"step\": 5\n    },\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.1,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"mouseAttraction\",\n      \"name\": \"Mouse Pull\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 5,\n      \"step\": 0.2\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b19\"\n    },\n    {\n      \"id\": \"starColor\",\n      \"name\": \"Star Color\",\n      \"type\": \"color\",\n      \"default\": \"#aaccff\"\n    },\n    {\n      \"id\": \"lineColor\",\n      \"name\": \"Constellation Line\",\n      \"type\": \"color\",\n      \"default\": \"#4488ff\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A springy elastic grid bends toward the mouse and relaxes.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3283,
+          "usage": {
+            "promptTokenCount": 1248,
+            "candidatesTokenCount": 1450,
+            "totalTokenCount": 2698,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1248
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Elastic Spring Grid\",\n  \"code\": \"let cols = 30;\\nlet rows = 20;\\nlet nodes = [];\\nlet restLength;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  restLength = dist(0, 0, width / cols, height / rows);\\n  initGrid();\\n}\\n\\nfunction initGrid() {\\n  nodes = [];\\n  let dx = width / cols;\\n  let dy = height / rows;\\n  for (let y = 0; y <= rows; y++) {\\n    for (let x = 0; x <= cols; x++) {\\n      let px = x * dx;\\n      let py = y * dy;\\n      nodes.push({\\n        x: px,\\n        y: py,\\n        ox: px,\\n        oy: py,\\n        vx: 0,\\n        vy: 0\\n      });\\n    }\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let stiffness = params.stiffness;\\n  let damping = params.damping;\\n  let mousePull = params.mousePull;\\n  let speed = params.speed;\\n  let showNodes = params.showNodes;\\n  \\n  // Update physics\\n  for (let y = 0; y <= rows; y++) {\\n    for (let x = 0; x <= cols; x++) {\\n      let i = x + y * (cols + 1);\\n      let n = nodes[i];\\n      \\n      // Spring back to origin\\n      let fx = (n.ox - n.x) * stiffness;\\n      let fy = (n.oy - n.y) * stiffness;\\n      \\n      // Mouse interaction\\n      let d = dist(mouseX, mouseY, n.x, n.y);\\n      if (d < 250 && d > 1) {\\n        let force = (1 - d / 250) * mousePull * 50;\\n        let angle = atan2(mouseY - n.y, mouseX - n.x);\\n        fx += cos(angle) * force;\\n        fy += sin(angle) * force;\\n      }\\n      \\n      n.vx = (n.vx + fx * speed) * damping;\\n      n.vy = (n.vy + fy * speed) * damping;\\n      n.x += n.vx * speed;\\n      n.y += n.vy * speed;\\n    }\\n  }\\n  \\n  // Draw grid lines\\n  stroke(params.lineColor);\\n  strokeWeight(1.5);\\n  noFill();\\n  \\n  // Horizontal lines\\n  for (let y = 0; y <= rows; y++) {\\n    beginShape();\\n    for (let x = 0; x <= cols; x++) {\\n      let n = nodes[x + y * (cols + 1)];\\n      curveVertex(n.x, n.y);\\n    }\\n    endShape();\\n  }\\n  \\n  // Vertical lines\\n  for (let x = 0; x <= cols; x++) {\\n    beginShape();\\n    for (let y = 0; y <= rows; y++) {\\n      let n = nodes[x + y * (cols + 1)];\\n      curveVertex(n.x, n.y);\\n    }\\n    endShape();\\n  }\\n  \\n  // Draw nodes\\n  if (showNodes) {\\n    fill(params.nodeColor);\\n    noStroke();\\n    for (let i = 0; i < nodes.length; i++) {\\n      let n = nodes[i];\\n      let speedMag = abs(n.vx) + abs(n.vy);\\n      let sz = constrain(2 + speedMag * 0.5, 2, 8);\\n      ellipse(n.x, n.y, sz, sz);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  restLength = dist(0, 0, width / cols, height / rows);\\n  initGrid();\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Simulation Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.1,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"stiffness\",\n      \"name\": \"Spring Stiffness\",\n      \"type\": \"number\",\n      \"default\": 0.15,\n      \"min\": 0.01,\n      \"max\": 0.5,\n      \"step\": 0.01\n    },\n    {\n      \"id\": \"damping\",\n      \"name\": \"Damping\",\n      \"type\": \"number\",\n      \"default\": 0.85,\n      \"min\": 0.5,\n      \"max\": 0.98,\n      \"step\": 0.01\n    },\n    {\n      \"id\": \"mousePull\",\n      \"name\": \"Mouse Attraction\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": -3,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"showNodes\",\n      \"name\": \"Show Nodes\",\n      \"type\": \"boolean\",\n      \"default\": true\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#111115\"\n    },\n    {\n      \"id\": \"lineColor\",\n      \"name\": \"Grid Line Color\",\n      \"type\": \"color\",\n      \"default\": \"#3498db\"\n    },\n    {\n      \"id\": \"nodeColor\",\n      \"name\": \"Node Color\",\n      \"type\": \"color\",\n      \"default\": \"#e74c3c\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Mouse movements create fading ripples in a luminous pond.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2961,
+          "usage": {
+            "promptTokenCount": 1246,
+            "candidatesTokenCount": 1171,
+            "totalTokenCount": 2417,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1246
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Luminous Pond\",\n  \"code\": \"let ripples = [];\\nlet lastX = -1;\\nlet lastY = -1;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  noFill();\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n\\n  let s = params.speed;\\n\\n  // Add ripple on mouse move\\n  if (mouseX !== lastX || mouseY !== lastY) {\\n    let d = dist(mouseX, mouseY, lastX, lastY);\\n    if (d > 15 / max(s, 0.1) && random() < 0.6) {\\n      ripples.push({\\n        x: mouseX,\\n        y: mouseY,\\n        r: 2,\\n        maxR: random(150, 350) * params.spread,\\n        alpha: 1,\\n        hue: (frameCount * 2 + random(360)) % 360\\n      });\\n      lastX = mouseX;\\n      lastY = mouseY;\\n    }\\n  }\\n\\n  // Add ambient random ripples if enabled\\n  if (params.ambient && random() < 0.05 * s) {\\n    ripples.push({\\n      x: random(width),\\n      y: random(height),\\n      r: 2,\\n      maxR: random(100, 250) * params.spread,\\n      alpha: 0.8,\\n      hue: random(360)\\n    });\\n  }\\n\\n  // Update and draw ripples\\n  for (let i = ripples.length - 1; i >= 0; i--) {\\n    let rip = ripples[i];\\n    \\n    rip.r += 2.5 * s;\\n    rip.alpha = map(rip.r, 0, rip.maxR, 1, 0);\\n\\n    if (rip.alpha <= 0 || rip.r >= rip.maxR) {\\n      ripples.splice(i, 1);\\n      continue;\\n    }\\n\\n    let col = color(rip.hue, 70, 90, rip.alpha * 0.7);\\n    stroke(col);\\n    strokeWeight(params.weight);\\n    ellipse(rip.x, rip.y, rip.r * 2);\\n\\n    // Secondary inner ripple for glow effect\\n    if (params.glow) {\\n      let innerCol = color(rip.hue, 40, 100, rip.alpha * 0.4);\\n      stroke(innerCol);\\n      strokeWeight(params.weight * 0.5);\\n      ellipse(rip.x, rip.y, rip.r * 1.2);\\n    }\\n  }\\n\\n  // Cap max ripples to prevent lag\\n  if (ripples.length > 150) {\\n    ripples.splice(0, ripples.length - 150);\\n  }\\n}\\n\\nfunction mousePressed() {\\n  ripples.push({\\n    x: mouseX,\\n    y: mouseY,\\n    r: 2,\\n    maxR: 400 * params.spread,\\n    alpha: 1,\\n    hue: random(360)\\n  });\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Ripple Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.2,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"spread\",\n      \"name\": \"Spread Size\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.5,\n      \"max\": 2.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"weight\",\n      \"name\": \"Line Weight\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.5,\n      \"max\": 5.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background\",\n      \"type\": \"color\",\n      \"default\": \"#0b0e14\"\n    },\n    {\n      \"id\": \"glow\",\n      \"name\": \"Inner Glow\",\n      \"type\": \"boolean\",\n      \"default\": true\n    },\n    {\n      \"id\": \"ambient\",\n      \"name\": \"Ambient Ripples\",\n      \"type\": \"boolean\",\n      \"default\": true\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A swarm of neon particles avoids the cursor and reforms a ring.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2990,
+          "usage": {
+            "promptTokenCount": 1249,
+            "candidatesTokenCount": 1254,
+            "totalTokenCount": 2503,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1249
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Neon Ring Swarm\",\n  \"code\": \"let particles = [];\\nconst maxParticles = 600;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  for (let i = 0; i < maxParticles; i++) {\\n    particles.push(new Particle());\\n  }\\n}\\n\\nfunction draw() {\\n  background(230, 80, 8, 0.25);\\n\\n  let count = floor(map(params.density, 1, 5, 100, maxParticles));\\n  let targetRadius = min(width, height) * 0.3 * params.ringSize;\\n\\n  for (let i = 0; i < count; i++) {\\n    let p = particles[i];\\n    p.update(targetRadius);\\n    p.display();\\n  }\\n}\\n\\nclass Particle {\\n  constructor() {\\n    this.pos = createVector(random(width), random(height));\\n    this.vel = createVector(0, 0);\\n    this.acc = createVector(0, 0);\\n    this.maxSpeed = random(4, 8);\\n    this.maxForce = 0.3;\\n    this.angle = random(TWO_PI);\\n    this.hue = random(160, 320);\\n  }\\n\\n  update(targetRadius) {\\n    this.angle += 0.01 * params.speed;\\n    let ringX = width / 2 + cos(this.angle) * targetRadius;\\n    let ringY = height / 2 + sin(this.angle) * targetRadius;\\n    let target = createVector(ringX, ringY);\\n\\n    let seekForce = this.arrive(target);\\n    seekForce.mult(0.8);\\n    this.acc.add(seekForce);\\n\\n    let mouse = createVector(mouseX, mouseY);\\n    let d = p5.Vector.dist(this.pos, mouse);\\n    if (d < params.repelRadius) {\\n      let repel = p5.Vector.sub(this.pos, mouse);\\n      let strength = map(d, 0, params.repelRadius, 3, 0);\\n      repel.setMag(strength * 5 * params.speed);\\n      this.acc.add(repel);\\n    }\\n\\n    let noiseVal = noise(this.pos.x * 0.005, this.pos.y * 0.005, frameCount * 0.01 * params.speed);\\n    let angleNoise = noiseVal * TWO_PI * 2;\\n    let noiseForce = p5.Vector.fromAngle(angleNoise);\\n    noiseForce.mult(0.5 * params.speed);\\n    this.acc.add(noiseForce);\\n\\n    this.vel.add(this.acc);\\n    this.vel.limit(this.maxSpeed * params.speed);\\n    this.pos.add(this.vel);\\n    this.acc.mult(0);\\n  }\\n\\n  arrive(target) {\\n    let desired = p5.Vector.sub(target, this.pos);\\n    let d = desired.mag();\\n    let speed = this.maxSpeed;\\n    if (d < 100) {\\n      speed = map(d, 0, 100, 0, this.maxSpeed);\\n    }\\n    desired.setMag(speed);\\n    let steer = p5.Vector.sub(desired, this.vel);\\n    steer.limit(this.maxForce);\\n    return steer;\\n  }\\n\\n  display() {\\n    noStroke();\\n    fill(this.hue, 80, 100, 0.8);\\n    ellipse(this.pos.x, this.pos.y, 4, 4);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.2,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"density\",\n      \"name\": \"Density\",\n      \"type\": \"number\",\n      \"default\": 4,\n      \"min\": 1,\n      \"max\": 5,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"ringSize\",\n      \"name\": \"Ring Size\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.4,\n      \"max\": 1.6,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"repelRadius\",\n      \"name\": \"Repel Radius\",\n      \"type\": \"number\",\n      \"default\": 180,\n      \"min\": 50,\n      \"max\": 400,\n      \"step\": 10\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A geometric Bauhaus poster animated with bouncing circles and stripes.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2902,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 1038,
+            "totalTokenCount": 2285,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Bauhaus Kinetic Poster\",\"code\":\"let balls = [];\\nlet maxBalls = 40;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  for (let i = 0; i < maxBalls; i++) {\\n    balls.push(new Ball());\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let cols = 12;\\n  let colWidth = width / cols;\\n  noStroke();\\n  for (let i = 0; i < cols; i++) {\\n    if (i % 2 === 0) {\\n      fill(params.stripeColor);\\n      rect(i * colWidth, 0, colWidth * (params.stripeWidth / 50), height);\\n    }\\n  }\\n  \\n  push();\\n  translate(width / 2, height / 2);\\n  let rSize = min(width, height) * 0.35;\\n  noFill();\\n  stroke(params.accentColor);\\n  strokeWeight(4);\\n  ellipse(0, 0, rSize * 2);\\n  \\n  fill(params.accentColor, 50);\\n  noStroke();\\n  arc(-rSize, 0, rSize, rSize, HALF_PI, -HALF_PI);\\n  pop();\\n  \\n  let count = floor(params.ballCount);\\n  let spd = params.speed;\\n  \\n  for (let i = 0; i < count; i++) {\\n    balls[i].update(spd);\\n    balls[i].display();\\n  }\\n}\\n\\nclass Ball {\\n  constructor() {\\n    this.reset();\\n  }\\n  \\n  reset() {\\n    this.x = random(width);\\n    this.y = random(height);\\n    this.r = random(15, 60);\\n    this.vx = random(-2, 2);\\n    this.vy = random(-2, 2);\\n    this.col = random([\\\"#e63946\\\", \\\"#f1faee\\\", \\\"#a8dadc\\\", \\\"#457b9d\\\", \\\"#1d3557\\\", \\\"#ffb703\\\"]);\\n  }\\n  \\n  update(spd) {\\n    this.x += this.vx * spd;\\n    this.y += this.vy * spd;\\n    \\n    if (this.x - this.r < 0 || this.x + this.r > width) {\\n      this.vx *= -1;\\n      this.x = constrain(this.x, this.r, width - this.r);\\n    }\\n    if (this.y - this.r < 0 || this.y + this.r > height) {\\n      this.vy *= -1;\\n      this.y = constrain(this.y, this.r, height - this.r);\\n    }\\n  }\\n  \\n  display() {\\n    fill(this.col);\\n    noStroke();\\n    ellipse(this.x, this.y, this.r * 2);\\n    \\n    fill(0, 0, 20);\\n    rect(this.x - this.r * 0.2, this.y - this.r * 0.2, this.r * 0.4, this.r * 0.4);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Animation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"ballCount\",\"name\":\"Circle Count\",\"type\":\"number\",\"default\":20,\"min\":5,\"max\":40,\"step\":1},{\"id\":\"stripeWidth\",\"name\":\"Stripe Width %\",\"type\":\"number\",\"default\":30,\"min\":10,\"max\":80,\"step\":5},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#f4f1de\"},{\"id\":\"stripeColor\",\"name\":\"Stripe Color\",\"type\":\"color\",\"default\":\"#e07a5f\"},{\"id\":\"accentColor\",\"name\":\"Accent Color\",\"type\":\"color\",\"default\":\"#3d405b\"}]}",
+          "validated": true,
+          "runtime": {
+            "error": "Script error.",
+            "success": false
+          },
+          "error": "Script error."
+        },
+        {
+          "repair": true,
+          "httpStatus": 200,
+          "latencyMs": 2257,
+          "usage": {
+            "promptTokenCount": 2363,
+            "candidatesTokenCount": 1027,
+            "totalTokenCount": 3390,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 2363
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Bauhaus Kinetic Poster\",\"code\":\"let balls = [];\\nlet maxBalls = 40;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(RGB, 255, 255, 255, 255);\\n  for (let i = 0; i < maxBalls; i++) {\\n    balls.push(new Ball());\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let cols = 12;\\n  let colWidth = width / cols;\\n  noStroke();\\n  for (let i = 0; i < cols; i++) {\\n    if (i % 2 === 0) {\\n      fill(params.stripeColor);\\n      rect(i * colWidth, 0, colWidth * (params.stripeWidth / 50), height);\\n    }\\n  }\\n  \\n  push();\\n  translate(width / 2, height / 2);\\n  let rSize = min(width, height) * 0.35;\\n  noFill();\\n  stroke(params.accentColor);\\n  strokeWeight(4);\\n  ellipse(0, 0, rSize * 2);\\n  \\n  fill(params.accentColor);\\n  noStroke();\\n  arc(-rSize, 0, rSize, rSize, HALF_PI, -HALF_PI);\\n  pop();\\n  \\n  let count = floor(params.ballCount);\\n  let spd = params.speed;\\n  \\n  for (let i = 0; i < count; i++) {\\n    balls[i].update(spd);\\n    balls[i].display();\\n  }\\n}\\n\\nclass Ball {\\n  constructor() {\\n    this.reset();\\n  }\\n  \\n  reset() {\\n    this.x = random(width);\\n    this.y = random(height);\\n    this.r = random(15, 60);\\n    this.vx = random(-2, 2);\\n    this.vy = random(-2, 2);\\n    this.col = random([\\\"#e63946\\\", \\\"#f1faee\\\", \\\"#a8dadc\\\", \\\"#457b9d\\\", \\\"#1d3557\\\", \\\"#ffb703\\\"]);\\n  }\\n  \\n  update(spd) {\\n    this.x += this.vx * spd;\\n    this.y += this.vy * spd;\\n    \\n    if (this.x - this.r < 0 || this.x + this.r > width) {\\n      this.vx *= -1;\\n      this.x = constrain(this.x, this.r, width - this.r);\\n    }\\n    if (this.y - this.r < 0 || this.y + this.r > height) {\\n      this.vy *= -1;\\n      this.y = constrain(this.y, this.r, height - this.r);\\n    }\\n  }\\n  \\n  display() {\\n    fill(this.col);\\n    noStroke();\\n    ellipse(this.x, this.y, this.r * 2);\\n    \\n    fill(30);\\n    rect(this.x - this.r * 0.2, this.y - this.r * 0.2, this.r * 0.4, this.r * 0.4);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Animation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"ballCount\",\"name\":\"Circle Count\",\"type\":\"number\",\"default\":20,\"min\":5,\"max\":40,\"step\":1},{\"id\":\"stripeWidth\",\"name\":\"Stripe Width %\",\"type\":\"number\",\"default\":30,\"min\":10,\"max\":80,\"step\":5},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#f4f1de\"},{\"id\":\"stripeColor\",\"name\":\"Stripe Color\",\"type\":\"color\",\"default\":\"#e07a5f\"},{\"id\":\"accentColor\",\"name\":\"Accent Color\",\"type\":\"color\",\"default\":\"#3d405b\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A monochrome op-art checkerboard breathes and twists.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2050,
+          "usage": {
+            "promptTokenCount": 1247,
+            "candidatesTokenCount": 717,
+            "totalTokenCount": 1964,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1247
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Monochrome Op-Art Breath\",\"code\":\"let angle = 0;\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  rectMode(CENTER);\\n}\\nfunction draw() {\\n  background(255);\\n  let spd = params.speed;\\n  let gridSz = params.gridSize;\\n  let maxAmp = params.amplitude;\\n  let twistFac = params.twist;\\n  \\n  angle += 0.02 * spd;\\n  let cols = gridSz;\\n  let rows = gridSz;\\n  let w = width / cols;\\n  let h = height / rows;\\n  let maxDist = dist(0, 0, width / 2, height / 2);\\n  \\n  noStroke();\\n  for (let i = 0; i < cols; i++) {\\n    for (let j = 0; j < rows; j++) {\\n      let x = w * i + w / 2;\\n      let y = h * j + h / 2;\\n      let d = dist(x, y, width / 2, height / 2);\\n      \\n      let offset = sin(angle + d * 0.01 * twistFac) * maxAmp;\\n      let szFactor = map(sin(angle * 0.7 + d * 0.005), -1, 1, 0.4, 1.6);\\n      \\n      push();\\n      translate(x, y);\\n      rotate(d * 0.002 * twistFac + angle * 0.5);\\n      \\n      let cIndex = (i + j + floor(sin(angle + d * 0.02) * 3)) % 2;\\n      if (cIndex === 0) {\\n        fill(0);\\n      } else {\\n        fill(255);\\n        stroke(0);\\n        strokeWeight(1);\\n      }\\n      \\n      let boxW = w * szFactor + offset;\\n      let boxH = h * szFactor + offset;\\n      if (params.shape === \\\"circle\\\") {\\n        ellipse(0, 0, boxW, boxH);\\n      } else {\\n        rect(0, 0, boxW, boxH);\\n      }\\n      pop();\\n    }\\n  }\\n}\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":4,\"step\":0.1},{\"id\":\"gridSize\",\"name\":\"Grid Size\",\"type\":\"number\",\"default\":16,\"min\":6,\"max\":40,\"step\":2},{\"id\":\"amplitude\",\"name\":\"Amplitude\",\"type\":\"number\",\"default\":10,\"min\":0,\"max\":40,\"step\":1},{\"id\":\"twist\",\"name\":\"Twist Intensity\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":5,\"step\":0.1},{\"id\":\"shape\",\"name\":\"Element Shape\",\"type\":\"enum\",\"default\":\"rect\",\"options\":[\"rect\",\"circle\"]}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "Animated Truchet tiles form flowing interlocking ribbons.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 3158,
+          "usage": {
+            "promptTokenCount": 1245,
+            "candidatesTokenCount": 1320,
+            "totalTokenCount": 2565,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1245
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Truchet Ribbon Flow\",\n  \"code\": \"let grid = [];\\nlet cols, rows;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  rectMode(CENTER);\\n  noFill();\\n  strokeWeight(params.lineWidth);\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let s = params.tileSize;\\n  cols = floor(width / s) + 2;\\n  rows = floor(height / s) + 2;\\n  \\n  strokeWeight(params.lineWidth);\\n  \\n  let t = millis() * 0.001 * params.speed;\\n  \\n  let offsetX = (width % s) / 2;\\n  let offsetY = (height % s) / 2;\\n\\n  for (let y = 0; y < rows; y++) {\\n    for (let x = 0; x < cols; x++) {\\n      push();\\n      let px = x * s + offsetX - s/2;\\n      let py = y * s + offsetY - s/2;\\n      translate(px + s/2, py + s/2);\\n      \\n      let n = noise(x * 0.1, y * 0.1, t * 0.2);\\n      let rot = floor(n * 4) * HALF_PI + t;\\n      rotate(rot);\\n      \\n      let col = getTileColor(x, y);\\n      stroke(col);\\n\\n      if (params.patternType === \\\"Arcs\\\") {\\n        // Quarter circles\\n        arc(-s/2, -s/2, s, s, 0, HALF_PI);\\n        arc(s/2, s/2, s, s, PI, PI + HALF_PI);\\n      } else if (params.patternType === \\\"Diagonals\\\") {\\n        // Diagonal lines\\n        line(-s/2, -s/2, s/2, s/2);\\n        line(-s/2, s/2, s/2, -s/2);\\n      } else if (params.patternType === \\\"Weave\\\") {\\n        // Nested curves\\n        arc(-s/2, -s/2, s, s, 0, HALF_PI);\\n        arc(s/2, s/2, s, s, PI, PI + HALF_PI);\\n        arc(-s/2, -s/2, s*0.5, s*0.5, 0, HALF_PI);\\n        arc(s/2, s/2, s*0.5, s*0.5, PI, PI + HALF_PI);\\n      }\\n      pop();\\n    }\\n  }\\n}\\n\\nfunction getTileColor(x, y) {\\n  let paletteType = params.colorPalette;\\n  if (paletteType === \\\"Neon\\\") {\\n    let val = (x + y + floor(millis() * 0.002 * params.speed)) % 3;\\n    if (val === 0) return color(0, 255, 200);\\n    if (val === 1) return color(255, 0, 128);\\n    return color(255, 220, 0);\\n  } else if (paletteType === \\\"Sunset\\\") {\\n    let mix = sin(x * 0.2 + millis() * 0.001 * params.speed) * 0.5 + 0.5;\\n    return lerpColor(color(255, 94, 77), color(90, 24, 154), mix);\\n  } else {\\n    let mix = (x * 0.1 + y * 0.1) % 1.0;\\n    return lerpColor(color(240, 240, 250), color(40, 40, 50), mix);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Flow Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.0,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"tileSize\",\n      \"name\": \"Tile Size\",\n      \"type\": \"number\",\n      \"default\": 60,\n      \"min\": 20,\n      \"max\": 150,\n      \"step\": 5\n    },\n    {\n      \"id\": \"lineWidth\",\n      \"name\": \"Line Width\",\n      \"type\": \"number\",\n      \"default\": 6,\n      \"min\": 1,\n      \"max\": 20,\n      \"step\": 1\n    },\n    {\n      \"id\": \"patternType\",\n      \"name\": \"Pattern Style\",\n      \"type\": \"enum\",\n      \"options\": [\"Arcs\", \"Diagonals\", \"Weave\"],\n      \"default\": \"Arcs\"\n    },\n    {\n      \"id\": \"colorPalette\",\n      \"name\": \"Palette\",\n      \"type\": \"enum\",\n      \"options\": [\"Neon\", \"Sunset\", \"Monochrome\"],\n      \"default\": \"Neon\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b16\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A minimal Swiss-style grid of oscillating red and black bars.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2968,
+          "usage": {
+            "promptTokenCount": 1249,
+            "candidatesTokenCount": 1100,
+            "totalTokenCount": 2349,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1249
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Swiss Oscillating Bars\",\"code\":\"let gridCols = 12;\\nlet gridRows = 8;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  rectMode(CORNER);\\n}\\n\\nfunction draw() {\\n  background(250);\\n  \\n  let margin = 60;\\n  let availW = width - margin * 2;\\n  let availH = height - margin * 2;\\n  \\n  let colW = availW / gridCols;\\n  let rowH = availH / gridRows;\\n  \\n  let time = frameCount * 0.02 * params.speed;\\n  \\n  // Subtle background grid lines (Swiss structural precision)\\n  stroke(225);\\n  strokeWeight(1);\\n  for (let i = 0; i <= gridCols; i++) {\\n    let x = margin + i * colW;\\n    line(x, margin, x, height - margin);\\n  }\\n  for (let j = 0; j <= gridRows; j++) {\\n    let y = margin + j * rowH;\\n    line(margin, y, width - margin, y);\\n  }\\n  noStroke();\\n  \\n  let totalBars = params.barCount;\\n  \\n  for (let n = 0; n < totalBars; n++) {\\n    // Deterministic pseudo-random grid placement using sine/cosine offsets\\n    let colIdx = floor(abs(sin(n * 12.9898)) * gridCols);\\n    let rowIdx = floor(abs(cos(n * 78.233)) * gridRows);\\n    \\n    let x = margin + colIdx * colW;\\n    let y = margin + rowIdx * rowH;\\n    \\n    // Size derived from grid module\\n    let w = colW * (1 + floor(abs(sin(n * 45.5)) * 2));\\n    let h = rowH * 0.85;\\n    \\n    // Oscillation\\n    let oscFreq = 0.5 + (n % 3) * 0.5;\\n    let offset = n * 0.5;\\n    let progress = sin(time * oscFreq + offset);\\n    \\n    // Color alternating\\n    if (n % 2 === 0) {\\n      fill(params.primaryColor);\\n    } else {\\n      fill(20, 20, 20);\\n    }\\n    \\n    push();\\n    translate(x + colW / 2, y + rowH / 2);\\n    \\n    if (params.mode === \\\"Scale & Shift\\\") {\\n      let scaleW = map(progress, -1, 1, 0.2, 1.2);\\n      let shiftX = progress * colW * 0.5;\\n      rect(-w/2 + shiftX, -h/2, w * scaleW, h);\\n    } else if (params.mode === \\\"Rotate & Expand\\\") {\\n      let rot = progress * HALF_PI * 0.5;\\n      rotate(rot);\\n      let s = map(progress, -1, 1, 0.5, 1.1);\\n      rect(-w/2 * s, -h/2 * s, w * s, h * s);\\n    } else {\\n      // Pure translation\\n      let move = progress * colW;\\n      rect(-w/2 + move, -h/2, w, h);\\n    }\\n    \\n    pop();\\n  }\\n  \\n  // Typography element for Swiss style\\n  fill(20);\\n  noStroke();\\n  textSize(14);\\n  textFont(\\\"sans-serif\\\");\\n  textStyle(BOLD);\\n  text(\\\"SWISS // GRID_OSC\\\", margin, margin - 20);\\n  \\n  textStyle(NORMAL);\\n  textSize(10);\\n  text(\\\"SYS. 04\\\", width - margin - 50, margin - 20);\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Oscillation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"barCount\",\"name\":\"Bar Count\",\"type\":\"number\",\"default\":24,\"min\":6,\"max\":60,\"step\":2},{\"id\":\"primaryColor\",\"name\":\"Primary Color\",\"type\":\"color\",\"default\":\"#e31b23\"},{\"id\":\"mode\",\"name\":\"Animation Mode\",\"type\":\"enum\",\"options\":[\"Scale & Shift\",\"Rotate & Expand\",\"Slide\"],\"default\":\"Scale & Shift\"}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A double-pendulum traces chaotic gold trails on a charcoal background.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2707,
+          "usage": {
+            "promptTokenCount": 1250,
+            "candidatesTokenCount": 1024,
+            "totalTokenCount": 2274,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1250
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\"title\":\"Golden Chaos Double Pendulum\",\"code\":\"let theta1 = 0;\\nlet theta2 = 0;\\nlet dTheta1 = 0;\\nlet dTheta2 = 0;\\nlet r1 = 150;\\nlet r2 = 130;\\nlet m1 = 20;\\nlet m2 = 20;\\nlet px2 = -1;\\nlet py2 = -1;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  background(30, 30, 33);\\n  theta1 = PI / 2;\\n  theta2 = PI / 2;\\n}\\n\\nfunction draw() {\\n  background(30, 30, 33, 25);\\n  \\n  let g = 1 * params.gravity;\\n  let steps = floor(params.speed * 5) + 1;\\n  \\n  push();\\n  translate(width / 2, height / 2 - 50);\\n  \\n  for (let s = 0; s < steps; s++) {\\n    let num1 = -g * (2 * m1 + m2) * sin(theta1) - m2 * g * sin(theta1 - 2 * theta2) - 2 * sin(theta1 - theta2) * m2 * (dTheta2 * dTheta2 * r2 + dTheta1 * dTheta1 * r1 * cos(theta1 - theta2));\\n    let den1 = r1 * (2 * m1 + m2 - m2 * cos(2 * theta1 - 2 * theta2));\\n    let alpha1 = num1 / den1;\\n\\n    let num2 = 2 * sin(theta1 - theta2) * (dTheta1 * dTheta1 * r1 * (m1 + m2) + g * (m1 + m2) * cos(theta1) + dTheta2 * dTheta2 * r2 * m2 * cos(theta1 - theta2));\\n    let den2 = r2 * (2 * m1 + m2 - m2 * cos(2 * theta1 - 2 * theta2));\\n    let alpha2 = num2 / den2;\\n\\n    dTheta1 += alpha1;\\n    dTheta2 += alpha2;\\n    theta1 += dTheta1;\\n    theta2 += dTheta2;\\n\\n    dTheta1 *= 0.999;\\n    dTheta2 *= 0.999;\\n  }\\n\\n  let x1 = r1 * sin(theta1);\\n  let y1 = r1 * cos(theta1);\\n\\n  let x2 = x1 + r2 * sin(theta2);\\n  let y2 = y1 + r2 * cos(theta2);\\n\\n  stroke(212, 175, 55, 30);\\n  strokeWeight(1);\\n  line(0, 0, x1, y1);\\n  line(x1, y1, x2, y2);\\n\\n  fill(212, 175, 55, 100);\\n  noStroke();\\n  ellipse(x1, y1, m1);\\n  ellipse(x2, y2, m2);\\n\\n  if (px2 !== -1) {\\n    stroke(255, 215, 0, params.glow * 255);\\n    strokeWeight(1.5);\\n    line(px2, py2, x2, y2);\\n  }\\n\\n  px2 = x2;\\n  py2 = y2;\\n  \\n  pop();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  background(30, 30, 33);\\n  px2 = -1;\\n  py2 = -1;\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Simulation Speed\",\"type\":\"number\",\"default\":1,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"gravity\",\"name\":\"Gravity\",\"type\":\"number\",\"default\":1,\"min\":0.1,\"max\":3,\"step\":0.1},{\"id\":\"glow\",\"name\":\"Trail Opacity\",\"type\":\"number\",\"default\":0.6,\"min\":0.1,\"max\":1,\"step\":0.05}]}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    },
+    {
+      "prompt": "A Lorenz attractor rotates while tracing colored trajectories.",
+      "attempts": [
+        {
+          "repair": false,
+          "httpStatus": 200,
+          "latencyMs": 2774,
+          "usage": {
+            "promptTokenCount": 1245,
+            "candidatesTokenCount": 1029,
+            "totalTokenCount": 2274,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 1245
+              }
+            ],
+            "serviceTier": "standard"
+          },
+          "model": "gemini-3.5-flash-lite",
+          "content": "{\n  \"title\": \"Lorenz Attractor\",\n  \"code\": \"let x = 0.1;\\nlet y = 0;\\nlet z = 0;\\nlet sigma = 10;\\nlet rho = 28;\\nlet beta = 8.0 / 3.0;\\nlet points = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  x = 0.1;\\n  y = 0.0;\\n  z = 0.0;\\n  points = [];\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n\\n  let dt = 0.01 * params.speed;\\n  for (let i = 0; i < floor(params.detail); i++) {\\n    let dx = (sigma * (y - x)) * dt;\\n    let dy = (x * (rho - z) - y) * dt;\\n    let dz = (x * y - beta * z) * dt;\\n    x += dx;\\n    y += dy;\\n    z += dz;\\n    points.push(createVector(x, y, z));\\n    if (points.length > 2500) {\\n      points.shift();\\n    }\\n  }\\n\\n  rotateX(frameCount * 0.005 * params.rotSpeed);\\n  rotateY(frameCount * 0.007 * params.rotSpeed);\\n  rotateZ(frameCount * 0.003 * params.rotSpeed);\\n\\n  scale(params.zoom);\\n  translate(0, 0, -25);\\n\\n  noFill();\\n  beginShape();\\n  for (let i = 0; i < points.length; i++) {\\n    let v = points[i];\\n    let hu = (i * 0.2 + frameCount * params.colorSpeed) % 360;\\n    stroke(hu, 80, 90, 80);\\n    strokeWeight(params.weight);\\n    vertex(v.x, v.y, v.z);\\n  }\\n  endShape();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Simulation Speed\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.1,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"rotSpeed\",\n      \"name\": \"Rotation Speed\",\n      \"type\": \"number\",\n      \"default\": 1.0,\n      \"min\": 0.0,\n      \"max\": 3.0,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"zoom\",\n      \"name\": \"Zoom Scale\",\n      \"type\": \"number\",\n      \"default\": 6.0,\n      \"min\": 2.0,\n      \"max\": 15.0,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"weight\",\n      \"name\": \"Line Weight\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.5,\n      \"max\": 5.0,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"detail\",\n      \"name\": \"Steps Per Frame\",\n      \"type\": \"number\",\n      \"default\": 5,\n      \"min\": 1,\n      \"max\": 15,\n      \"step\": 1\n    },\n    {\n      \"id\": \"colorSpeed\",\n      \"name\": \"Color Shift Speed\",\n      \"type\": \"number\",\n      \"default\": 2.0,\n      \"min\": 0.0,\n      \"max\": 10.0,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background Color\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b16\"\n    }\n  ]\n}",
+          "validated": true,
+          "runtime": {
+            "success": true
+          }
+        }
+      ],
+      "success": true
+    }
+  ]
+}

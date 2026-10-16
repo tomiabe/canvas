@@ -92,7 +92,8 @@ async function tryGroq(messages: ChatMessage[], temperature: number, maxTokens: 
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
+        reasoning_effort: 'low',
         messages,
         temperature,
         max_tokens: maxTokens,
@@ -165,19 +166,18 @@ export default {
     const maxTokens = Math.min(body.max_tokens ?? 4096, 4096);
     const jsonMode = body.response_format?.type === 'json_object';
 
-    const providers: Array<{ name: string; run: () => Promise<string> }> = [
-      { name: 'workers-ai', run: () => tryWorkersAI(env, messages, temperature, maxTokens) },
-    ];
+    const providers: Array<{ name: string; run: () => Promise<string> }> = [];
     if (env.GEMINI_API_KEY) {
-      // Flash-Lite keeps requests on Gemini when Flash is overloaded (503s are common).
+      // Orb evaluation: Lite answered 8/8; Flash was quota-blocked (see docs/phase3-evaluation.md).
       providers.unshift(
-        { name: 'gemini', run: () => tryGemini('gemini-flash-latest', messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) },
         { name: 'gemini-lite', run: () => tryGemini('gemini-flash-lite-latest', messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) },
+        { name: 'gemini', run: () => tryGemini('gemini-flash-latest', messages, temperature, maxTokens, env.GEMINI_API_KEY!, jsonMode) },
       );
     }
     if (env.GROQ_API_KEY) {
       providers.push({ name: 'groq', run: () => tryGroq(messages, temperature, maxTokens, env.GROQ_API_KEY!, jsonMode) });
     }
+    providers.push({ name: 'workers-ai', run: () => tryWorkersAI(env, messages, temperature, maxTokens) });
     if (env.OPENROUTER_API_KEY) {
       providers.push({ name: 'openrouter', run: () => tryOpenRouter(messages, temperature, maxTokens, env.OPENROUTER_API_KEY!) });
     }

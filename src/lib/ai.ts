@@ -1,9 +1,12 @@
 import { templates } from '../templates';
 import { ParamDef, SketchConfig } from '../types';
+import { limitSketchLoops } from '../engine/generator';
 
 const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas.tomi.workers.dev';
 
-export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig): Promise<SketchConfig> {
+export class AIServiceError extends Error {}
+
+export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig, repair?: string): Promise<SketchConfig> {
   const currentTemplate = templates[currentConfig.templateId];
   const systemPrompt = `You create original generative art and animations for Canvas using p5.js 1.9 global mode.
 Always write a complete custom sketch, not a template selection. Return ONLY valid JSON:
@@ -50,61 +53,75 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
           controls: currentConfig.generated?.controls ?? currentTemplate.params,
         })}` }] : []),
         { role: 'user', content: prompt },
+        ...(repair ? [{ role: 'user', content: `Repair the failed attempt. Keep the original artistic intent and return the complete corrected JSON. Failure: ${repair}` }] : []),
       ],
       temperature: 0.8,
       max_tokens: 4096,
       response_format: { type: 'json_object' },
     }),
-  });
+    signal: AbortSignal.timeout(90000),
+  }).catch(() => { throw new AIServiceError('The AI service could not be reached. Please try again.'); });
 
-  if (!response.ok) throw new Error(`AI proxy error ${response.status}`);
-  const responseData = await response.json();
+  if (!response.ok) throw new AIServiceError('The AI service is unavailable. Please try again shortly.');
+  const responseData = await response.json().catch(() => {
+    throw new AIServiceError('The AI service returned an unreadable response. Please try again.');
+  });
   const content = responseData.choices?.[0]?.message?.content;
-  if (typeof content !== 'string') throw new Error('AI returned no sketch. Please try again.');
-  const data = JSON.parse(content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim());
-  if (typeof data?.title !== 'string' || !data.title.trim() ||
-      typeof data.code !== 'string' || !data.code.trim() ||
-      !Array.isArray(data.params) || data.params.length < 1 || data.params.length > 8) {
-    throw new Error('AI returned an incomplete sketch or controls. Please try again.');
-  }
-  // Compile without executing, so syntax errors never replace the current artwork.
-  new Function('params', data.code);
-  const ids = new Set<string>();
-  const controls: ParamDef[] = data.params.map((p: any) => {
-    if (!p || typeof p.id !== 'string' || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(p.id) ||
-        ['code', '__proto__', 'constructor', 'prototype'].includes(p.id) || ids.has(p.id) ||
-        typeof p.name !== 'string' || !p.name.trim()) {
-      throw new Error('AI returned an invalid control. Please try again.');
+  try {
+    if (typeof content !== 'string') throw new Error('AI returned no sketch. Please try again.');
+    const data = JSON.parse(content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim());
+    if (typeof data?.title !== 'string' || !data.title.trim() ||
+        typeof data.code !== 'string' || !data.code.trim() ||
+        !Array.isArray(data.params)) {
+      throw new Error('AI returned an incomplete sketch or controls. Please try again.');
     }
-    ids.add(p.id);
-    const control: ParamDef = { id: p.id, name: p.name.trim(), type: p.type, default: p.default };
-    switch (p.type) {
-      case 'number':
-        if (![p.min, p.max, p.step, p.default].every(v => typeof v === 'number' && Number.isFinite(v)) ||
-            p.min >= p.max || p.step <= 0 || p.step > p.max - p.min || p.default < p.min || p.default > p.max) {
-          throw new Error(`AI returned invalid bounds for ${p.name}. Please try again.`);
-        }
-        return { ...control, min: p.min, max: p.max, step: p.step };
-      case 'color':
-        if (typeof p.default === 'string' && /^#[0-9a-f]{6}$/i.test(p.default)) return control;
-        break;
-      case 'boolean':
-        if (typeof p.default === 'boolean') return control;
-        break;
-      case 'enum':
-        if (Array.isArray(p.options) && p.options.length > 0 &&
-            p.options.every((v: unknown) => typeof v === 'string') && p.options.includes(p.default)) {
-          return { ...control, options: p.options };
-        }
-        break;
+    if (data.params.length < 1 || data.params.length > 8) {
+      throw new Error(`Expected 1–8 controls, received ${data.params.length}. Reduce the controls to 3–6 and update the code to match.`);
     }
-    throw new Error(`AI returned an invalid value for ${p.name}. Please try again.`);
-  });
+    // Parse without executing, using the same grammar as the preview's loop guard.
+    limitSketchLoops(data.code);
+    const ids = new Set<string>();
+    const controls: ParamDef[] = data.params.map((p: any) => {
+      if (!p || typeof p.id !== 'string' || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(p.id) ||
+          ['code', '__proto__', 'constructor', 'prototype'].includes(p.id) || ids.has(p.id) ||
+          typeof p.name !== 'string' || !p.name.trim()) {
+        throw new Error('AI returned an invalid control. Please try again.');
+      }
+      ids.add(p.id);
+      const control: ParamDef = { id: p.id, name: p.name.trim(), type: p.type, default: p.default };
+      switch (p.type) {
+        case 'number':
+          if (![p.min, p.max, p.step, p.default].every(v => typeof v === 'number' && Number.isFinite(v)) ||
+              p.min >= p.max || p.step <= 0 || p.step > p.max - p.min || p.default < p.min || p.default > p.max) {
+            throw new Error(`AI returned invalid bounds for ${p.name}. Please try again.`);
+          }
+          return { ...control, min: p.min, max: p.max, step: p.step };
+        case 'color':
+          if (typeof p.default === 'string' && /^#[0-9a-f]{6}$/i.test(p.default)) return control;
+          break;
+        case 'boolean':
+          if (typeof p.default === 'boolean') return control;
+          break;
+        case 'enum':
+          if (Array.isArray(p.options) && p.options.length > 0 &&
+              p.options.every((v: unknown) => typeof v === 'string') && p.options.includes(p.default)) {
+            return { ...control, options: p.options };
+          }
+          break;
+      }
+      throw new Error(`AI returned an invalid value for ${p.name}. Please try again.`);
+    });
 
-  return {
-    templateId: 'custom-sketch',
-    seed: currentTemplate ? currentConfig.seed : Math.floor(Math.random() * 1000000),
-    params: { ...Object.fromEntries(controls.map(p => [p.id, p.default])), code: data.code },
-    generated: { title: data.title.trim(), controls },
-  };
+    return {
+      templateId: 'custom-sketch',
+      seed: currentTemplate ? currentConfig.seed : Math.floor(Math.random() * 1000000),
+      params: { ...Object.fromEntries(controls.map(p => [p.id, p.default])), code: data.code },
+      generated: {
+        title: data.title.trim(), controls,
+        ...(typeof responseData.provider === 'string' ? { provider: responseData.provider } : {}),
+      },
+    };
+  } catch (error) {
+    throw new Error(`${error instanceof Error ? error.message : 'Invalid sketch'}\nFailed response: ${String(content).slice(0, 24000)}`);
+  }
 }

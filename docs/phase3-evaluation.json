@@ -1,0 +1,610 @@
+{
+  "date": "2026-10-16T00:19:49.351Z",
+  "concurrency": 2,
+  "timeoutMs": 15000,
+  "systemPrompt": "You create original generative art and animations for Canvas using p5.js 1.9 global mode.\nAlways write a complete custom sketch, not a template selection. Return ONLY valid JSON:\n{\"title\":\"Short artwork title\",\"code\":\"complete JavaScript\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":4,\"step\":0.1}]}\n\nDeclare 3–6 useful controls in params. Supported types:\n- number: finite min < max, positive step, default within bounds\n- color: default is a six-digit HEX string, e.g. \"#ff6699\"\n- boolean: default is true or false\n- enum: options is a nonempty array of strings, default is one of those strings\nEach control needs a unique JavaScript identifier id and a short human-readable name.\nDo not use code, constructor, prototype, or __proto__ as control ids.\n\nRuntime contract:\n- The host provides a mutable global object called params, initialized with your control defaults.\n- Read params.speed, params.color, etc. directly in draw(), not only during setup(). Never declare or shadow params.\n- EVERY declared control must visibly affect the artwork when changed, without reloading or resetting animation.\n- For counts, initialize enough elements for the maximum and draw only the current count, or reconcile counts in draw().\n- Define function setup() and function draw(). setup() calls createCanvas(windowWidth, windowHeight).\n- Define function windowResized() { resizeCanvas(windowWidth, windowHeight); }.\n- Do not use new p5(), HTML, imports, external libraries, network calls, or DOM controls.\n- Call p5 functions only inside setup/draw/events, not at top level. The host seeds random and noise before setup.\n- Keep the code focused and complete so it fits the response budget. No markdown fences.\n\nWhen editing, preserve the current composition and existing controls unless the request needs a change.\nThe control defaults in your response must reflect the requested changes and the current values.\nReturn the full code and full control list on every request.\n\nCurated style references (inspiration only, not output template ids):\nParticle System: A swarm of particles moving organically with mouse attraction.\nNoise Flow Field: Smooth flowing lines driven by Perlin noise.\nGeometric Grid: Structured grid with random geometric shapes.\nBrush Playground: Expressive brush strokes that follow the mouse.\nRadial Mandala: Symmetrical radial patterns with layered geometry.\nTypography Warp: Text distorted by sine waves.\n3D Geometry (WEBGL): Explore 3D space, lighting, and materials.\nRecursive Fractal Tree: A mathematical tree generated using recursive functions and transformations.\nLissajous Curves: Complex harmonic motion created with trigonometry.\nBouncing Balls: Physics simulation with gravity, bouncing, and collisions.\nFlocking Boids: Emergent flocking behavior using Craig Reynolds boids algorithm.\nGame of Life: Conway's Game of Life cellular automaton simulation.\nMeta-balls: Organic blob-like isosurfaces using marching squares.\n3D Terrain (WEBGL): Procedural 3D terrain generated from Perlin noise, rendered in WebGL.\nSpirograph: Mathematical spirograph curves using parametric equations.\nFireworks: Exploding particle fireworks with gravity and trail effects.\nKaleidoscope: Interactive kaleidoscope drawing tool with mirror symmetry.\nColor Waves: Animated flowing color gradients using sine waves and color interpolation.\nRain: Atmospheric rain effect with wind, splashes, and layered depth.\nNeon Lines: Particles connected by glowing lines when close to each other.\nTruchet Tiles: Procedural tiling patterns using Truchet tile arrangements.\nWave Interference: Simulation of overlapping waves creating interference patterns.\nReaction-Diffusion: Gray-Scott reaction-diffusion system producing organic patterns.\nSolar System: 2D orbital mechanics simulation with planets orbiting a star.\nAudio Visualizer: Sound-reactive visualization using p5.sound FFT analysis. Enable mic or use the built-in oscillator.\nVirtual Aquarium: Mic-reactive migration sim — small fish flee sound, big fish hunt toward it.\nInteractive Playground: Multi-input interactive sketch responding to mouse, keyboard, and webcam motion.\nVideo Feedback: Webcam capture with real-time pixel effects, feedback loops, and glitch aesthetics.\nPhyllotaxis: Fibonacci spiral pattern found in sunflowers and pinecones.\nCircle Packing: Circles that grow and pack together without overlapping.\nMaze Generator: DFS recursive backtracking maze generation with animated solving.\nDouble Pendulum: Chaotic motion of a double pendulum with trail visualization.\nFluid Ripple: 2D water ripple simulation using wave propagation algorithm.\nL-System: Formal grammar fractal plant growth using Lindenmayer systems.\nDLA Crystal Growth: Diffusion-limited aggregation — organic crystal/dendrite formation.\nSorting Visualizer: Animated visualization of classic sorting algorithms.\nIsometric Cubes: 3D isometric cube projection rendered on 2D canvas.\nWorley Noise: Cellular noise texture based on distance to random feature points.\nDithering: Floyd-Steinberg error diffusion dithering on procedural patterns.\nMaurer Rose: Mathematical rose curves with rotating line segments.\nGradient Mesh: Smooth color gradient mesh with animated control points.\nDrip Effect: Paint dripping and splatter effect with fluid physics.\nSwirl: Hypnotic conical swirl pattern with color distortion.\nHalftone: Halftone dot pattern effect on procedural shapes.\nPixel Sort: Glitchy pixel sorting effect on procedural gradients.\nASCII Render: Live canvas rendered as ASCII text art.\nChain Reaction: Abelian sandpile model — self-organized criticality simulation.\nVoronoi Diagram: Voronoi tessellation with animated site points and colored cells.\nLorenz Attractor: 3D strange attractor visualization of the Lorenz chaotic system.\nSpring System: Mass-spring physics simulation with connected particles and tension.",
+  "notes": "32 distinct creation prompts; no editing context. Actual app schema/syntax validator and generated HTML in Chromium; 2.5-second default-state smoke test, no control mutation or visual fidelity scoring. Costs not independently verified. No retries.",
+  "results": [
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "Bioluminescent jellyfish drifting through midnight water with trailing tentacles.",
+      "category": 0,
+      "httpStatus": 429,
+      "latencyMs": 390,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m27.325894859s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85467s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "An evolving reaction-diffusion pattern resembling leopard spots.",
+      "category": 1,
+      "latencyMs": 15002,
+      "error": "TimeoutError"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "A rotating three-dimensional wireframe torus with neon edges using WEBGL.",
+      "category": 2,
+      "httpStatus": 429,
+      "latencyMs": 114,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m27.205887161s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85467s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "A recursive fern grows and sways in a gentle wind.",
+      "category": 3,
+      "httpStatus": 429,
+      "latencyMs": 179,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m27.026714851s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85467s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "A typographic rain of the word DREAM with rippling letter spacing.",
+      "category": 4,
+      "httpStatus": 429,
+      "latencyMs": 108,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m26.919417723s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85466s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "An interactive constellation connects nearby stars and responds to the mouse.",
+      "category": 5,
+      "httpStatus": 429,
+      "latencyMs": 191,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m26.727015802s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85466s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "A geometric Bauhaus poster animated with bouncing circles and stripes.",
+      "category": 6,
+      "httpStatus": 429,
+      "latencyMs": 94,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m26.631895378s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85466s\"}]}"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-flash-latest",
+      "prompt": "A double-pendulum traces chaotic gold trails on a charcoal background.",
+      "category": 7,
+      "httpStatus": 429,
+      "latencyMs": 179,
+      "error": "{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash\\nPlease retry in 23h44m26.452930534s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"location\":\"global\",\"model\":\"gemini-3.8-flash\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"85466s\"}]}"
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A murmuration of birds spirals around an invisible lighthouse.",
+      "category": 0,
+      "httpStatus": 200,
+      "latencyMs": 3709,
+      "usage": {
+        "promptTokenCount": 1247,
+        "candidatesTokenCount": 1461,
+        "totalTokenCount": 2708,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1247
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\"title\":\"Stellar Murmuration\",\"code\":\"let boids = [];\\nlet numBoids = 600;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 1);\\n  for (let i = 0; i < numBoids; i++) {\\n    boids.push(new Boid(random(width), random(height)));\\n  }\\n}\\n\\nfunction draw() {\\n  let bgCol = color(params.bgColor);\\n  bgCol.setAlpha(0.25);\\n  background(bgCol);\\n\\n  let center = createVector(width / 2, height / 2 + 50);\\n  \\n  // Draw invisible lighthouse aura / beacon\\n  if (params.showBeacon) {\\n    push();\\n    noStroke();\\n    let beaconCol = color(params.boidColor);\\n    beaconCol.setAlpha(0.05);\\n    fill(beaconCol);\\n    ellipse(center.x, center.y - 100, 150 * params.scale, 400 * params.scale);\\n    pop();\\n  }\\n\\n  let maxCount = floor(map(params.population, 0, 100, 50, numBoids));\\n  \\n  for (let i = 0; i < maxCount; i++) {\\n    let b = boids[i];\\n    b.update(center);\\n    b.show();\\n  }\\n}\\n\\nclass Boid {\\n  constructor(x, y) {\\n    this.pos = createVector(x, y);\\n    this.vel = p5.Vector.random2D().mult(random(2, 4));\\n    this.acc = createVector(0, 0);\\n    this.maxSpeed = 4;\\n    this.maxForce = 0.2;\\n    this.size = random(2, 5);\\n  }\\n\\n  update(target) {\\n    let s = params.speed;\\n    \\n    // Spiral force around lighthouse center\\n    let toCenter = p5.Vector.sub(target, this.pos);\\n    let distToCenter = toCenter.mag();\\n    toCenter.normalize();\\n    \\n    // Tangent vector for swirling\\n    let tangent = createVector(-toCenter.y, toCenter.x);\\n    \\n    let pullForce = toCenter.mult(map(distToCenter, 0, width, 0.1, 0.8) * params.pullStrength);\\n    let swirlForce = tangent.mult(2.5 * params.speed);\\n    \\n    // Mouse interaction\\n    let mouse = createVector(mouseX, mouseY);\\n    let dMouse = p5.Vector.dist(this.pos, mouse);\\n    if (dMouse < 150 && mouseX > 0 && mouseY > 0) {\\n      let flee = p5.Vector.sub(this.pos, mouse);\\n      flee.normalize();\\n      flee.mult(5);\\n      this.acc.add(flee);\\n    }\\n\\n    this.acc.add(pullForce);\\n    this.acc.add(swirlForce);\\n\\n    // Turbulence via noise\\n    let n = noise(this.pos.x * 0.005, this.pos.y * 0.005, frameCount * 0.01 * s);\\n    let angle = n * TWO_PI * 2;\\n    let noiseForce = p5.Vector.fromAngle(angle).mult(1.5);\\n    this.acc.add(noiseForce);\\n\\n    this.vel.add(this.acc);\\n    this.vel.limit(this.maxSpeed * s);\\n    this.pos.add(this.vel);\\n    this.acc.mult(0);\\n\\n    // Wrap borders gently\\n    if (this.pos.x < -50) this.pos.x = width + 50;\\n    if (this.pos.x > width + 50) this.pos.x = -50;\\n    if (this.pos.y < -50) this.pos.y = height + 50;\\n    if (this.pos.y > height + 50) this.pos.y = -50;\\n  }\\n\\n  show() {\\n    push();\\n    noStroke();\\n    let c = color(params.boidColor);\\n    fill(c);\\n    \\n    // Draw bird as a small oriented triangle/ellipse\\n    let theta = this.vel.heading() + PI / 2;\\n    translate(this.pos.x, this.pos.y);\\n    rotate(theta);\\n    \\n    beginShape();\\n    vertex(0, -this.size * params.scale);\\n    vertex(-this.size * 0.7 * params.scale, this.size * params.scale);\\n    vertex(this.size * 0.7 * params.scale, this.size * params.scale);\\n    endShape(CLOSE);\\n    pop();\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Speed\",\"type\":\"number\",\"default\":1.2,\"min\":0.2,\"max\":3,\"step\":0.1},{\"id\":\"pullStrength\",\"name\":\"Spiral Pull\",\"type\":\"number\",\"default\":1.0,\"min\":0.1,\"max\":3.0,\"step\":0.1},{\"id\":\"population\",\"name\":\"Population\",\"type\":\"number\",\"default\":80,\"min\":10,\"max\":100,\"step\":5},{\"id\":\"scale\",\"name\":\"Bird Scale\",\"type\":\"number\",\"default\":1.2,\"min\":0.5,\"max\":2.5,\"step\":0.1},{\"id\":\"showBeacon\",\"name\":\"Show Beacon Aura\",\"type\":\"boolean\",\"default\":true},{\"id\":\"boidColor\",\"name\":\"Bird Color\",\"type\":\"color\",\"default\":\"#88d9ff\"},{\"id\":\"bgColor\",\"name\":\"Background Color\",\"type\":\"color\",\"default\":\"#0b1021\"}]}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 155,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A fluid ink plume curls through a bowl of milk.",
+      "category": 1,
+      "httpStatus": 200,
+      "latencyMs": 3648,
+      "usage": {
+        "promptTokenCount": 1247,
+        "candidatesTokenCount": 1470,
+        "totalTokenCount": 2717,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1247
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\n  \"title\": \"Milk Ink Plume\",\n  \"code\": \"let particles = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  \\n  // Initialize maximum possible particles\\n  for (let i = 0; i < 1500; i++) {\\n    particles.push(new InkParticle());\\n  }\\n}\\n\\nfunction draw() {\\n  // Milk background with slight persistence for motion blur\\n  let bgCol = color(params.milkHue, 15, 95);\\n  background(hue(bgCol), saturation(bgCol), brightness(bgCol), 15);\\n  \\n  let count = floor(params.particleCount);\\n  let t = millis() * 0.0005 * params.speed;\\n  \\n  let mainColor;\\n  if (params.inkColor === \\\"Indigo\\\") {\\n    mainColor = color(240, 80, 20, 25);\\n  } else if (params.inkColor === \\\"Crimson\\\") {\\n    mainColor = color(350, 90, 60, 25);\\n  } else if (params.inkColor === \\\"Emerald\\\") {\\n    mainColor = color(150, 80, 50, 25);\\n  } else {\\n    mainColor = color(280, 85, 45, 25);\\n  }\\n  \\n  for (let i = 0; i < count; i++) {\\n    let p = particles[i];\\n    p.update(t, params.turbulence, params.speed);\\n    p.display(mainColor);\\n  }\\n}\\n\\nclass InkParticle {\\n  constructor() {\\n    this.reset(true);\\n  }\\n  \\n  reset(initial = false) {\\n    this.x = width * 0.5 + random(-40, 40);\\n    this.y = initial ? random(height * 0.2, height * 0.9) : height + random(10, 50);\\n    this.vx = 0;\\n    this.vy = random(-2, -0.5);\\n    this.age = 0;\\n    this.lifeSpan = random(200, 450);\\n    this.size = random(2, 12);\\n  }\\n  \\n  update(t, turb, spd) {\\n    let nScale = 0.003 * turb;\\n    let angle = noise(this.x * nScale, this.y * nScale, t) * TWO_PI * 4;\\n    \\n    // Flow field force combined with upward buoyancy and curl\\n    let fx = cos(angle) * 0.8;\\n    let fy = sin(angle) * 0.8 - (0.4 * params.buoyancy);\\n    \\n    this.vx += fx * 0.1;\\n    this.vy += fy * 0.1;\\n    \\n    // Damping\\n    this.vx *= 0.94;\\n    this.vy *= 0.94;\\n    \\n    this.x += this.vx * spd;\\n    this.y += this.vy * spd;\\n    \\n    // Gentle horizontal pull towards center to keep plume bounded\\n    let centerPull = (width * 0.5 - this.x) * 0.0002;\\n    this.x += centerPull;\\n    \\n    this.age++;\\n    if (this.age > this.lifeSpan || this.y < -50 || this.x < 0 || this.x > width) {\\n      this.reset();\\n    }\\n  }\\n  \\n  display(baseCol) {\\n    noStroke();\\n    let lifeRatio = 1 - (this.age / this.lifeSpan);\\n    let c = color(\\n      hue(baseCol),\\n      saturation(baseCol),\\n      brightness(baseCol) + (1 - lifeRatio) * 20,\\n      alpha(baseCol) * lifeRatio\\n    );\\n    fill(c);\\n    ellipse(this.x, this.y, this.size * lifeRatio);\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.2,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"particleCount\",\n      \"name\": \"Ink Density\",\n      \"type\": \"number\",\n      \"default\": 800,\n      \"min\": 200,\n      \"max\": 1500,\n      \"step\": 50\n    },\n    {\n      \"id\": \"turbulence\",\n      \"name\": \"Turbulence\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0.5,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"buoyancy\",\n      \"name\": \"Buoyancy\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"inkColor\",\n      \"name\": \"Ink Color\",\n      \"type\": \"enum\",\n      \"default\": \"Indigo\",\n      \"options\": [\n        \"Indigo\",\n        \"Crimson\",\n        \"Emerald\",\n        \"Violet\"\n      ]\n    },\n    {\n      \"id\": \"milkHue\",\n      \"name\": \"Milk Hue\",\n      \"type\": \"number\",\n      \"default\": 40,\n      \"min\": 0,\n      \"max\": 360,\n      \"step\": 1\n    }\n  ]\n}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 171,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A low-poly mountain landscape scrolling toward the viewer in WEBGL.",
+      "category": 2,
+      "httpStatus": 200,
+      "latencyMs": 3276,
+      "usage": {
+        "promptTokenCount": 1250,
+        "candidatesTokenCount": 1191,
+        "totalTokenCount": 2441,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1250
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\"title\":\"Low-Poly Mountain Landscape\",\"code\":\"let terrainCols = 40;\\plet terrainRows = 60;\\plet terrainScale = 60;\\plet flying = 0;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  noStroke();\\n}\\n\\nfunction draw() {\\n  background(params.nightMode ? 10 : 200, params.nightMode ? 15 : 220, params.nightMode ? 35 : 255);\\n  \\n  let s = params.speed;\\n  flying -= s * 0.05;\\n  \\n  let zOff = flying;\\n  let terrainWidth = terrainCols * terrainScale;\\n  let terrainDepth = terrainRows * terrainScale;\\n  \\n  if (params.nightMode) {\\n    ambientLight(40, 40, 60);\\n    directionalLight(200, 220, 255, 0.5, 1, -0.5);\\n    pointLight(255, 100, 150, 0, -300, -200);\\n  } else {\\n    ambientLight(150, 150, 150);\\n    directionalLight(255, 255, 255, 0.5, 1, 0.5);\\n    pointLight(255, 200, 150, 0, -400, -300);\\n  }\\n\\n  push();\\n  rotateX(QUARTER_PI * 0.9);\\n  translate(-terrainWidth / 2, -terrainDepth / 2, -100);\\n  \\n  let baseHue = params.palette === 'Neon' ? 300 : (params.palette === 'Sunset' ? 15 : 120);\\n\\n  let yVals = [];\\n  for (let y = 0; y < terrainRows; y++) {\\n    yVals[y] = [];\\n    let xOff = 0;\\n    for (let x = 0; x < terrainCols; x++) {\\n      let h = map(noise(xOff, zOff), 0, 1, -180, 180);\\n      // Add a valley in the middle\\n      let distFromCenter = abs(x - terrainCols / 2) / (terrainCols / 2);\\n      h *= pow(distFromCenter, 0.7);\\n      yVals[y][x] = h;\\n      xOff += 0.15;\\n    }\\n    zOff += 0.15;\\n  }\\n\\n  for (let y = 0; y < terrainRows - 1; y++) {\\n    beginShape(TRIANGLE_STRIP);\\n    for (let x = 0; x < terrainCols; x++) {\\n      let h1 = yVals[y][x];\\n      let h2 = yVals[y + 1][x];\\n      \\n      let n1 = map(h1, -180, 180, 0, 1);\\n      let n2 = map(h2, -180, 180, 0, 1);\\n      \\n      if (params.palette === 'Neon') {\\n        fill(n1 * 255, 50, 250 - n1 * 150);\\n      } else if (params.palette === 'Sunset') {\\n        fill(255, n1 * 180, n1 * 50);\\n      } else {\\n        fill(40 + n1 * 60, 120 + n1 * 100, 60 + n1 * 40);\\n      }\\n      vertex(x * terrainScale, y * terrainScale, h1);\\n      \\n      if (params.palette === 'Neon') {\\n        fill(n2 * 255, 50, 250 - n2 * 150);\\n      } else if (params.palette === 'Sunset') {\\n        fill(255, n2 * 180, n2 * 50);\\n      } else {\\n        fill(40 + n2 * 60, 120 + n2 * 100, 60 + n2 * 40);\\n      }\\n      vertex(x * terrainScale, (y + 1) * terrainScale, h2);\\n    }\\n    endShape();\\n  }\\n  pop();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Scroll Speed\",\"type\":\"number\",\"default\":1.5,\"min\":0.1,\"max\":5,\"step\":0.1},{\"id\":\"palette\",\"name\":\"Color Theme\",\"type\":\"enum\",\"options\":[\"Nature\",\"Neon\",\"Sunset\"],\"default\":\"Nature\"},{\"id\":\"nightMode\",\"name\":\"Night Mode\",\"type\":\"boolean\",\"default\":false}]}",
+      "strictJson": false,
+      "appSchemaAndSyntax": false,
+      "validationError": "Bad escaped character in JSON at position 69 (line 1 column 70)"
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A fractal tree blossoms in seasonal colors as its branches sway.",
+      "category": 3,
+      "httpStatus": 200,
+      "latencyMs": 2943,
+      "usage": {
+        "promptTokenCount": 1248,
+        "candidatesTokenCount": 1268,
+        "totalTokenCount": 2516,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1248
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\n  \"title\": \"Seasonal Fractal Tree\",\n  \"code\": \"let maxDepth = 10;\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(RADIANS);\\n}\\nfunction draw() {\\n  background(params.bgColor);\\n  let baseColor;\\n  let leafColor;\\n  if (params.season === \\\"Spring\\\") {\\n    baseColor = color(100, 70, 40);\\n    leafColor = color(255, 150, 180, 200);\\n  } else if (params.season === \\\"Summer\\\") {\\n    baseColor = color(80, 50, 30);\\n    leafColor = color(50, 200, 80, 200);\\n  } else if (params.season === \\\"Autumn\\\") {\\n    baseColor = color(90, 60, 40);\\n    leafColor = color(230, 120, 30, 200);\\n  } else {\\n    baseColor = color(60, 60, 70);\\n    leafColor = color(220, 230, 255, 180);\\n  }\\n  push();\\n  translate(width / 2, height - 50);\\n  let len = height * 0.22;\\n  stroke(baseColor);\\n  strokeWeight(params.trunkWidth);\\n  branch(len, 0, baseColor, leafColor);\\n  pop();\\n}\\nfunction branch(len, depth, baseColor, leafColor) {\\n  let angleSway = sin(frameCount * 0.02 * params.speed + depth * 0.5) * 0.05 * params.wind;\\n  let theta = params.branchAngle + angleSway;\\n  line(0, 0, 0, -len);\\n  translate(0, -len);\\n  if (depth < params.depth) {\\n    push();\\n    rotate(theta);\\n    strokeWeight(max(0.5, params.trunkWidth * pow(0.7, depth + 1)));\\n    branch(len * params.lengthRatio, depth + 1, baseColor, leafColor);\\n    pop();\\n\\n    push();\\n    rotate(-theta);\\n    strokeWeight(max(0.5, params.trunkWidth * pow(0.7, depth + 1)));\\n    branch(len * params.lengthRatio, depth + 1, baseColor, leafColor);\\n    pop();\\n  } else {\\n    noStroke();\\n    fill(leafColor);\\n    ellipse(0, 0, params.leafSize, params.leafSize * 1.5);\\n  }\\n}\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"season\",\n      \"name\": \"Season\",\n      \"type\": \"enum\",\n      \"options\": [\n        \"Spring\",\n        \"Summer\",\n        \"Autumn\",\n        \"Winter\"\n      ],\n      \"default\": \"Spring\"\n    },\n    {\n      \"id\": \"depth\",\n      \"name\": \"Recursion Depth\",\n      \"type\": \"number\",\n      \"default\": 8,\n      \"min\": 4,\n      \"max\": 11,\n      \"step\": 1\n    },\n    {\n      \"id\": \"branchAngle\",\n      \"name\": \"Branch Angle\",\n      \"type\": \"number\",\n      \"default\": 0.55,\n      \"min\": 0.2,\n      \"max\": 1.2,\n      \"step\": 0.05\n    },\n    {\n      \"id\": \"lengthRatio\",\n      \"name\": \"Length Ratio\",\n      \"type\": \"number\",\n      \"default\": 0.73,\n      \"min\": 0.5,\n      \"max\": 0.85,\n      \"step\": 0.01\n    },\n    {\n      \"id\": \"wind\",\n      \"name\": \"Wind Force\",\n      \"type\": \"number\",\n      \"default\": 1.2,\n      \"min\": 0,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"speed\",\n      \"name\": \"Sway Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"trunkWidth\",\n      \"name\": \"Trunk Width\",\n      \"type\": \"number\",\n      \"default\": 12,\n      \"min\": 4,\n      \"max\": 25,\n      \"step\": 1\n    },\n    {\n      \"id\": \"leafSize\",\n      \"name\": \"Leaf Size\",\n      \"type\": \"number\",\n      \"default\": 14,\n      \"min\": 4,\n      \"max\": 35,\n      \"step\": 1\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background\",\n      \"type\": \"color\",\n      \"default\": \"#121218\"\n    }\n  ]\n}",
+      "strictJson": true,
+      "appSchemaAndSyntax": false,
+      "validationError": "AI returned an incomplete sketch or controls. Please try again."
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "Kinetic typography: ORBIT arranged along moving circular paths.",
+      "category": 4,
+      "httpStatus": 200,
+      "latencyMs": 3128,
+      "usage": {
+        "promptTokenCount": 1248,
+        "candidatesTokenCount": 1232,
+        "totalTokenCount": 2480,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1248
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\n  \"title\": \"Orbital Typography\",\n  \"code\": \"let font;\\nlet letters = \\\"ORBIT\\\";\\nlet rings = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  angleMode(RADIANS);\\n  textAlign(CENTER, CENTER);\\n  textSize(24);\\n  \\n  // Initialize rings\\n  for (let i = 0; i < 8; i++) {\\n    rings.push({\\n      radius: 60 + i * 45,\\n      speed: (i % 2 === 0 ? 1 : -1) * (0.2 + i * 0.05),\\n      offset: random(TWO_PI),\\n      charIndex: i % letters.length\\n    });\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let cx = width / 2;\\n  let cy = height / 2;\\n  \\n  // Draw central glowing core\\n  noStroke();\\n  let c = color(params.accentColor);\\n  for (let r = 80; r > 0; r -= 10) {\\n    let alpha = map(r, 0, 80, 80, 0);\\n    fill(red(c), green(c), blue(c), alpha);\\n    ellipse(cx, cy, r * 2);\\n  }\\n  \\n  // Draw orbits and text\\n  noFill();\\n  strokeWeight(1);\\n  \\n  let baseSpeed = params.speed;\\n  let totalRings = floor(params.ringCount);\\n  \\n  for (let i = 0; i < totalRings; i++) {\\n    // Reuse or create ring data dynamically\\n    if (i >= rings.length) {\\n      rings.push({\\n        radius: 60 + i * 45,\\n        speed: (i % 2 === 0 ? 1 : -1) * (0.2 + i * 0.05),\\n        offset: random(TWO_PI),\\n        charIndex: i % letters.length\\n      });\\n    }\\n    \\n    let ring = rings[i];\\n    \\n    // Draw orbit path\\n    stroke(red(c), green(c), blue(c), 30);\\n    ellipse(cx, cy, ring.radius * 2);\\n    \\n    // Calculate letter positions along the ring\\n    let numChars = params.letterCount;\\n    let angleStep = TWO_PI / numChars;\\n    let currentAngle = ring.offset + (frameCount * 0.01 * ring.speed * baseSpeed);\\n    \\n    for (let j = 0; j < numChars; j++) {\\n      let theta = currentAngle + j * angleStep;\\n      let x = cx + cos(theta) * ring.radius;\\n      let y = cy + sin(theta) * ring.radius;\\n      \\n      push();\\n      translate(x, y);\\n      // Rotate letters to follow the tangent of the circle, plus a slight wiggle\\n      rotate(theta + HALF_PI);\\n      \\n      let charToShow = letters[(ring.charIndex + j) % letters.length];\\n      \\n      fill(params.textColor);\\n      noStroke();\\n      textSize(params.fontSize);\\n      text(charToShow, 0, 0);\\n      pop();\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.1,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"ringCount\",\n      \"name\": \"Ring Count\",\n      \"type\": \"number\",\n      \"default\": 6,\n      \"min\": 2,\n      \"max\": 12,\n      \"step\": 1\n    },\n    {\n      \"id\": \"letterCount\",\n      \"name\": \"Letters per Ring\",\n      \"type\": \"number\",\n      \"default\": 8,\n      \"min\": 3,\n      \"max\": 16,\n      \"step\": 1\n    },\n    {\n      \"id\": \"fontSize\",\n      \"name\": \"Font Size\",\n      \"type\": \"number\",\n      \"default\": 24,\n      \"min\": 12,\n      \"max\": 48,\n      \"step\": 2\n    },\n    {\n      \"id\": \"textColor\",\n      \"name\": \"Text Color\",\n      \"type\": \"color\",\n      \"default\": \"#ffffff\"\n    },\n    {\n      \"id\": \"accentColor\",\n      \"name\": \"Accent Glow\",\n      \"type\": \"color\",\n      \"default\": \"#ff3366\"\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background\",\n      \"type\": \"color\",\n      \"default\": \"#0b0b14\"\n    }\n  ]\n}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 176,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A springy elastic grid bends toward the mouse and relaxes.",
+      "category": 5,
+      "httpStatus": 200,
+      "latencyMs": 3192,
+      "usage": {
+        "promptTokenCount": 1248,
+        "candidatesTokenCount": 1421,
+        "totalTokenCount": 2669,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1248
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\n  \"title\": \"Elastic Spring Grid\",\n  \"code\": \"let cols = 30;\\nlet rows = 20;\\nlet nodes = [];\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  initGrid();\\n}\\n\\nfunction initGrid() {\\n  nodes = [];\\n  let dx = width / (cols - 1);\\n  let dy = height / (rows - 1);\\n  for (let y = 0; y < rows; y++) {\\n    for (let x = 0; x < cols; x++) {\\n      let px = x * dx;\\n      let py = y * dy;\\n      nodes.push({\\n        x: px,\\n        y: py,\\n        ox: px,\\n        oy: py,\\n        vx: 0,\\n        vy: 0\\n      });\\n    }\\n  }\\n}\\n\\nfunction draw() {\\n  background(params.bgColor);\\n  \\n  let k = 0.05 * params.stiffness;\\n  let damp = 0.85;\\n  let pullRadius = params.radius;\\n  let pullStrength = params.strength * 2;\\n  \\n  // Update physics\\n  for (let i = 0; i < nodes.length; i++) {\\n    let n = nodes[i];\\n    \\n    // Spring force to origin\\n    let fx = (n.ox - n.x) * k;\\n    let fy = (n.oy - n.y) * k;\\n    \\n    n.vx = (n.vx + fx) * damp;\\n    n.vy = (n.vy + fy) * damp;\\n    \\n    // Mouse interaction\\n    let d = dist(mouseX, mouseY, n.x, n.y);\\n    if (d < pullRadius && d > 0) {\\n      let factor = (1.0 - d / pullRadius) * pullStrength;\\n      if (mouseIsPressed) {\\n        // Push away on click\\n        n.vx -= (mouseX - n.x) / d * factor * 5;\\n        n.vy -= (mouseY - n.y) / d * factor * 5;\\n      } else {\\n        // Pull towards mouse\\n        n.vx += (mouseX - n.x) / d * factor;\\n        n.vy += (mouseY - n.y) / d * factor;\\n      }\\n    }\\n    \\n    n.x += n.vx * params.speed;\\n    n.y += n.vy * params.speed;\\n  }\\n  \\n  // Draw grid lines\\n  stroke(params.gridColor);\\n  strokeWeight(1.5);\\n  noFill();\\n  \\n  // Horizontal lines\\n  for (let y = 0; y < rows; y++) {\\n    beginShape();\\n    for (let x = 0; x < cols; x++) {\\n      let n = nodes[y * cols + x];\\n      vertex(n.x, n.y);\\n    }\\n    endShape();\\n  }\\n  \\n  // Vertical lines\\n  for (let x = 0; x < cols; x++) {\\n    beginShape();\\n    for (let y = 0; y < rows; y++) {\\n      let n = nodes[y * cols + x];\\n      vertex(n.x, n.y);\\n    }\\n    endShape();\\n  }\\n  \\n  // Draw nodes\\n  noStroke();\\n  fill(params.nodeColor);\\n  let nodeSize = params.nodeSize;\\n  if (nodeSize > 0) {\\n    for (let i = 0; i < nodes.length; i++) {\\n      let n = nodes[i];\\n      ellipse(n.x, n.y, nodeSize, nodeSize);\\n    }\\n  }\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n  initGrid();\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Simulation Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.2,\n      \"max\": 2.5,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"stiffness\",\n      \"name\": \"Spring Stiffness\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.1,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"strength\",\n      \"name\": \"Mouse Pull Force\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"radius\",\n      \"name\": \"Influence Radius\",\n      \"type\": \"number\",\n      \"default\": 180,\n      \"min\": 50,\n      \"max\": 400,\n      \"step\": 10\n    },\n    {\n      \"id\": \"nodeSize\",\n      \"name\": \"Node Size\",\n      \"type\": \"number\",\n      \"default\": 4,\n      \"min\": 0,\n      \"max\": 10,\n      \"step\": 1\n    },\n    {\n      \"id\": \"bgColor\",\n      \"name\": \"Background\",\n      \"type\": \"color\",\n      \"default\": \"#111318\"\n    },\n    {\n      \"id\": \"gridColor\",\n      \"name\": \"Grid Color\",\n      \"type\": \"color\",\n      \"default\": \"#38bdf8\"\n    },\n    {\n      \"id\": \"nodeColor\",\n      \"name\": \"Node Color\",\n      \"type\": \"color\",\n      \"default\": \"#f43f5e\"\n    }\n  ]\n}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 175,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A monochrome op-art checkerboard breathes and twists.",
+      "category": 6,
+      "httpStatus": 200,
+      "latencyMs": 1967,
+      "usage": {
+        "promptTokenCount": 1247,
+        "candidatesTokenCount": 668,
+        "totalTokenCount": 1915,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1247
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\"title\":\"Monochrome Op-Art Twister\",\"code\":\"let angle = 0;\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight);\\n  rectMode(CENTER);\\n}\\nfunction draw() {\\n  background(params.invert ? 255 : 0);\\n  let cols = params.gridSize;\\n  let rows = params.gridSize;\\n  let w = width / cols;\\n  let h = height / rows;\\n  \\n  angle += params.speed * 0.01;\\n  \\n  let maxDist = dist(0, 0, width/2, height/2);\\n  \\n  for (let i = 0; i < cols; i++) {\\n    for (let j = 0; j < rows; j++) {\\n      let x = w * i + w / 2;\\n      let y = h * j + h / 2;\\n      \\n      let d = dist(x, y, width / 2, height / 2);\\n      let offset = map(d, 0, maxDist, 0, TWO_PI * params.twist);\\n      let currentAngle = angle + offset;\\n      \\n      let bFactor = sin(frameCount * 0.03 * params.breathe + d * 0.005);\\n      let sizeFactor = map(bFactor, -1, 1, 0.4, 1.4);\\n      \\n      push();\\n      translate(x, y);\\n      rotate(currentAngle);\\n      \\n      let isDark = (i + j) % 2 === 0;\\n      if (params.invert) isDark = !isDark;\\n      \\n      fill(isDark ? 0 : 255);\\n      noStroke();\\n      \\n      rect(0, 0, w * sizeFactor * params.scaleSize, h * sizeFactor * params.scaleSize);\\n      pop();\\n    }\\n  }\\n}\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\"params\":[{\"id\":\"speed\",\"name\":\"Rotation Speed\",\"type\":\"number\",\"default\":1,\"min\":0,\"max\":3,\"step\":0.1},{\"id\":\"gridSize\",\"name\":\"Grid Density\",\"type\":\"number\",\"default\":20,\"min\":6,\"max\":50,\"step\":2},{\"id\":\"twist\",\"name\":\"Twist Intensity\",\"type\":\"number\",\"default\":2,\"min\":0,\"max\":6,\"step\":0.2},{\"id\":\"breathe\",\"name\":\"Breathe Speed\",\"type\":\"number\",\"default\":1.5,\"min\":0,\"max\":4,\"step\":0.1},{\"id\":\"scaleSize\",\"name\":\"Shape Scale\",\"type\":\"number\",\"default\":0.85,\"min\":0.5,\"max\":1.5,\"step\":0.05},{\"id\":\"invert\",\"name\":\"Invert Colors\",\"type\":\"boolean\",\"default\":false}]}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 163,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "gemini-lite",
+      "model": "gemini-flash-lite-latest",
+      "prompt": "A Lorenz attractor rotates while tracing colored trajectories.",
+      "category": 7,
+      "httpStatus": 200,
+      "latencyMs": 2694,
+      "usage": {
+        "promptTokenCount": 1245,
+        "candidatesTokenCount": 1127,
+        "totalTokenCount": 2372,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 1245
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "finishReason": "STOP",
+      "content": "{\n  \"title\": \"Lorenz Attractor\",\n  \"code\": \"let points = [];\\nlet x = 0.01;\\nlet y = 0;\\nlet z = 0;\\nlet sigma = 10;\\nlet rho = 28;\\nlet beta = 8.0 / 3.0;\\nlet angle = 0;\\n\\nfunction setup() {\\n  createCanvas(windowWidth, windowHeight, WEBGL);\\n  colorMode(HSB, 360, 100, 100, 100);\\n  x = 0.01;\\n  y = 0;\\n  z = 0;\\n  points = [];\\n}\\n\\nfunction draw() {\\n  background(params.bgHue, 40, 15);\\n\\n  let dt = 0.01 * params.speed;\\n  let stepsPerFrame = floor(params.detail);\\n\\n  for (let s = 0; s < stepsPerFrame; s++) {\\n    let dx = (sigma * (y - x)) * dt;\\n    let dy = (x * (rho - z) - y) * dt;\\n    let dz = (x * y - beta * z) * dt;\\n    x += dx;\\n    y += dy;\\n    z += dz;\\n    points.push(createVector(x, y, z));\\n\\n    let maxPoints = floor(params.length);\\n    if (points.length > maxPoints) {\\n      points.shift();\\n    }\\n  }\\n\\n  rotateX(frameCount * 0.002 * params.rotSpeed);\\n  rotateY(angle);\\n  angle += 0.005 * params.rotSpeed;\\n\\n  scale(params.scaleFactor);\\n  translate(0, 0, -80);\\n\\n  noFill();\\n  beginShape();\\n  for (let i = 0; i < points.length; i++) {\\n    let p = points[i];\\n    let hueVal = (params.startHue + (i / points.length) * 180) % 360;\\n    stroke(hueVal, 80, 90, 80);\\n    strokeWeight(params.weight);\\n    vertex(p.x, p.y, p.z);\\n  }\\n  endShape();\\n}\\n\\nfunction windowResized() {\\n  resizeCanvas(windowWidth, windowHeight);\\n}\",\n  \"params\": [\n    {\n      \"id\": \"speed\",\n      \"name\": \"Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0.2,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"rotSpeed\",\n      \"name\": \"Rotation Speed\",\n      \"type\": \"number\",\n      \"default\": 1,\n      \"min\": 0,\n      \"max\": 3,\n      \"step\": 0.1\n    },\n    {\n      \"id\": \"length\",\n      \"name\": \"Trail Length\",\n      \"type\": \"number\",\n      \"default\": 1500,\n      \"min\": 200,\n      \"max\": 4000,\n      \"step\": 100\n    },\n    {\n      \"id\": \"detail\",\n      \"name\": \"Sim Steps\",\n      \"type\": \"number\",\n      \"default\": 8,\n      \"min\": 1,\n      \"max\": 20,\n      \"step\": 1\n    },\n    {\n      \"id\": \"scaleFactor\",\n      \"name\": \"Scale\",\n      \"type\": \"number\",\n      \"default\": 7,\n      \"min\": 3,\n      \"max\": 15,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"weight\",\n      \"name\": \"Line Weight\",\n      \"type\": \"number\",\n      \"default\": 1.5,\n      \"min\": 0.5,\n      \"max\": 5,\n      \"step\": 0.5\n    },\n    {\n      \"id\": \"startHue\",\n      \"name\": \"Color Hue\",\n      \"type\": \"number\",\n      \"default\": 180,\n      \"min\": 0,\n      \"max\": 360,\n      \"step\": 1\n    },\n    {\n      \"id\": \"bgHue\",\n      \"name\": \"BG Hue\",\n      \"type\": \"number\",\n      \"default\": 220,\n      \"min\": 0,\n      \"max\": 360,\n      \"step\": 1\n    }\n  ]\n}",
+      "strictJson": true,
+      "appSchemaAndSyntax": true,
+      "runtime": {
+        "success": true,
+        "data": {
+          "lifecycle": {
+            "effectiveLaunch": {
+              "browserLaunched": true,
+              "engine": "chrome",
+              "launchHash": 11677035664275012000
+            },
+            "launched": false,
+            "relaunchedBrowser": false,
+            "restartedBackground": false,
+            "restoreStatus": "not_configured",
+            "reused": true,
+            "saveStatus": "not_attempted"
+          },
+          "origin": "https://example.com/",
+          "result": {
+            "canvas": [
+              1560,
+              1120
+            ],
+            "errors": [],
+            "frameCount": 62,
+            "neededExplicitBootstrap": false,
+            "p5Loaded": true,
+            "readyState": "complete",
+            "setupDefined": true
+          }
+        },
+        "error": null
+      }
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "Fireflies weave luminous trails through a moonlit meadow.",
+      "category": 0,
+      "httpStatus": 404,
+      "latencyMs": 93,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "A Gray-Scott inspired cellular labyrinth slowly morphs.",
+      "category": 1,
+      "httpStatus": 404,
+      "latencyMs": 39,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "A crystalline rotating 3D sculpture lit by moving colored lights.",
+      "category": 2,
+      "httpStatus": 404,
+      "latencyMs": 41,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "An animated Sierpinski triangle dissolves into luminous dust.",
+      "category": 3,
+      "httpStatus": 404,
+      "latencyMs": 36,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "A field of ASCII characters forms animated ocean waves.",
+      "category": 4,
+      "httpStatus": 404,
+      "latencyMs": 33,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "Mouse movements create fading ripples in a luminous pond.",
+      "category": 5,
+      "httpStatus": 404,
+      "latencyMs": 36,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "Animated Truchet tiles form flowing interlocking ribbons.",
+      "category": 6,
+      "httpStatus": 404,
+      "latencyMs": 35,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt": "A solar system with elliptical orbits and comet trails.",
+      "category": 7,
+      "httpStatus": 404,
+      "latencyMs": 37,
+      "error": "{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model_not_found\"}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "A school of jewel-colored fish flows around a coral silhouette.",
+      "category": 0,
+      "httpStatus": 401,
+      "latencyMs": 123,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "Marbled oil slicks swirl in pastel interference bands.",
+      "category": 1,
+      "httpStatus": 401,
+      "latencyMs": 24,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "An orbital mobile of wireframe 3D polyhedra in WEBGL.",
+      "category": 2,
+      "httpStatus": 401,
+      "latencyMs": 20,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "A recursive coral fan unfurls with branching rhythmic motion.",
+      "category": 3,
+      "httpStatus": 401,
+      "latencyMs": 29,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "The word CANVAS stretches like elastic ribbons in a breeze.",
+      "category": 4,
+      "httpStatus": 401,
+      "latencyMs": 21,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "A swarm of neon particles avoids the cursor and reforms a ring.",
+      "category": 5,
+      "httpStatus": 401,
+      "latencyMs": 20,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "A minimal Swiss-style grid of oscillating red and black bars.",
+      "category": 6,
+      "httpStatus": 401,
+      "latencyMs": 44,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "prompt": "A vibrating membrane displays colorful Chladni-like nodal patterns.",
+      "category": 7,
+      "httpStatus": 401,
+      "latencyMs": 23,
+      "error": "{\"message\":\"User not found.\",\"code\":401}"
+    }
+  ]
+}
