@@ -98,7 +98,9 @@ The document title is Canvas, with a description, canonical URL, Open Graph and 
 
 Public assets include a 1200×630 OG image based on a clean first-open screenshot, a dark gradient and white Canvas title, plus SVG/PNG Palette favicons matching the app brand. Metadata is in the initial HTML so social crawlers do not need JavaScript. The Worker URL is the AI API, not the canonical site URL.
 
-Mobile recommendation: keep Canvas web-based and desktop-first, but give phones a dedicated prompt/preview layout with template/adjust panels as drawers or sheets. The current fixed template/inspector sidebars still need that separate responsive pass; a native app is not required.
+Screens narrower than 1024 CSS pixels show a dedicated desktop-experience notice instead of the editor, with a Copy link action and a selectable-link fallback when clipboard access is denied. The rule uses available width, not device detection. Widening the window restores the current artwork, controls, and history; shrinking cancels unaccepted AI generation and removes the preview so it does not run invisibly. A full mobile editor is deferred.
+
+Google Analytics uses the supplied Google tag with measurement ID `G-TLYEMMFBSN` on both the editor and small-screen notice. No custom events containing prompts, artwork code, or control values are added.
 
 ### Phase 5 — Export and share
 

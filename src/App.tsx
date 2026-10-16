@@ -7,6 +7,7 @@ import { CodeViewer } from './components/CodeViewer';
 import { PromptBar } from './components/PromptBar';
 import { InfoPanel } from './components/InfoPanel';
 import { HistoryPanel } from './components/HistoryPanel';
+import { DesktopNotice } from './components/DesktopNotice';
 import { SketchConfig } from './types';
 import { templates } from './templates';
 import { AIServiceError, generateConfigFromPrompt } from './lib/ai';
@@ -85,6 +86,15 @@ function useAnimatedConfig(config: SketchConfig, morphDuration = 400): SketchCon
 }
 
 export default function App() {
+  const [isWide, setIsWide] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
+  useEffect(() => {
+    const screen = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsWide(screen.matches);
+    screen.addEventListener('change', onChange);
+    onChange();
+    return () => screen.removeEventListener('change', onChange);
+  }, []);
+
   const [restored] = useState(() => {
     try { return { state: loadStudio(window.localStorage), writable: true }; }
     catch { return { state: createStudio(), writable: false }; }
@@ -142,6 +152,12 @@ export default function App() {
   };
 
   useEffect(() => {
+    // A hidden candidate cannot finish preview validation; keep the saved artwork instead.
+    if (!isWide) cancelGeneration();
+  }, [isWide]);
+
+  useEffect(() => {
+    if (!isWide) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
       const target = event.target as HTMLElement;
@@ -154,7 +170,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [isWide]);
 
   const handleHome = () => {
     cancelGeneration();
@@ -244,6 +260,8 @@ export default function App() {
   }, []);
 
   const hasAnyTemplate = !!config.templateId;
+
+  if (!isWide) return <DesktopNotice />;
 
   return (
     <div className="flex flex-col h-screen w-full bg-[#000000] text-white overflow-hidden font-sans antialiased relative">
