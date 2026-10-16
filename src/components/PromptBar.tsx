@@ -2,14 +2,20 @@ import React, { useState } from 'react';
 import { Sparkles, Loader2, X, Wand2, Sliders, Download, PanelLeft } from 'lucide-react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
+import { AIUsage, GenerationMode } from '../lib/ai';
 
 interface PromptBarProps {
-  onGenerate: (prompt: string) => Promise<void>;
+  onGenerate: (prompt: string, mode: GenerationMode) => Promise<void>;
   isLoading: boolean;
   onClose?: () => void;
   config?: SketchConfig;
   /** 'hero' is the centered prompt on the empty canvas; 'floating' edits an existing sketch. */
   variant?: 'floating' | 'hero';
+  mode: GenerationMode;
+  onModeChange: (mode: GenerationMode) => void;
+  usage: AIUsage | null;
+  usageUnavailable: boolean;
+  usageBlocked: boolean;
 }
 
 const suggestionMap: Record<string, string[]> = {
@@ -65,22 +71,52 @@ const heroSteps = [
   { icon: Download, label: 'Export it', desc: 'PNG, GIF, video, or p5.js code' },
 ];
 
-export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'floating' }: PromptBarProps) {
+export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'floating', mode, onModeChange, usage, usageUnavailable, usageBlocked }: PromptBarProps) {
   const isHero = variant === 'hero';
   const [prompt, setPrompt] = useState('');
+  const disabled = isLoading || usageBlocked;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!prompt.trim() || isLoading) return;
-    await onGenerate(prompt);
+    if (!prompt.trim() || disabled) return;
+    await onGenerate(prompt, mode);
   };
 
-  const suggestions = config ? (suggestionMap[config.templateId] || defaultSuggestions) : defaultSuggestions;
+  const suggestions = mode === 'new' ? examplePrompts : config ? (suggestionMap[config.templateId] || defaultSuggestions) : defaultSuggestions;
 
   const handleSuggestion = async (suggestion: string) => {
+    if (disabled) return;
     setPrompt(suggestion);
-    await onGenerate(suggestion);
+    await onGenerate(suggestion, mode);
   };
+
+  const usageLabel = usageUnavailable ? 'AI allowance temporarily unavailable. Try again shortly.'
+    : !usage ? 'Checking AI allowance…'
+    : usage.reason === 'global' ? 'Shared daily AI budget reached. Resets at 00:00 UTC.'
+    : usage.reason === 'burst' ? 'A short breather—try again in a minute.'
+    : `${usage.remaining}/${usage.limit} AI submissions left today · resets at 00:00 UTC`;
+  const allowance = (
+    <p role="status" title="Anonymous allowance is shared by people on the same network. A submission includes up to two automatic repairs. Templates and manual adjustments are unlimited."
+      className={`mt-3 text-[11px] ${usageBlocked ? 'text-amber-200/90' : 'text-white/45'}`}>
+      {usageLabel}
+    </p>
+  );
+  const modeSelector = !isHero && (
+    <div className="mb-3">
+      <div role="group" aria-label="AI artwork mode" className="flex flex-wrap gap-1">
+        {(['new', 'refine'] as const).map(value => (
+          <button key={value} type="button" aria-pressed={mode === value} disabled={isLoading}
+            onClick={() => onModeChange(value)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 ${mode === value ? 'bg-white text-black' : 'text-white/55 hover:bg-white/10 hover:text-white'}`}>
+            {value === 'new' ? 'New artwork' : 'Refine this artwork'}
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-white/45">
+        {mode === 'new' ? 'Start fresh. Your current artwork stays in History.' : 'Keep this composition, palette and settings as the starting point.'}
+      </p>
+    </div>
+  );
 
   const inputRow = (
     <div className="flex items-center">
@@ -91,27 +127,28 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
         type="text"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder={isHero ? 'e.g. ink drops slowly spreading in water' : "Describe a change (e.g. 'slower, more pink')"}
+        placeholder={mode === 'new' ? 'e.g. fireworks over a dark lake' : "Describe a change (e.g. 'slower, more pink')"}
         aria-label="Describe your sketch"
         autoFocus={isHero}
         disabled={isLoading}
-        className="flex-1 bg-transparent border-none outline-none text-white placeholder-white/40 px-3 text-sm"
+        className="flex-1 min-w-0 bg-transparent border-none outline-none text-white placeholder-white/40 px-3 text-sm"
       />
       <button
         type="submit"
-        disabled={!prompt.trim() || isLoading}
+        disabled={!prompt.trim() || disabled}
         className={`h-9 px-5 rounded-full font-medium text-sm transition-colors cursor-pointer ${
-          prompt.trim() && !isLoading
+          prompt.trim() && !disabled
             ? 'bg-white text-black hover:bg-white/90'
             : 'bg-white/10 text-white/40 cursor-not-allowed'
         }`}
       >
-        Generate
+        {isLoading ? 'Generating…' : mode === 'new' ? 'Create' : 'Refine'}
       </button>
       {onClose && (
         <button
           type="button"
           onClick={onClose}
+          aria-label="Close AI prompt"
           className="ml-2 p-2 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
         >
           <X size={16} />
@@ -137,6 +174,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
             className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
           >
             {inputRow}
+            {allowance}
           </form>
 
           <p className={`text-xs text-center mt-3 h-4 ${isLoading ? 'text-white/50' : 'text-transparent'}`} aria-live="polite">
@@ -151,7 +189,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
               <button
                 key={example}
                 type="button"
-                disabled={isLoading}
+                disabled={disabled}
                 onClick={() => handleSuggestion(example)}
                 className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 rounded-full border border-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -188,9 +226,11 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
+        className="glass-panel bg-zinc-900/95! rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
       >
+        {modeSelector}
         {inputRow}
+        {allowance}
 
         {!isLoading && (
           <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-white/10">
@@ -202,8 +242,9 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
               <button
                 key={i}
                 type="button"
+                disabled={disabled}
                 onClick={() => handleSuggestion(s)}
-                className="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 rounded-full border border-white/10 transition-colors cursor-pointer whitespace-nowrap"
+                className="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 rounded-full border border-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {s}
               </button>

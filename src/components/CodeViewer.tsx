@@ -1,5 +1,6 @@
 import React from 'react';
 import { SketchConfig } from '../types';
+import { getSketchScripts } from '../engine/generator';
 import { templates } from '../templates';
 import { Copy, Check } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export function CodeViewer({ config, onChange }: CodeViewerProps) {
   const code = template.generateCode(config.params, config.seed);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(`// Load these scripts in order before running this sketch:\n${getSketchScripts(config).map(url => `// ${url}`).join('\n')}\n\n${code}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

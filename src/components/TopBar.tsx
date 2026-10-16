@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
+import { getSketchScripts } from '../engine/generator';
 import { Download, Code, Palette, SlidersHorizontal, Pause, Play, FileImage, FileVideo, FileJson, CircleHelp, History, Undo2, Redo2 } from 'lucide-react';
 
 interface TopBarProps {
@@ -41,7 +42,7 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
   const handleJsExport = () => {
     if (!hasTemplate) return;
     const template = templates[config.templateId];
-    const code = template.generateCode(config.params, config.seed);
+    const code = `// Load these scripts in order before running this sketch:\n${getSketchScripts(config).map(url => `// ${url}`).join('\n')}\n\n${template.generateCode(config.params, config.seed)}`;
     const blob = new Blob([code], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

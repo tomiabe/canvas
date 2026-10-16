@@ -35,7 +35,10 @@ export interface Preset {
   params: Record<string, any>;
 }
 
+export type SketchLibrary = 'brush' | 'grain';
+
 export interface Template {
+  libraries?: SketchLibrary[];
   id: string;
   name: string;
   description: string;
@@ -47,6 +50,7 @@ export interface Template {
 }
 
 export interface SketchConfig {
+  libraries?: SketchLibrary[];
   templateId: string;
   seed: number;
   params: Record<string, any>;

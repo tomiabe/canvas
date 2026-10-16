@@ -24,6 +24,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
   const callbacks = useRef({ onReady, onError });
   callbacks.current = { onReady, onError };
   const runId = useRef('');
+  const libraryKey = (config.libraries ?? templates[config.templateId]?.libraries ?? []).join(',');
 
   // Code edits/new generations reload; live control changes do not.
   useEffect(() => {
@@ -37,7 +38,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
       setSketchError(message);
       callbacks.current.onError?.(message);
     }
-  }, [config.templateId, config.seed, config.params.code, previewEnabled]);
+  }, [config.templateId, config.seed, config.params.code, libraryKey, previewEnabled]);
 
   // For templates that support live params: postMessage instead of reload
   // For all others: reload so param changes take effect immediately
@@ -97,7 +98,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
       clearTimeout(readyTimer);
       window.removeEventListener('message', handler);
     };
-  }, [config.templateId, config.seed, config.params.code, previewEnabled]);
+  }, [config.templateId, config.seed, config.params.code, libraryKey, previewEnabled]);
 
   // The empty state (hero prompt) is rendered by App on top of this background.
   if (!config.templateId) {

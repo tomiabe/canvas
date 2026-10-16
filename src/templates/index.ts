@@ -50,8 +50,12 @@ import { chainReactionTemplate } from './chainReaction';
 import { voronoiTemplate } from './voronoi';
 import { lorenzAttractorTemplate } from './lorenzAttractor';
 import { springSystemTemplate } from './springSystem';
+import { watercolorGardenTemplate, charcoalLandscapeTemplate, inkFlowTemplate } from './painterly';
 
 export const templates: Record<string, Template> = {
+  [watercolorGardenTemplate.id]: watercolorGardenTemplate,
+  [charcoalLandscapeTemplate.id]: charcoalLandscapeTemplate,
+  [inkFlowTemplate.id]: inkFlowTemplate,
   [particleSystemTemplate.id]: particleSystemTemplate,
   [noiseFieldTemplate.id]: noiseFieldTemplate,
   [gridPatternTemplate.id]: gridPatternTemplate,

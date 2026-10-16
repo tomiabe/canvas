@@ -1,5 +1,5 @@
 import { templates } from '../templates';
-import { ParamDef, SketchConfig } from '../types';
+import { ParamDef, SketchConfig, SketchLibrary } from '../types';
 import { limitSketchLoops } from '../engine/generator';
 import { ConversationTurn } from './studio';
 
@@ -7,11 +7,32 @@ const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas.tomi.workers.dev
 
 export class AIServiceError extends Error {}
 
-export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig, repair?: string, conversation: ConversationTurn[] = []): Promise<SketchConfig> {
-  const currentTemplate = templates[currentConfig.templateId];
+export type GenerationMode = 'new' | 'refine';
+export interface AIUsage {
+  limit: number;
+  remaining: number;
+  resetsAt: string;
+  reason?: 'daily' | 'burst' | 'global';
+  retryAt?: string;
+}
+
+export async function getAIUsage(): Promise<AIUsage> {
+  const response = await fetch(`${PROXY_URL.replace(/\/$/, '')}/usage`, { cache: 'no-store' });
+  if (!response.ok) throw new AIServiceError('AI allowance temporarily unavailable.');
+  const data = await response.json();
+  return data.usage;
+}
+
+export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig, repair?: string, conversation: ConversationTurn[] = [], options: {
+  mode?: GenerationMode;
+  submissionId?: string;
+  onUsage?: (usage: AIUsage) => void;
+} = {}): Promise<SketchConfig> {
+  const refining = options.mode !== 'new';
+  const currentTemplate = templates[refining || repair ? currentConfig.templateId : ''];
   const systemPrompt = `You create original generative art and animations for Canvas using p5.js 1.9 global mode.
 Always write a complete custom sketch, not a template selection. Return ONLY valid JSON:
-{"title":"Short artwork title","code":"complete JavaScript","params":[{"id":"speed","name":"Speed","type":"number","default":1,"min":0,"max":4,"step":0.1}]}
+{"title":"Short artwork title","libraries":[],"code":"complete JavaScript","params":[{"id":"speed","name":"Speed","type":"number","default":1,"min":0,"max":4,"step":0.1}]}
 
 Declare 3–6 useful controls in params. Supported types:
 - number: finite min < max, positive step, default within bounds
@@ -28,13 +49,18 @@ Runtime contract:
 - For counts, initialize enough elements for the maximum and draw only the current count, or reconcile counts in draw().
 - Define function setup() and function draw(). setup() calls createCanvas(windowWidth, windowHeight).
 - Define function windowResized() { resizeCanvas(windowWidth, windowHeight); }.
-- Do not use new p5(), HTML, imports, external libraries, network calls, or DOM controls.
+- Do not use new p5(), HTML, imports, unlisted libraries, network calls, or DOM controls.
 - Call p5 functions only inside setup/draw/events, not at top level. The host seeds random and noise before setup.
 - Keep the code focused and complete so it fits the response budget. No markdown fences.
 
-When editing, preserve the current composition and existing controls unless the request needs a change.
-Use the recent conversation to understand references and artistic intent. The supplied current artwork code and live values are authoritative over earlier descriptions, including after a restore or manual adjustment.
-The control defaults in your response must reflect the requested changes and the current values.
+Optional host-provided libraries (return only needed names in libraries; never add script tags):
+- "brush": p5.brush 1.1.4 with p5 1.11.3. Use createCanvas(windowWidth, windowHeight, WEBGL), pixelDensity(1), and setAttributes('preserveDrawingBuffer', true) before createCanvas. Coordinates are centered. brush.noField(); brush.noFill(); brush.noHatch(); brush.seed(37) initialize seeded brush drawing. brush.set('HB'|'2B'|'charcoal'|'marker'|'rotring', hexColor, weight); brush.line(x1,y1,x2,y2), brush.circle(x,y,r,true), brush.spline([[x,y],...],0.7). For watercolor: brush.noStroke(); brush.fill(hexColor,60); brush.bleed(0.1); brush.fillTexture(0.5,0.6). Flush brush.reBlend(); brush.reDraw(). On resize call brush.load() after resizeCanvas. Use very few watercolor shapes and bounded strokes with modest weights (typically 0.5–2): brush loops have a 500ms safety budget (ordinary sketches have 100ms). Never rebuild expensive brush paintings every animation frame; cache unchanged compositions, detect control changes in draw(), and repaint only when needed. Keep draw() running for control detection; noLoop() would prevent live controls from responding.
+- "grain": p5.grain 0.8.0. In setup call p5grain.setup({random: () => random()}). p5grain.applyMonochromaticGrain(amount,false) adds exportable pixel texture; apply after painting/flushing brush, only when repainting, not every animation frame. No DOM texture overlays.
+- Both may be combined. Ordinary animations should use libraries: []. Do not use brush or grain unless the requested visual style benefits from them.
+
+${refining ? `REFINE THIS ARTWORK: preserve the current composition, palette, libraries and controls unless the request changes them.
+Use recent conversation for references. Current artwork code and live values override earlier descriptions, including after restore/manual adjustment.
+Control defaults must reflect the requested changes and current values.` : `NEW ARTWORK: create an independent composition from the current user prompt. Do not inherit a previous subject, palette, controls, or conversation. Any supplied failed attempt is only for repairing this new artwork.`}
 Return the full code and full control list on every request.
 
 Curated style references (inspiration only, not output template ids):
@@ -44,9 +70,10 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      submissionId: options.submissionId ?? crypto.randomUUID(),
       messages: [
         { role: 'system', content: systemPrompt },
-        ...conversation.slice(-12),
+        ...(refining ? conversation.slice(-12) : []),
         ...(currentTemplate ? [{ role: 'user', content: `Current artwork:\n${JSON.stringify({
           title: currentConfig.generated?.title ?? currentTemplate.name,
           code: currentConfig.templateId === 'custom-sketch'
@@ -54,6 +81,7 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
             : currentTemplate.generateCode(currentConfig.params, currentConfig.seed),
           values: Object.fromEntries(Object.entries(currentConfig.params).filter(([id]) => id !== 'code')),
           controls: currentConfig.generated?.controls ?? currentTemplate.params,
+          libraries: currentConfig.libraries ?? currentTemplate.libraries ?? [],
         })}` }] : []),
         { role: 'user', content: prompt },
         ...(repair ? [{ role: 'user', content: `Repair the failed attempt. Keep the original artistic intent and return the complete corrected JSON. Failure: ${repair}` }] : []),
@@ -65,10 +93,13 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
     signal: AbortSignal.timeout(90000),
   }).catch(() => { throw new AIServiceError('The AI service could not be reached. Please try again.'); });
 
-  if (!response.ok) throw new AIServiceError('The AI service is unavailable. Please try again shortly.');
   const responseData = await response.json().catch(() => {
     throw new AIServiceError('The AI service returned an unreadable response. Please try again.');
   });
+  if (responseData.usage) options.onUsage?.(responseData.usage);
+  if (!response.ok) throw new AIServiceError(response.status === 429 || response.status === 503
+    ? responseData.error || 'AI allowance temporarily unavailable. Please try again later.'
+    : 'The AI service is unavailable. Please try again shortly.');
   const content = responseData.choices?.[0]?.message?.content;
   try {
     if (typeof content !== 'string') throw new Error('AI returned no sketch. Please try again.');
@@ -77,6 +108,10 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
         typeof data.code !== 'string' || !data.code.trim() ||
         !Array.isArray(data.params)) {
       throw new Error('AI returned an incomplete sketch or controls. Please try again.');
+    }
+    const libraries: SketchLibrary[] = data.libraries ?? [];
+    if (!Array.isArray(libraries) || libraries.some(name => name !== 'brush' && name !== 'grain')) {
+      throw new Error('AI returned an unsupported drawing library. Use only brush or grain.');
     }
     if (data.params.length < 1 || data.params.length > 8) {
       throw new Error(`Expected 1–8 controls, received ${data.params.length}. Reduce the controls to 3–6 and update the code to match.`);
@@ -117,6 +152,7 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
 
     return {
       templateId: 'custom-sketch',
+      ...(libraries.length ? { libraries: [...new Set(libraries)] } : {}),
       seed: currentTemplate ? currentConfig.seed : Math.floor(Math.random() * 1000000),
       params: { ...Object.fromEntries(controls.map(p => [p.id, p.default])), code: data.code },
       generated: {

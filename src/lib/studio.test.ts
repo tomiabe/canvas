@@ -6,6 +6,7 @@ const version = (id: string, speed: number, createdAt: number, conversation: Con
   id, label: id, createdAt, conversation,
   config: {
     templateId: 'custom-sketch', seed: 71, params: { code: `function draw() { circle(23, 47, ${speed}); }`, speed },
+    libraries: ['brush', 'grain'],
     generated: { title: id, controls: [{ id: 'speed', name: 'Speed', type: 'number', default: speed, min: 0, max: 100, step: 1 }] },
   },
 });
@@ -22,6 +23,7 @@ test('five edits survive reload, undo/redo, and branching without losing old ver
   saveStudio(storage, state);
   state = loadStudio(storage);
   assert.equal(state.versions.at(-1)!.config.seed, 71);
+  assert.deepEqual(state.versions.at(-1)!.config.libraries, ['brush', 'grain']);
   assert.equal(state.versions.at(-1)!.config.generated!.controls[0].max, 100);
   state = studioReducer(state, { type: 'undo' });
   assert.equal(state.currentId, 'v5');

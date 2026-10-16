@@ -69,12 +69,45 @@ test('service outages are distinguished from repairable sketch failures', async 
   await assert.rejects(generateConfigFromPrompt('orbit', empty), AIServiceError);
 });
 
+test('new artwork excludes previous visuals and conversation, while repairs retain only the new attempt', async t => {
+  const requests: any[] = [];
+  t.mock.method(Math, 'random', () => 0.25);
+  t.mock.method(globalThis, 'fetch', async (_url: unknown, init: RequestInit) => {
+    requests.push(JSON.parse(init.body as string));
+    return Response.json({ choices: [{ message: { content: JSON.stringify({ ...sketch, title: 'Fresh fireworks', libraries: ['brush', 'grain'] }) } }] });
+  });
+  const old: SketchConfig = { templateId: 'custom-sketch', seed: 81, params: { code: 'oldVisualSignature()', color: '#112233' } };
+  const conversation = [{ role: 'user' as const, content: 'oldConversationSignature' }];
+  const options = { mode: 'new' as const, submissionId: '44bb38aa-bc17-4f01-85dd-d06a473cbbdf' };
+  const fresh = await generateConfigFromPrompt('fireworks over a lake', old, undefined, conversation, options);
+  assert.deepEqual(requests[0].messages.map((m: any) => m.role), ['system', 'user']);
+  assert.doesNotMatch(JSON.stringify(requests[0].messages), /oldVisualSignature|oldConversationSignature|#112233/);
+  assert.equal(fresh.seed, 250000);
+  assert.deepEqual(fresh.libraries, ['brush', 'grain']);
+  await generateConfigFromPrompt('fireworks over a lake', fresh, 'brush error', conversation, options);
+  assert.equal(requests[1].submissionId, requests[0].submissionId);
+  assert.doesNotMatch(JSON.stringify(requests[1].messages), /oldVisualSignature|oldConversationSignature/);
+  assert.match(requests[1].messages[1].content, /Fresh fireworks/);
+  assert.match(requests[1].messages[1].content, /"libraries":\["brush","grain"\]/);
+});
+
+test('quota denials update the displayed allowance and are not repairable sketch failures', async t => {
+  const usage = { limit: 10, remaining: 0, resetsAt: '2026-10-17T00:00:00Z', reason: 'daily' };
+  t.mock.method(globalThis, 'fetch', async () => Response.json({ error: 'AI allowance exhausted', usage }, { status: 429 }));
+  let received: unknown;
+  await assert.rejects(generateConfigFromPrompt('orbit', empty, undefined, [], { onUsage: value => { received = value; } }),
+    error => error instanceof AIServiceError && /allowance exhausted/.test(error.message));
+  assert.deepEqual(received, usage);
+});
+
 test('malformed model output is rejected instead of replacing an artwork with broken controls', async t => {
   const numeric = sketch.params[0];
   const invalid = [
     { ...sketch, code: 'function draw( {' },
     { ...sketch, title: '' },
     { ...sketch, params: [] },
+    { ...sketch, libraries: ['https://untrusted.example/brush.js'] },
+    { ...sketch, libraries: 'brush' },
     ...[
       { ...numeric, default: -1 },
       { ...numeric, default: 5 },

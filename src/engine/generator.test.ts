@@ -2,6 +2,39 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { generateHtml } from './generator';
+import { templates } from '../templates';
+
+test('addon selection uses only pinned allowlisted URLs and preserves the legacy runtime', () => {
+  const base = { templateId: 'custom-sketch', seed: 1, params: { code: 'function draw() {}' } };
+  const legacy = generateHtml(base);
+  assert.match(legacy, /p5.js\/1.9.0\/p5.min.js/);
+  assert.doesNotMatch(legacy, /npm\/p5\.(brush|grain)/);
+  const selected = generateHtml({ ...base, libraries: ['brush', 'grain', 'brush'] });
+  assert.match(selected, /p5.js\/1.11.3\/p5.min.js/);
+  assert.equal(selected.split('p5.brush@1.1.4/dist/p5.brush.js').length, 2);
+  assert.match(selected, /p5.grain@0.8.0\/dist\/p5.grain.min.js/);
+  const grain = generateHtml({ ...base, libraries: ['grain'] });
+  assert.match(grain, /p5.js\/1.9.0\/p5.min.js/);
+  assert.doesNotMatch(generateHtml({ ...base, libraries: ['https://evil.invalid/x.js'] as any }), /evil.invalid/);
+});
+
+test('painterly starters are additive, seeded, live and inherit addon metadata in old configs', () => {
+  assert.ok(Object.keys(templates).length >= 53);
+  assert.ok(templates['brush-playground']);
+  for (const id of ['watercolor-garden', 'charcoal-landscape', 'ink-flow']) {
+    const template = templates[id];
+    const params = Object.fromEntries(template.params.map(p => [p.id, p.default]));
+    assert.deepEqual(template.libraries, ['brush', 'grain']);
+    assert.equal(template.supportsLiveParams, true);
+    const config = { templateId: id, seed: 41, params };
+    const html = generateHtml(config);
+    assert.equal(html, generateHtml(config));
+    assert.match(html, /brush.seed\(41\)/);
+    assert.match(html, /params-update/);
+    assert.match(html, /p5.brush@1.1.4/);
+    assert.doesNotMatch(generateHtml({ ...config, libraries: [] }), /npm\/p5\.(brush|grain)/);
+  }
+});
 
 test('exported custom sketch keeps its live values and accepts updates without restarting its state', () => {
   const html = generateHtml({
@@ -71,4 +104,49 @@ test('preview stops runaway loops but preserves nested loops, labels and repeate
   runInNewContext([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n'), context);
   for (let frame = 0; frame < 100; frame++) context.draw();
   assert.equal(context.result, 1900);
+});
+
+test('brush strokes have a bounded painting budget without weakening ordinary loop protection', () => {
+  const execute = (brush: boolean, code: string, context: any) => {
+    const html = generateHtml({ templateId: 'custom-sketch', seed: 1, params: { code }, libraries: brush ? ['brush'] : [] });
+    context.window = context;
+    context.addEventListener = () => {};
+    context.document = { querySelector: () => ({}) };
+    context.parent = { postMessage() {} };
+    runInNewContext([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n'), context);
+    runInNewContext('draw()', context, { timeout: 1000 });
+  };
+  for (const brush of [false, true]) {
+    let clock = 0;
+    let strokes = 0;
+    const paint = () => execute(brush, 'function draw(){for(let i=0;i<5;i++) stroke()}', {
+      performance: { now: () => clock }, stroke: () => { clock += 90; strokes++; },
+    });
+    if (brush) { paint(); assert.equal(strokes, 5); }
+    else assert.throws(paint, /exceeded 100ms/);
+    clock = 0;
+    assert.throws(() => execute(brush, 'function draw(){while(true){}}', {
+      performance: { now: () => clock++ },
+    }), brush ? /exceeded 500ms/ : /exceeded 100ms/);
+  }
+});
+
+test('GIF export preserves whether the artwork was static or animated', async () => {
+  for (const initiallyLooping of [false, true]) {
+    let looping = initiallyLooping;
+    const listeners: Function[] = [];
+    const html = generateHtml({ templateId: 'custom-sketch', seed: 1, params: { code: 'function draw() {}' } });
+    const context: any = {
+      addEventListener: (name: string, handler: Function) => { if (name === 'message') listeners.push(handler); },
+      isLooping: () => looping,
+      noLoop: () => { looping = false; },
+      // p5's asynchronous encoder restarts animation when finishing capture.
+      saveGif: async () => { await Promise.resolve(); looping = true; },
+    };
+    context.window = context;
+    runInNewContext([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n'), context);
+    for (const handler of listeners) handler({ data: { type: 'export', exportType: 'gif' } });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(looping, initiallyLooping);
+  }
 });

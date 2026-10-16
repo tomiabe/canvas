@@ -50,6 +50,7 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
       templateId: template.id,
       seed: Math.floor(Math.random() * 1000000),
       params: defaultParams,
+      libraries: template.libraries,
     });
   };
 
@@ -75,7 +76,7 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
         randomParams[p.id] = p.default;
       }
     });
-    onChange({ templateId: template.id, seed: Math.floor(Math.random() * 1000000), params: randomParams });
+    onChange({ templateId: template.id, seed: Math.floor(Math.random() * 1000000), params: randomParams, libraries: template.libraries });
   };
 
   const catLabel = (key: string) => templateCategories.find(c => c.key === key)?.label || key;

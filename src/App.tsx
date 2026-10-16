@@ -10,7 +10,7 @@ import { HistoryPanel } from './components/HistoryPanel';
 import { DesktopNotice } from './components/DesktopNotice';
 import { SketchConfig } from './types';
 import { templates } from './templates';
-import { AIServiceError, generateConfigFromPrompt } from './lib/ai';
+import { AIServiceError, AIUsage, GenerationMode, generateConfigFromPrompt, getAIUsage } from './lib/ai';
 import { ConversationTurn, StudioAction, createStudio, createVersion, loadStudio, saveStudio, studioReducer } from './lib/studio';
 import { Sparkles } from 'lucide-react';
 
@@ -57,7 +57,7 @@ function useAnimatedConfig(config: SketchConfig, morphDuration = 400): SketchCon
     const to = config;
     const startTime = performance.now();
 
-    if (to.templateId === 'custom-sketch' || from.templateId !== to.templateId || morphDuration <= 0 || !from.templateId || !to.templateId) {
+    if (to.templateId === 'custom-sketch' || to.libraries?.includes('brush') || templates[to.templateId]?.libraries?.includes('brush') || from.templateId !== to.templateId || morphDuration <= 0 || !from.templateId || !to.templateId) {
       setDisplayed(to);
       return;
     }
@@ -124,6 +124,28 @@ export default function App() {
 
   const [panel, setPanel] = useState<'adjust' | 'code' | 'help' | 'history' | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [promptMode, setPromptMode] = useState<GenerationMode>('new');
+  const [usage, setUsage] = useState<AIUsage | null>(null);
+  const [usageUnavailable, setUsageUnavailable] = useState(false);
+  const refreshUsage = useCallback(() => {
+    void getAIUsage().then(value => { setUsage(value); setUsageUnavailable(false); })
+      .catch(() => setUsageUnavailable(true));
+  }, []);
+  useEffect(() => {
+    if (!isWide) return;
+    refreshUsage();
+    window.addEventListener('focus', refreshUsage);
+    return () => window.removeEventListener('focus', refreshUsage);
+  }, [isWide, refreshUsage]);
+  useEffect(() => {
+    if (!isWide || !usage) return;
+    const delay = Date.parse(usage.retryAt ?? usage.resetsAt) - Date.now();
+    // A device clock ahead of the server must not cause an immediate fetch loop.
+    const timer = setTimeout(refreshUsage, delay > 0 ? delay + 250 : 60000);
+    return () => clearTimeout(timer);
+  }, [isWide, usage, refreshUsage]);
+  const usageBlocked = !!usage && (usage.remaining === 0 || !!usage.reason) &&
+    Date.parse(usage.retryAt ?? usage.resetsAt) > Date.now();
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [exportEvent, setExportEvent] = useState<{ type: 'png' | 'gif' | 'video'; duration?: number; fps?: number } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -131,9 +153,10 @@ export default function App() {
   const [status, setStatus] = useState('');
   const [failure, setFailure] = useState('');
   const lastPrompt = useRef('');
+  const lastMode = useRef<GenerationMode>('new');
   const generation = useRef(0);
   const validation = useRef<{ id: number; resolve: () => void; reject: (error: Error) => void } | null>(null);
-  const activeRepair = useRef<{ config: SketchConfig; prompt: string; remaining: number; fallbackId: string; conversation: ConversationTurn[] } | null>(null);
+  const activeRepair = useRef<{ config: SketchConfig; prompt: string; remaining: number; fallbackId: string; conversation: ConversationTurn[]; mode: GenerationMode; submissionId: string } | null>(null);
 
   const cancelGeneration = () => {
     generation.current++;
@@ -176,6 +199,7 @@ export default function App() {
     cancelGeneration();
     setPanel(null);
     setShowPrompt(false);
+    setPromptMode('new');
     setPreviewEnabled(true);
     if (!config.templateId) return;
     dispatch({ type: 'commit', version: createVersion({ templateId: '', seed: Math.floor(Math.random() * 1000000), params: {} }, [], 'New artwork') });
@@ -185,21 +209,26 @@ export default function App() {
     setExportEvent({ type, duration: type === 'gif' ? 3 : 5, fps: 15 });
   };
 
-  const handleGenerate = async (prompt: string, recovery?: { broken: SketchConfig; error: string; remaining: number; fallbackId: string; conversation: ConversationTurn[] }) => {
+  const handleGenerate = async (prompt: string, mode: GenerationMode = 'new', recovery?: { broken: SketchConfig; error: string; remaining: number; fallbackId: string; conversation: ConversationTurn[]; submissionId: string }) => {
     cancelGeneration();
     const id = generation.current;
     lastPrompt.current = prompt;
+    lastMode.current = mode;
+    const submissionId = recovery?.submissionId ?? crypto.randomUUID();
     setIsGenerating(true);
-    let attemptConfig = recovery?.broken ?? config;
+    // A failed first response must not accidentally pull the old artwork into a repair.
+    let attemptConfig = recovery?.broken ?? (mode === 'new' ? { templateId: '', seed: Math.floor(Math.random() * 1000000), params: {} } : config);
     let repair: string | undefined = recovery?.error;
     const fallbackId = recovery?.fallbackId ?? current.id;
-    const conversation = recovery?.conversation ?? current.conversation;
+    const conversation = recovery?.conversation ?? (mode === 'refine' ? current.conversation : []);
     const maxAttempt = recovery ? recovery.remaining - 1 : 2;
     try {
       for (let attempt = 0; attempt <= maxAttempt; attempt++) {
         setStatus(repair ? 'Fixing your sketch…' : 'Writing your sketch…');
         try {
-          const newConfig = await generateConfigFromPrompt(prompt, attemptConfig, repair, conversation);
+          const newConfig = await generateConfigFromPrompt(prompt, attemptConfig, repair, conversation, {
+            mode, submissionId, onUsage: value => { setUsage(value); setUsageUnavailable(false); },
+          });
           if (id !== generation.current) return;
           attemptConfig = newConfig;
           setStatus('Testing your sketch…');
@@ -208,7 +237,7 @@ export default function App() {
             setCandidate({ config: newConfig, id: id * 3 + attempt });
           });
           if (id !== generation.current) return;
-          activeRepair.current = { config: newConfig, prompt, remaining: maxAttempt - attempt, fallbackId, conversation };
+          activeRepair.current = { config: newConfig, prompt, remaining: maxAttempt - attempt, fallbackId, conversation, mode, submissionId };
           dispatch({ type: 'commit', version: createVersion(newConfig, [
             ...conversation,
             { role: 'user', content: prompt },
@@ -299,7 +328,7 @@ export default function App() {
               activeRepair.current = null;
               dispatch({ type: 'reject', id: studioRef.current.currentId, fallbackId: active.fallbackId, error: message });
               if (active.remaining > 0) {
-                void handleGenerate(active.prompt, { broken: active.config, error: message, remaining: active.remaining, fallbackId: active.fallbackId, conversation: active.conversation });
+                void handleGenerate(active.prompt, active.mode, { broken: active.config, error: message, remaining: active.remaining, fallbackId: active.fallbackId, conversation: active.conversation, submissionId: active.submissionId });
               } else {
                 setFailure('This sketch still could not run after two repairs. Try a simpler description.');
               }
@@ -314,16 +343,18 @@ export default function App() {
           )}
 
           {!hasAnyTemplate && (
-            <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating} />
+            <PromptBar variant="hero" onGenerate={handleGenerate} isLoading={isGenerating}
+              mode="new" onModeChange={setPromptMode} usage={usage} usageUnavailable={usageUnavailable} usageBlocked={usageBlocked} />
           )}
 
           {hasAnyTemplate && !showPrompt && (
             <button
               onClick={() => setShowPrompt(true)}
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 w-10 h-10 rounded-full glass-panel flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors shadow-lg"
-              title="Open AI prompt"
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 h-10 px-4 gap-2 rounded-full glass-panel flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors shadow-lg"
+              title="Open AI prompt" aria-label="Create or refine artwork"
             >
               <Sparkles size={18} className="text-white/80" />
+              <span className="text-xs">Create or refine</span>
             </button>
           )}
 
@@ -333,6 +364,8 @@ export default function App() {
               isLoading={isGenerating}
               onClose={() => setShowPrompt(false)}
               config={config}
+              mode={promptMode} onModeChange={setPromptMode}
+              usage={usage} usageUnavailable={usageUnavailable} usageBlocked={usageBlocked}
             />
           )}
 
@@ -341,7 +374,7 @@ export default function App() {
               <p role={failure ? 'alert' : 'status'} className="text-sm text-white/90">{failure || status}</p>
               {hasAnyTemplate && <p className="mt-1 text-xs text-white/50">Your previous artwork is unchanged.</p>}
               <div className="flex gap-4 mt-2 text-xs">
-                {failure && <button className="underline cursor-pointer" onClick={() => handleGenerate(lastPrompt.current)}>Retry</button>}
+                {failure && <button disabled={usageBlocked} className="underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" onClick={() => handleGenerate(lastPrompt.current, lastMode.current)}>Retry</button>}
                 <button className="text-white/60 hover:text-white cursor-pointer" onClick={cancelGeneration}>{failure ? 'Dismiss' : 'Cancel'}</button>
               </div>
             </div>
