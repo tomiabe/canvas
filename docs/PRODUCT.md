@@ -94,7 +94,9 @@ Verification: `npm test` covers persistence, five edits, branching, Undo/Redo, e
 
 ### Branding and discovery
 
-The document title is Canvas, with a description, canonical URL, Open Graph and large-image Twitter metadata for the GitHub Pages frontend. Public assets include a 1200×630 OG image based on a clean first-open screenshot, a dark gradient and white Canvas title, plus SVG/PNG Palette favicons matching the app brand. Metadata is in the initial HTML so social crawlers do not need JavaScript. The Worker URL is the AI API, not the canonical site URL.
+The document title is Canvas, with a description, canonical URL, Open Graph and large-image Twitter metadata for the GitHub Pages frontend at `https://canvas.tomiabe.com/`. Production assets use the domain root (`/`), not the former `/canvas/` project subpath. The AI Worker allows this HTTPS origin alongside the existing development and GitHub Pages origins.
+
+Public assets include a 1200×630 OG image based on a clean first-open screenshot, a dark gradient and white Canvas title, plus SVG/PNG Palette favicons matching the app brand. Metadata is in the initial HTML so social crawlers do not need JavaScript. The Worker URL is the AI API, not the canonical site URL.
 
 Mobile recommendation: keep Canvas web-based and desktop-first, but give phones a dedicated prompt/preview layout with template/adjust panels as drawers or sheets. The current fixed template/inspector sidebars still need that separate responsive pass; a native app is not required.
 

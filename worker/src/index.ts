@@ -11,6 +11,7 @@ interface ChatMessage {
 }
 
 const ALLOWED_ORIGINS = new Set([
+  'https://canvas.tomiabe.com',
   'https://tomiabe.github.io',
   'http://localhost:3000',
   'http://localhost:5173',
