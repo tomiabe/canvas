@@ -41,6 +41,29 @@ test('generation returns original code, editable controls, and preserves live va
   assert.match(request.messages[1].content, /Blue Orbit/);
 });
 
+test('edits include bounded recent conversation plus the authoritative current code and values', async t => {
+  let request: any;
+  t.mock.method(globalThis, 'fetch', async (_url: unknown, init: RequestInit) => {
+    request = JSON.parse(init.body as string);
+    return Response.json({ choices: [{ message: { content: JSON.stringify(sketch) } }] });
+  });
+  const current: SketchConfig = {
+    templateId: 'custom-sketch', seed: 81, params: { code: sketch.code, speed: 2.7 },
+    generated: { title: 'Restored orbit', controls: sketch.params },
+  };
+  const conversation = Array.from({ length: 8 }, (_, i) => [
+    { role: 'user' as const, content: `instruction ${i}` },
+    { role: 'assistant' as const, content: `artwork ${i}` },
+  ]).flat();
+  await generateConfigFromPrompt('slower, keep that palette', current, undefined, conversation);
+  assert.deepEqual(request.messages.slice(1, 13), conversation.slice(4));
+  const context = JSON.parse(request.messages[13].content.split('\n').slice(1).join('\n'));
+  assert.equal(context.title, 'Restored orbit');
+  assert.equal(context.values.speed, 2.7);
+  assert.equal(context.code, sketch.code);
+  assert.equal(request.messages.at(-1).content, 'slower, keep that palette');
+});
+
 test('service outages are distinguished from repairable sketch failures', async t => {
   t.mock.method(globalThis, 'fetch', async () => Response.json({ error: 'offline' }, { status: 502 }));
   await assert.rejects(generateConfigFromPrompt('orbit', empty), AIServiceError);

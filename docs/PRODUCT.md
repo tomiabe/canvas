@@ -84,6 +84,20 @@ Generated previews now use opaque-origin sandboxes; curated media templates reta
 
 **Done when:** a user can make five successive conversational edits and step back to any of them.
 
+**Status:** Core conversation and versioning implemented locally (2026-10-16). Three-way variations are deferred, rather than included in this delivery.
+
+Successful generations, manual code edits, parameter changes, and seeds are autosaved with their prompt/conversation context. Undo/Redo and History restore the complete snapshot, including conversation. Branching clears Redo but preserves every archived version. Continuous edits to the same control/code within 700ms are grouped into one Undo step; a different control starts another. Choosing another template or clicking Canvas starts a new conversation; the brand returns to the blank prompt without deleting the archive.
+
+Requests include the last six conversation exchanges plus authoritative current code and live values; the full conversation remains in browser storage. Failed staged generations do not create versions. A later runtime failure marks the accepted version as failed and restores the previous complete version before repair, without duplicating the prompt in conversation. Unreadable saved data is left untouched; quota/access failures show a visible warning. There is no cloud sync, arbitrary history cap, or automatic pruning.
+
+Verification: `npm test` covers persistence, five edits, branching, Undo/Redo, edit grouping, late failures, and malformed/unavailable storage. Real browser checks against the deployed AI Worker completed an initial sketch plus five successive edits via Gemini Flash-Lite, then reload and Undo/Redo retained the same seed and matching conversation. Additional dev-only API fixtures checked restoration before branching, a late iframe failure followed by repair, and service failure without a new version. Browser checks also exercised keyboard shortcuts, brand navigation without losing history, corrupted storage, and quota warnings. The History overlay fits a 390px Chromium viewport; that is not a full mobile/touch editor verification.
+
+### Branding and discovery
+
+The document title is Canvas, with a description, canonical URL, Open Graph and large-image Twitter metadata for the GitHub Pages frontend. Public assets include a 1200×630 OG image based on a clean first-open screenshot, a dark gradient and white Canvas title, plus SVG/PNG Palette favicons matching the app brand. Metadata is in the initial HTML so social crawlers do not need JavaScript. The Worker URL is the AI API, not the canonical site URL.
+
+Mobile recommendation: keep Canvas web-based and desktop-first, but give phones a dedicated prompt/preview layout with template/adjust panels as drawers or sheets. The current fixed template/inspector sidebars still need that separate responsive pass; a native app is not required.
+
 ### Phase 5 — Export and share
 
 - Polish existing exports (PNG, GIF, WebM) and add "download as standalone HTML" and "open in the p5.js web editor".

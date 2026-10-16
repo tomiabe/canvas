@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
-import { Download, Code, Palette, SlidersHorizontal, Pause, Play, FileImage, FileVideo, FileJson, CircleHelp } from 'lucide-react';
+import { Download, Code, Palette, SlidersHorizontal, Pause, Play, FileImage, FileVideo, FileJson, CircleHelp, History, Undo2, Redo2 } from 'lucide-react';
 
 interface TopBarProps {
   config: SketchConfig;
@@ -15,9 +15,16 @@ interface TopBarProps {
   onToggleInfo: () => void;
   showInfo: boolean;
   hasTemplate: boolean;
+  onHome: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  showHistory: boolean;
+  onToggleHistory: () => void;
 }
 
-export function TopBar({ config, onExport, onToggleCode, showCode, showSettings, onToggleSettings, previewEnabled, onTogglePreview, onToggleInfo, showInfo, hasTemplate }: TopBarProps) {
+export function TopBar({ config, onExport, onToggleCode, showCode, showSettings, onToggleSettings, previewEnabled, onTogglePreview, onToggleInfo, showInfo, hasTemplate, onHome, onUndo, onRedo, canUndo, canRedo, showHistory, onToggleHistory }: TopBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -51,13 +58,21 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
   ];
 
   return (
-    <header className="min-h-12 glass-panel grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
-      <div className="flex items-center gap-2.5 font-semibold text-sm tracking-tight">
+    <header className="min-h-12 glass-panel grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 sm:gap-4 sm:px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+      <button onClick={onHome} title="Start a new artwork — saved versions are kept" aria-label="Canvas — new artwork"
+        className="flex items-center gap-2.5 font-semibold text-sm tracking-tight rounded-md py-2 cursor-pointer hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70">
         <Palette className="text-white" size={18} />
         <span>Canvas</span>
-      </div>
+      </button>
 
       <div role="group" aria-label="Artwork controls" className="flex min-w-0 flex-wrap items-center justify-center gap-1.5 py-2">
+        {(hasTemplate || canUndo || canRedo) && <>
+          <button onClick={onUndo} disabled={!canUndo} aria-label="Undo" title="Undo (⌘/Ctrl Z)"
+            className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-25 disabled:cursor-default cursor-pointer transition-colors"><Undo2 size={14} /></button>
+          <button onClick={onRedo} disabled={!canRedo} aria-label="Redo" title="Redo (⌘/Ctrl Shift Z)"
+            className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-25 disabled:cursor-default cursor-pointer transition-colors"><Redo2 size={14} /></button>
+          <div className="h-4 w-px bg-white/15 mx-1" />
+        </>}
         {hasTemplate && (
           <>
             <span className="max-w-48 truncate text-xs font-medium text-white/60 mr-3" title={config.generated?.title ?? templates[config.templateId]?.name}>
@@ -137,15 +152,22 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
           </>
         )}
       </div>
-      <button
-        onClick={onToggleInfo}
-        aria-pressed={showInfo}
-        className={`border-l border-white/10 pl-4 py-1 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showInfo ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
-        title="Help"
-      >
-        <CircleHelp size={16} />
-        Help
-      </button>
+      <div className="flex items-center gap-3 border-l border-white/10 pl-3 sm:pl-4">
+        <button onClick={onToggleHistory} aria-pressed={showHistory} aria-label="History" title="Version history"
+          className={`py-2 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showHistory ? 'text-white' : 'text-white/50 hover:text-white/90'}`}>
+          <History size={16} /><span className="hidden sm:inline">History</span>
+        </button>
+        <button
+          onClick={onToggleInfo}
+          aria-pressed={showInfo}
+          aria-label="Help"
+          className={`py-2 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showInfo ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
+          title="Help"
+        >
+          <CircleHelp size={16} />
+          <span className="hidden sm:inline">Help</span>
+        </button>
+      </div>
     </header>
   );
 }

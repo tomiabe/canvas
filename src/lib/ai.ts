@@ -1,12 +1,13 @@
 import { templates } from '../templates';
 import { ParamDef, SketchConfig } from '../types';
 import { limitSketchLoops } from '../engine/generator';
+import { ConversationTurn } from './studio';
 
 const PROXY_URL = process.env.GROQ_PROXY_URL || 'https://canvas.tomi.workers.dev';
 
 export class AIServiceError extends Error {}
 
-export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig, repair?: string): Promise<SketchConfig> {
+export async function generateConfigFromPrompt(prompt: string, currentConfig: SketchConfig, repair?: string, conversation: ConversationTurn[] = []): Promise<SketchConfig> {
   const currentTemplate = templates[currentConfig.templateId];
   const systemPrompt = `You create original generative art and animations for Canvas using p5.js 1.9 global mode.
 Always write a complete custom sketch, not a template selection. Return ONLY valid JSON:
@@ -32,6 +33,7 @@ Runtime contract:
 - Keep the code focused and complete so it fits the response budget. No markdown fences.
 
 When editing, preserve the current composition and existing controls unless the request needs a change.
+Use the recent conversation to understand references and artistic intent. The supplied current artwork code and live values are authoritative over earlier descriptions, including after a restore or manual adjustment.
 The control defaults in your response must reflect the requested changes and the current values.
 Return the full code and full control list on every request.
 
@@ -44,6 +46,7 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
     body: JSON.stringify({
       messages: [
         { role: 'system', content: systemPrompt },
+        ...conversation.slice(-12),
         ...(currentTemplate ? [{ role: 'user', content: `Current artwork:\n${JSON.stringify({
           title: currentConfig.generated?.title ?? currentTemplate.name,
           code: currentConfig.templateId === 'custom-sketch'

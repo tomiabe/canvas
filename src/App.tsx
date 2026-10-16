@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import { TopBar } from './components/TopBar';
 import { TemplateGallery } from './components/TemplateGallery';
 import { ControlPanel } from './components/ControlPanel';
@@ -6,9 +6,11 @@ import { CanvasRunner } from './components/CanvasRunner';
 import { CodeViewer } from './components/CodeViewer';
 import { PromptBar } from './components/PromptBar';
 import { InfoPanel } from './components/InfoPanel';
+import { HistoryPanel } from './components/HistoryPanel';
 import { SketchConfig } from './types';
 import { templates } from './templates';
 import { AIServiceError, generateConfigFromPrompt } from './lib/ai';
+import { ConversationTurn, StudioAction, createStudio, createVersion, loadStudio, saveStudio, studioReducer } from './lib/studio';
 import { Sparkles } from 'lucide-react';
 
 function lerpValue(a: any, b: any, t: number): any {
@@ -83,30 +85,45 @@ function useAnimatedConfig(config: SketchConfig, morphDuration = 400): SketchCon
 }
 
 export default function App() {
-  const [config, setConfig] = useState<SketchConfig>({
-    templateId: '',
-    seed: Math.floor(Math.random() * 1000000),
-    params: {},
+  const [restored] = useState(() => {
+    try { return { state: loadStudio(window.localStorage), writable: true }; }
+    catch { return { state: createStudio(), writable: false }; }
   });
+  const [studio, dispatch] = useReducer(studioReducer, restored.state);
+  const studioRef = useRef(studio);
+  studioRef.current = studio;
+  const current = studio.versions.find(v => v.id === studio.currentId)!;
+  const config = current.config;
+  const [storageWarning, setStorageWarning] = useState(restored.writable ? '' :
+    'Saved work could not be restored. This tab will not overwrite it. Export your work before closing.');
+
+  useEffect(() => {
+    if (!restored.writable) return;
+    try {
+      saveStudio(window.localStorage, studio);
+      setStorageWarning('');
+    } catch {
+      setStorageWarning('Autosave is unavailable or browser storage is full. Your latest changes are only in this tab; export your work before closing.');
+    }
+  }, [studio, restored.writable]);
 
   const animatedConfig = useAnimatedConfig(config);
 
   const hasTemplate = !!config.templateId && !!templates[config.templateId];
   const activeTemplate = hasTemplate ? templates[config.templateId] : null;
 
-  const [panel, setPanel] = useState<'adjust' | 'code' | 'help' | null>(null);
+  const [panel, setPanel] = useState<'adjust' | 'code' | 'help' | 'history' | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [exportEvent, setExportEvent] = useState<{ type: 'png' | 'gif' | 'video'; duration?: number; fps?: number } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [configVersion, setConfigVersion] = useState(0);
   const [candidate, setCandidate] = useState<{ config: SketchConfig; id: number } | null>(null);
   const [status, setStatus] = useState('');
   const [failure, setFailure] = useState('');
   const lastPrompt = useRef('');
   const generation = useRef(0);
   const validation = useRef<{ id: number; resolve: () => void; reject: (error: Error) => void } | null>(null);
-  const activeRepair = useRef<{ config: SketchConfig; prompt: string; remaining: number; fallback: SketchConfig } | null>(null);
+  const activeRepair = useRef<{ config: SketchConfig; prompt: string; remaining: number; fallbackId: string; conversation: ConversationTurn[] } | null>(null);
 
   const cancelGeneration = () => {
     generation.current++;
@@ -119,24 +136,54 @@ export default function App() {
     setFailure('');
   };
 
+  const navigateHistory = (action: StudioAction) => {
+    cancelGeneration();
+    dispatch(action);
+  };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+      const target = event.target as HTMLElement;
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      const key = event.key.toLowerCase();
+      const type = key === 'z' ? (event.shiftKey ? 'redo' : 'undo') : key === 'y' ? 'redo' : null;
+      if (!type || !studioRef.current[type].length) return;
+      event.preventDefault();
+      navigateHistory({ type });
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const handleHome = () => {
+    cancelGeneration();
+    setPanel(null);
+    setShowPrompt(false);
+    setPreviewEnabled(true);
+    if (!config.templateId) return;
+    dispatch({ type: 'commit', version: createVersion({ templateId: '', seed: Math.floor(Math.random() * 1000000), params: {} }, [], 'New artwork') });
+  };
+
   const handleExport = (type: 'png' | 'gif' | 'video') => {
     setExportEvent({ type, duration: type === 'gif' ? 3 : 5, fps: 15 });
   };
 
-  const handleGenerate = async (prompt: string, recovery?: { broken: SketchConfig; error: string; remaining: number; fallback: SketchConfig }) => {
+  const handleGenerate = async (prompt: string, recovery?: { broken: SketchConfig; error: string; remaining: number; fallbackId: string; conversation: ConversationTurn[] }) => {
     cancelGeneration();
     const id = generation.current;
     lastPrompt.current = prompt;
     setIsGenerating(true);
     let attemptConfig = recovery?.broken ?? config;
     let repair: string | undefined = recovery?.error;
-    const fallback = recovery?.fallback ?? config;
+    const fallbackId = recovery?.fallbackId ?? current.id;
+    const conversation = recovery?.conversation ?? current.conversation;
     const maxAttempt = recovery ? recovery.remaining - 1 : 2;
     try {
       for (let attempt = 0; attempt <= maxAttempt; attempt++) {
         setStatus(repair ? 'Fixing your sketch…' : 'Writing your sketch…');
         try {
-          const newConfig = await generateConfigFromPrompt(prompt, attemptConfig, repair);
+          const newConfig = await generateConfigFromPrompt(prompt, attemptConfig, repair, conversation);
           if (id !== generation.current) return;
           attemptConfig = newConfig;
           setStatus('Testing your sketch…');
@@ -145,10 +192,13 @@ export default function App() {
             setCandidate({ config: newConfig, id: id * 3 + attempt });
           });
           if (id !== generation.current) return;
-          activeRepair.current = { config: newConfig, prompt, remaining: maxAttempt - attempt, fallback };
-          setConfig(newConfig);
+          activeRepair.current = { config: newConfig, prompt, remaining: maxAttempt - attempt, fallbackId, conversation };
+          dispatch({ type: 'commit', version: createVersion(newConfig, [
+            ...conversation,
+            { role: 'user', content: prompt },
+            { role: 'assistant', content: `Created artwork: ${newConfig.generated?.title}.` },
+          ], prompt) });
           setPanel('adjust');
-          setConfigVersion(v => v + 1);
           return;
         } catch (error) {
           if (id !== generation.current) return;
@@ -174,14 +224,23 @@ export default function App() {
   };
 
   const handleConfigChange = useCallback((newConfig: SketchConfig) => {
+    const previous = studioRef.current.versions.find(v => v.id === studioRef.current.currentId)!;
     const active = activeRepair.current;
     cancelGeneration();
     if (active && active.config.templateId === newConfig.templateId && active.config.seed === newConfig.seed &&
         active.config.params.code === newConfig.params.code) {
       activeRepair.current = { ...active, config: newConfig };
     }
-    setConfig(newConfig);
-    setConfigVersion(v => v + 1);
+    const sameArtwork = previous.config.templateId === newConfig.templateId;
+    const codeChanged = sameArtwork && previous.config.params.code !== newConfig.params.code;
+    const changedParams = Object.keys(newConfig.params).filter(key => newConfig.params[key] !== previous.config.params[key]);
+    const title = newConfig.generated?.title ?? templates[newConfig.templateId]?.name ?? 'artwork';
+    dispatch({
+      type: 'commit',
+      version: createVersion(newConfig, sameArtwork ? previous.conversation : [],
+        `${sameArtwork ? codeChanged ? 'Edited code:' : 'Adjusted:' : 'Started:'} ${title}`),
+      group: sameArtwork && previous.config.seed === newConfig.seed ? `edit:${changedParams.sort().join(',')}` : undefined,
+    });
   }, []);
 
   const hasAnyTemplate = !!config.templateId;
@@ -200,7 +259,16 @@ export default function App() {
         onToggleInfo={() => setPanel(panel === 'help' ? null : 'help')}
         showInfo={panel === 'help'}
         hasTemplate={hasAnyTemplate}
+        onHome={handleHome}
+        onUndo={() => navigateHistory({ type: 'undo' })}
+        onRedo={() => navigateHistory({ type: 'redo' })}
+        canUndo={studio.undo.length > 0}
+        canRedo={studio.redo.length > 0}
+        showHistory={panel === 'history'}
+        onToggleHistory={() => setPanel(panel === 'history' ? null : 'history')}
       />
+
+      {storageWarning && <p role="alert" className="shrink-0 border-b border-amber-300/20 bg-amber-950 px-4 py-2 text-xs text-amber-100">{storageWarning}</p>}
 
       <div className="flex flex-1 overflow-hidden relative">
         <TemplateGallery config={config} onChange={handleConfigChange} />
@@ -211,9 +279,9 @@ export default function App() {
               const active = activeRepair.current;
               if (!active || active.config.params.code !== animatedConfig.params.code) return;
               activeRepair.current = null;
-              setConfig(active.fallback);
+              dispatch({ type: 'reject', id: studioRef.current.currentId, fallbackId: active.fallbackId, error: message });
               if (active.remaining > 0) {
-                void handleGenerate(active.prompt, { broken: active.config, error: message, remaining: active.remaining, fallback: active.fallback });
+                void handleGenerate(active.prompt, { broken: active.config, error: message, remaining: active.remaining, fallbackId: active.fallbackId, conversation: active.conversation });
               } else {
                 setFailure('This sketch still could not run after two repairs. Try a simpler description.');
               }
@@ -272,6 +340,10 @@ export default function App() {
         )}
         {panel === 'help' && (
           <InfoPanel template={activeTemplate} title={config.generated?.title} onClose={() => setPanel(null)} />
+        )}
+        {panel === 'history' && (
+          <HistoryPanel versions={studio.versions} currentId={studio.currentId}
+            onRestore={id => navigateHistory({ type: 'restore', id })} onClose={() => setPanel(null)} />
         )}
       </div>
     </div>

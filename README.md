@@ -8,6 +8,10 @@ No-code generative art playground — type a prompt and AI writes the p5.js sket
 - AI-powered text-to-sketch: describe what you want, get a working p5.js sketch
 - Live canvas preview with tweakable parameters
 - Code viewer — inspect or copy the generated sketch
+- Conversational refinement with the current code and recent prompts as context
+- Browser-local autosave, Undo/Redo, and a History panel for restoring earlier versions
+
+Work is saved in this browser only, not synced to an account. Restoring an older version and editing it keeps the other versions in History. Clicking the Canvas brand starts a blank artwork without deleting saved versions. Export anything important before clearing browser data; storage failures show a warning rather than silently discarding work.
 
 ## Run Locally
 
