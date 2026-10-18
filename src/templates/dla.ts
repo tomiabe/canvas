@@ -3,7 +3,7 @@ import { Template } from '../types';
 export const dlaTemplate: Template = {
   id: 'dla',
   name: 'DLA Crystal Growth',
-  description: 'Diffusion-limited aggregation — organic crystal/dendrite formation.',
+  description: 'Diffusion-limited aggregation - organic crystal/dendrite formation.',
   category: 'simulation',
   params: [
     { id: 'particleCount', name: 'Particle Count', type: 'number', default: 2000, min: 200, max: 10000, step: 200, category: 'simulation', description: 'Number of particles to deposit' },

@@ -93,7 +93,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
   const usageLabel = usageUnavailable ? 'AI allowance temporarily unavailable. Try again shortly.'
     : !usage ? 'Checking AI allowance…'
     : usage.reason === 'global' ? 'Shared daily AI budget reached. Resets at 00:00 UTC.'
-    : usage.reason === 'burst' ? 'A short breather—try again in a minute.'
+    : usage.reason === 'burst' ? 'A short breather-try again in a minute.'
     : `${usage.remaining}/${usage.limit} AI submissions left today · resets at 00:00 UTC`;
   const allowance = (
     <p role="status" title="Anonymous allowance is shared by people on the same network. A submission includes up to two automatic repairs. Templates and manual adjustments are unlimited."

@@ -60,7 +60,7 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
 
   return (
     <header className="min-h-12 glass-panel grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 sm:gap-4 sm:px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
-      <button onClick={onHome} title="Start a new artwork — saved versions are kept" aria-label="Canvas — new artwork"
+      <button onClick={onHome} title="Start a new artwork - saved versions are kept" aria-label="Canvas - new artwork"
         className="flex items-center gap-2.5 font-semibold text-sm tracking-tight rounded-md py-2 cursor-pointer hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70">
         <Palette className="text-white" size={18} />
         <span>Canvas</span>

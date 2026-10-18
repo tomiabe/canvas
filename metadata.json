@@ -1,5 +1,5 @@
 {
   "name": "Canvas",
-  "description": "No-code generative art studio powered by p5.js",
+  "description": "Create, refine, and export generative art in the browser with p5.js.",
   "requestFramePermissions": []
 }

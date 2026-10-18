@@ -1,28 +1,91 @@
 # Canvas
 
-No-code generative art playground — type a prompt and AI writes the p5.js sketch for you. Browse templates, adjust parameters live, and copy the generated code.
+Canvas is a browser based studio for making generative art with p5.js. Start with a written idea or one of 53 built in sketches, adjust the result with live controls, and export the finished work.
 
-**Features**
+[Open Canvas](https://canvas.tomiabe.com/)
 
-- Gallery of generative art templates to start from
-- AI-powered text-to-sketch: describe what you want, get a working p5.js sketch
-- Live canvas preview with tweakable parameters
-- Code viewer — inspect or copy the generated sketch
-- Conversational refinement with the current code and recent prompts as context
-- Browser-local autosave, Undo/Redo, and a History panel for restoring earlier versions
+## Who it is for
 
-Work is saved in this browser only, not synced to an account. Restoring an older version and editing it keeps the other versions in History. Clicking the Canvas brand starts a blank artwork without deleting saved versions. Export anything important before clearing browser data; storage failures show a warning rather than silently discarding work.
+Canvas is for artists, designers, students, creative coders, and anyone who wants to experiment with generative visuals. You can use it without writing code, but the generated JavaScript is always available if you want to inspect or reuse it.
 
-## Run Locally
+It works well for:
 
-**Prerequisites:** Node.js 18+, a [Gemini API key](https://aistudio.google.com) (free)
+- exploring visual ideas and motion studies
+- making backgrounds, loops, textures, and abstract artwork
+- learning how p5.js sketches are put together
+- building a starting point for a larger creative coding project
+- producing quick visual material for events, performances, or social posts
+
+## What it does
+
+- Creates original p5.js sketches from plain language prompts
+- Refines the current artwork through follow up prompts
+- Repairs many syntax and runtime errors automatically
+- Provides controls for colour, movement, density, size, and other sketch settings
+- Includes 53 templates across particles, physics, simulation, geometry, audio, image, and WebGL
+- Keeps version history, Undo, and Redo in the browser
+- Exports PNG, GIF, WebM video, and JavaScript source
+- Saves work locally without requiring an account
+
+Canvas is currently designed for screens at least 1024 pixels wide. Saved work stays in the current browser and is not synced to another device.
+
+## AI allowance
+
+AI creation is limited to 10 submissions per network each UTC day, with a short burst limit of 3 submissions per minute. A submission can include up to two automatic repair attempts. Templates, manual controls, playback, history, and export do not use the AI allowance.
+
+## Run it locally
+
+You need Node.js 22 or a compatible recent Node.js release.
 
 ```bash
-npm install
-# copy .env.example → .env.local and add your GEMINI_API_KEY
+npm ci
 npm run dev
 ```
 
----
+The frontend uses the deployed Canvas worker by default. To use another worker, copy `.env.example` to `.env.local` and set `GROQ_PROXY_URL`.
 
-Built by [Tomi Abe Studio](https://studio.tomiabe.com)
+Run the checks with:
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+## Run the worker locally
+
+The worker handles AI providers, request limits, and automatic fallback. It runs on Cloudflare Workers and uses a Durable Object for quotas.
+
+```bash
+cd worker
+npm install
+npx wrangler dev
+```
+
+Copy `worker/.dev.vars.example` to `worker/.dev.vars` and add at least one provider key if you want to test AI generation locally. Provider keys stay in the worker and are never sent to the browser.
+
+## Project layout
+
+```text
+src/                 React app, p5.js templates, generation, and browser storage
+worker/              Cloudflare Worker, provider routing, and quota handling
+scripts/             Saved AI evaluation tools
+docs/                Product notes and evaluation results
+.github/workflows/   Frontend and worker deployment
+```
+
+## Storage and privacy
+
+Artwork versions, prompts, generated code, and settings are stored in browser local storage. Clearing site data removes them. Export work you want to keep.
+
+Google Analytics is present on the public site. Canvas does not send prompt text, artwork code, or control values as custom analytics events.
+
+## Current limits
+
+- There are no accounts or cloud sync.
+- Shared links and remix links are not implemented yet.
+- Small screen editing is not supported yet.
+- AI output can still be visually wrong even when the code runs.
+- Some templates request microphone or webcam access when their features need it.
+
+Built by [Tomi Abe Studio](https://studio.tomiabe.com).

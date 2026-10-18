@@ -6,21 +6,21 @@ Executed 2026-10-16 in the orb: **32 distinct prompts / 32 API attempts**, eight
 
 | Configured model | API output | App schema + JS compile | Actual p5 runtime | Request latency |
 |---|---:|---:|---:|---|
-| `gemini-flash-lite-latest` | 8/8 HTTP 200 | 6/8 | 6/6 accepted sketches ran | 1.967–3.709 s; median 3.160 s |
-| `gemini-flash-latest` | 0/8 | not testable | not testable | Seven 429s: 94–390 ms; one 15.002 s timeout |
-| Groq `llama-3.3-70b-versatile` | 0/8 | not testable | not testable | Eight 404s: 33–93 ms |
-| OpenRouter `meta-llama/llama-3.3-70b-instruct:free` | 0/8 | not testable | not testable | Eight 401s: 20–123 ms |
+| `gemini-flash-lite-latest` | 8/8 HTTP 200 | 6/8 | 6/6 accepted sketches ran | 1.967-3.709 s; median 3.160 s |
+| `gemini-flash-latest` | 0/8 | not testable | not testable | Seven 429s: 94-390 ms; one 15.002 s timeout |
+| Groq `llama-3.3-70b-versatile` | 0/8 | not testable | not testable | Eight 404s: 33-93 ms |
+| OpenRouter `meta-llama/llama-3.3-70b-instruct:free` | 0/8 | not testable | not testable | Eight 401s: 20-123 ms |
 
 - Gemini Flash: seven quota-exhausted responses identify the alias target as `gemini-3.8-flash`, with a 20-request free-tier daily quota already exhausted. One request timed out. This is not evidence of poor sketch quality or global model unavailability.
 - Groq: all eight responses say model does not exist **or** this account lacks access (`model_not_found`). Cannot distinguish those causes from these responses.
 - OpenRouter: all eight say `User not found.` Authentication blocks any conclusion about model availability or output quality. The exact configured model was actually requested, not inferred unavailable.
-- Lite: seven strict JSON responses; the WEBGL mountain response had an invalid JSON escape (position 69). The seasonal tree returned nine controls and was rejected by the actual app's 1–8-control schema (the system asks for 3–6). Six responses passed the actual app validator, including `new Function('params', code)` syntax compilation.
+- Lite: seven strict JSON responses; the WEBGL mountain response had an invalid JSON escape (position 69). The seasonal tree returned nine controls and was rejected by the actual app's 1-8-control schema (the system asks for 3-6). Six responses passed the actual app validator, including `new Function('params', code)` syntax compilation.
 
 ## What runtime means here
 
 The script captures the **actual system prompt** from `generateConfigFromPrompt`, sends direct requests with the worker's exact model names, temperature 0.8, 4096-token budget and provider-specific JSON/thinking settings, and then feeds saved responses through the real app validator. The captured system prompt and full outputs are preserved in the JSON evidence.
 
-The accepted sketches were rendered using the real `generateHtml`/custom-sketch wrapper, p5 **1.9.0** and p5.sound in Chromium, inside same-origin srcdoc iframes at 780×560 CSS pixels / DPR 2. A secure blanked `https://example.com` page hosts the scratch harness; it is not the Canvas app UI. All six created 1560×1120 backing canvases, advanced **62–176 frames**, and reported **zero sketch errors** during the roughly 2.5-second observation window. None needed explicit p5 bootstrap. This is actual execution, not merely syntax checking.
+The accepted sketches were rendered using the real `generateHtml`/custom-sketch wrapper, p5 **1.9.0** and p5.sound in Chromium, inside same-origin srcdoc iframes at 780×560 CSS pixels / DPR 2. A secure blanked `https://example.com` page hosts the scratch harness; it is not the Canvas app UI. All six created 1560×1120 backing canvases, advanced **62-176 frames**, and reported **zero sketch errors** during the roughly 2.5-second observation window. None needed explicit p5 bootstrap. This is actual execution, not merely syntax checking.
 
 An initial `about:blank` harness produced no canvas because p5.sound needs a secure-context AudioWorklet; moving the harness to HTTPS resolved that environmental problem. Those exploratory runs made **no additional provider calls** and are not counted as model failures. Replay uses `--runtime-only`.
 
@@ -28,7 +28,7 @@ An initial `about:blank` harness produced no canvas because p5.sound needs a sec
 
 ## Recommendation and costs
 
-For **these credentials at this time**, Lite is the only empirically usable configured model and should precede quota-blocked Flash. Keep Flash conditional on restored quota rather than adding its possible 15-second wait ahead of working Lite. Groq and OpenRouter should not be relied on until model access and credentials respectively are repaired. There is **no defensible quality ordering among the three blocked models**; assigning them places 2–4 would confuse account availability with quality. Workers AI was outside this assignment and was not tested.
+For **these credentials at this time**, Lite is the only empirically usable configured model and should precede quota-blocked Flash. Keep Flash conditional on restored quota rather than adding its possible 15-second wait ahead of working Lite. Groq and OpenRouter should not be relied on until model access and credentials respectively are repaired. There is **no defensible quality ordering among the three blocked models**; assigning them places 2-4 would confuse account availability with quality. Workers AI was outside this assignment and was not tested.
 
 Lite reported **9,980 input + 9,838 output tokens** across eight requests. No dollar amount or billing tier was independently verified, and aliases can change targets/pricing. The `:free` suffix does not prove authenticated availability or zero account cost; all its requests failed authentication. Failed requests and the aborted Flash request may still consume quota or incur provider-side work; this script cannot establish billed cost. Request timings include full response-body parsing and exclude browser startup/runtime checks.
 
@@ -36,10 +36,10 @@ The 32 prompts cover biological motion, fluids/cells, WEBGL, recursion, typograp
 
 ## Reproduce / evidence
 
-- `npx tsx scripts/evaluate-ai.ts` — makes 32 quota/possibly billable calls with environment keys.
-- `npx tsx scripts/evaluate-ai.ts --runtime-only` — revalidates saved responses and replays browser checks without provider API calls.
-- `docs/phase3-evaluation.json` — per-request prompt, model, status/error, latency, usage, raw output, validation outcome, and browser execution results.
-- `scripts/evaluation-prompts.json` — reusable prompt fixture (columns correspond to Flash, Lite, Groq, OpenRouter).
+- `npx tsx scripts/evaluate-ai.ts` - makes 32 quota/possibly billable calls with environment keys.
+- `npx tsx scripts/evaluate-ai.ts --runtime-only` - revalidates saved responses and replays browser checks without provider API calls.
+- `docs/phase3-evaluation.json` - per-request prompt, model, status/error, latency, usage, raw output, validation outcome, and browser execution results.
+- `scripts/evaluation-prompts.json` - reusable prompt fixture (columns correspond to Flash, Lite, Groq, OpenRouter).
 
 Verification: both evaluation and secure-context runtime replay exited successfully; all 32 request records and six successful browser execution records are present. No application build/test was needed for these standalone evaluation additions.
 

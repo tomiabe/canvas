@@ -34,7 +34,7 @@ export async function generateConfigFromPrompt(prompt: string, currentConfig: Sk
 Always write a complete custom sketch, not a template selection. Return ONLY valid JSON:
 {"title":"Short artwork title","libraries":[],"code":"complete JavaScript","params":[{"id":"speed","name":"Speed","type":"number","default":1,"min":0,"max":4,"step":0.1}]}
 
-Declare 3–6 useful controls in params. Supported types:
+Declare 3-6 useful controls in params. Supported types:
 - number: finite min < max, positive step, default within bounds
 - color: default is a six-digit HEX string, e.g. "#ff6699"
 - boolean: default is true or false
@@ -54,7 +54,7 @@ Runtime contract:
 - Keep the code focused and complete so it fits the response budget. No markdown fences.
 
 Optional host-provided libraries (return only needed names in libraries; never add script tags):
-- "brush": p5.brush 1.1.4 with p5 1.11.3. Use createCanvas(windowWidth, windowHeight, WEBGL), pixelDensity(1), and setAttributes('preserveDrawingBuffer', true) before createCanvas. Coordinates are centered. brush.noField(); brush.noFill(); brush.noHatch(); brush.seed(37) initialize seeded brush drawing. brush.set('HB'|'2B'|'charcoal'|'marker'|'rotring', hexColor, weight); brush.line(x1,y1,x2,y2), brush.circle(x,y,r,true), brush.spline([[x,y],...],0.7). For watercolor: brush.noStroke(); brush.fill(hexColor,60); brush.bleed(0.1); brush.fillTexture(0.5,0.6). Flush brush.reBlend(); brush.reDraw(). On resize call brush.load() after resizeCanvas. Use very few watercolor shapes and bounded strokes with modest weights (typically 0.5–2): brush loops have a 500ms safety budget (ordinary sketches have 100ms). Never rebuild expensive brush paintings every animation frame; cache unchanged compositions, detect control changes in draw(), and repaint only when needed. Keep draw() running for control detection; noLoop() would prevent live controls from responding.
+- "brush": p5.brush 1.1.4 with p5 1.11.3. Use createCanvas(windowWidth, windowHeight, WEBGL), pixelDensity(1), and setAttributes('preserveDrawingBuffer', true) before createCanvas. Coordinates are centered. brush.noField(); brush.noFill(); brush.noHatch(); brush.seed(37) initialize seeded brush drawing. brush.set('HB'|'2B'|'charcoal'|'marker'|'rotring', hexColor, weight); brush.line(x1,y1,x2,y2), brush.circle(x,y,r,true), brush.spline([[x,y],...],0.7). For watercolor: brush.noStroke(); brush.fill(hexColor,60); brush.bleed(0.1); brush.fillTexture(0.5,0.6). Flush brush.reBlend(); brush.reDraw(). On resize call brush.load() after resizeCanvas. Use very few watercolor shapes and bounded strokes with modest weights (typically 0.5-2): brush loops have a 500ms safety budget (ordinary sketches have 100ms). Never rebuild expensive brush paintings every animation frame; cache unchanged compositions, detect control changes in draw(), and repaint only when needed. Keep draw() running for control detection; noLoop() would prevent live controls from responding.
 - "grain": p5.grain 0.8.0. In setup call p5grain.setup({random: () => random()}). p5grain.applyMonochromaticGrain(amount,false) adds exportable pixel texture; apply after painting/flushing brush, only when repainting, not every animation frame. No DOM texture overlays.
 - Both may be combined. Ordinary animations should use libraries: []. Do not use brush or grain unless the requested visual style benefits from them.
 
@@ -114,7 +114,7 @@ ${Object.values(templates).filter(t => t.id !== 'custom-sketch').map(t => `${t.n
       throw new Error('AI returned an unsupported drawing library. Use only brush or grain.');
     }
     if (data.params.length < 1 || data.params.length > 8) {
-      throw new Error(`Expected 1–8 controls, received ${data.params.length}. Reduce the controls to 3–6 and update the code to match.`);
+      throw new Error(`Expected 1-8 controls, received ${data.params.length}. Reduce the controls to 3-6 and update the code to match.`);
     }
     // Parse without executing, using the same grammar as the preview's loop guard.
     limitSketchLoops(data.code);

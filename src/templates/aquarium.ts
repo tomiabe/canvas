@@ -3,7 +3,7 @@ import { Template } from '../types';
 export const aquariumTemplate: Template = {
   id: 'aquarium',
   name: 'Virtual Aquarium',
-  description: 'Mic-reactive migration sim — small fish flee sound, big fish hunt toward it.',
+  description: 'Mic-reactive migration sim - small fish flee sound, big fish hunt toward it.',
   category: 'audio',
   supportsLiveParams: true,
   params: [
@@ -14,7 +14,7 @@ export const aquariumTemplate: Template = {
       default: 'moderate',
       options: ['freezing', 'cold', 'moderate', 'warm', 'hot'],
       category: 'simulation',
-      description: 'Controls swim speed and vertical drift — hot rises fast, freezing sinks slowly.',
+      description: 'Controls swim speed and vertical drift - hot rises fast, freezing sinks slowly.',
     },
     {
       id: 'currentStrength',

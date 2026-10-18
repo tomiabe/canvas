@@ -3,7 +3,7 @@ import { Template } from '../types';
 export const chainReactionTemplate: Template = {
   id: 'chain-reaction',
   name: 'Chain Reaction',
-  description: 'Abelian sandpile model — self-organized criticality simulation.',
+  description: 'Abelian sandpile model - self-organized criticality simulation.',
   category: 'simulation',
   params: [
     { id: 'dropRate', name: 'Drop Rate', type: 'number', default: 5, min: 1, max: 50, step: 1, category: 'simulation', description: 'Grains dropped per frame' },
