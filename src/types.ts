@@ -51,6 +51,7 @@ export interface Template {
 
 export interface SketchConfig {
   libraries?: SketchLibrary[];
+  imageAssetId?: string;
   templateId: string;
   seed: number;
   params: Record<string, any>;

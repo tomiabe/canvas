@@ -3,6 +3,21 @@ import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { generateHtml } from './generator';
 import { templates } from '../templates';
+import { parse } from 'acorn';
+
+test('photo poster keeps its image outside saved code and safely embeds editable text', () => {
+  const template = templates['photo-poster'];
+  assert.equal(template.supportsLiveParams, true);
+  const params = Object.fromEntries(template.params.map(param => [param.id, param.default]));
+  params.title = '</script><script>alert(1)</script>';
+  const code = template.generateCode(params, 7);
+  parse(code, { ecmaVersion: 'latest' });
+  const html = generateHtml({ templateId: template.id, seed: 7, imageAssetId: 'local-image-id', params });
+  assert.match(html, /image-asset/);
+  assert.match(html, /params-update/);
+  assert.doesNotMatch(html, /local-image-id/);
+  assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);
+});
 
 test('addon selection uses only pinned allowlisted URLs and preserves the legacy runtime', () => {
   const base = { templateId: 'custom-sketch', seed: 1, params: { code: 'function draw() {}' } };

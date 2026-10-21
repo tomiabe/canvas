@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { templates, templateCategories } from '../templates';
 import { SketchConfig, Template } from '../types';
-import { Search, ChevronDown, ChevronRight, List, LayoutGrid, ChevronUp, Wand2 } from 'lucide-react';
+import { importImageAsset } from '../lib/imageAssets';
+import { Search, ChevronDown, ChevronRight, List, LayoutGrid, ChevronUp, Wand2, ImagePlus } from 'lucide-react';
 
 interface TemplateGalleryProps {
   config: SketchConfig;
@@ -16,9 +17,32 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [view, setView] = useState<GalleryView>('accordion');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const imageInput = useRef<HTMLInputElement>(null);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState('');
+  const ordinaryTemplates = useMemo(() => Object.values(templates).filter(t => t.id !== 'custom-sketch' && t.id !== 'photo-poster'), []);
+
+  const handleImage = async (file?: File) => {
+    if (!file) return;
+    setImageBusy(true);
+    setImageError('');
+    try {
+      const imageAssetId = await importImageAsset(file);
+      const poster = templates['photo-poster'];
+      const params = config.templateId === poster.id
+        ? config.params
+        : Object.fromEntries(poster.params.map(param => [param.id, param.default]));
+      onChange({ templateId: poster.id, seed: Math.floor(Math.random() * 1000000), imageAssetId, params });
+    } catch (error) {
+      setImageError(error instanceof Error ? error.message : 'Could not open this image.');
+    } finally {
+      setImageBusy(false);
+      if (imageInput.current) imageInput.current.value = '';
+    }
+  };
 
   const filteredTemplates = useMemo(() => {
-    let list = Object.values(templates).filter(t => t.id !== 'custom-sketch');
+    let list = [...ordinaryTemplates];
     if (activeCategory !== 'all') {
       list = list.filter(t => t.category === activeCategory);
     }
@@ -27,18 +51,18 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
       list = list.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
     }
     return list.sort((a, b) => a.name.localeCompare(b.name));
-  }, [activeCategory, search]);
+  }, [activeCategory, search, ordinaryTemplates]);
 
   const groupedByCategory = useMemo(() => {
     const groups: Record<string, Template[]> = {};
-    const allTemplates = Object.values(templates).filter((t): t is Template => t.id !== 'custom-sketch').sort((a, b) => a.name.localeCompare(b.name));
+    const allTemplates = [...ordinaryTemplates].sort((a, b) => a.name.localeCompare(b.name));
     for (const t of allTemplates) {
       const cat = t.category || 'misc';
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(t);
     }
     return groups;
-  }, []);
+  }, [ordinaryTemplates]);
 
   const handleSelect = (template: Template) => {
     if (template.id === config.templateId) return;
@@ -59,7 +83,7 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
   };
 
   const handleSurpriseMe = () => {
-    const choices = Object.values(templates).filter(t => t.id !== 'custom-sketch');
+    const choices = ordinaryTemplates;
     const template = choices[Math.floor(Math.random() * choices.length)];
     const randomParams: Record<string, any> = {};
     template.params.forEach(p => {
@@ -107,6 +131,16 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
       {!collapsed && (
         <>
           <div className="px-3 pt-3">
+            <input ref={imageInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden"
+              aria-label="Choose a photo" onChange={event => void handleImage(event.target.files?.[0])} />
+            <button onClick={() => imageInput.current?.click()} disabled={imageBusy}
+              className="w-full rounded-xl border border-white/20 bg-white/10 p-3 text-left hover:bg-white/15 transition-colors cursor-pointer disabled:opacity-50">
+              <span className="flex items-center gap-2 text-xs font-semibold text-white"><ImagePlus size={16} /> {config.templateId === 'photo-poster' ? 'Replace photo' : 'Create from photo'}</span>
+              <span className="mt-1 block text-[10px] leading-relaxed text-white/55">{imageBusy ? 'Preparing photo...' : 'JPG, PNG, WebP, or first frame of a GIF'}</span>
+            </button>
+            {imageError && <p role="alert" className="mt-2 text-[11px] leading-relaxed text-amber-300">{imageError}</p>}
+          </div>
+          <div className="px-3 pt-3">
             <button
               onClick={handleSurpriseMe}
               title="Start from a random template"
@@ -145,7 +179,7 @@ export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
           {view === 'accordion' && (
             <div className="px-3 py-1.5 border-b border-white/5 shrink-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-white/40 font-medium">{Object.values(templates).filter(t => t.id !== 'custom-sketch').length} templates</span>
+                <span className="text-[10px] text-white/40 font-medium">{ordinaryTemplates.length} templates + photo poster</span>
               </div>
             </div>
           )}

@@ -136,17 +136,19 @@ export function TopBar({ config, onExport, onToggleCode, showCode, showSettings,
                       </button>
                     );
                   })}
-                  <div className="h-px bg-white/10 my-1"></div>
-                  <button
-                    onClick={() => { handleJsExport(); setShowExportMenu(false); }}
-                    className="flex items-center gap-3 w-full px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors cursor-pointer text-left"
-                  >
-                    <FileJson size={14} className="shrink-0" />
-                    <div>
-                      <div className="font-medium">JS</div>
-                      <div className="text-white/40">Source code</div>
-                    </div>
-                  </button>
+                  {config.templateId !== 'photo-poster' && <>
+                    <div className="h-px bg-white/10 my-1"></div>
+                    <button
+                      onClick={() => { handleJsExport(); setShowExportMenu(false); }}
+                      className="flex items-center gap-3 w-full px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors cursor-pointer text-left"
+                    >
+                      <FileJson size={14} className="shrink-0" />
+                      <div>
+                        <div className="font-medium">JS</div>
+                        <div className="text-white/40">Source code</div>
+                      </div>
+                    </button>
+                  </>}
                 </div>
               )}
             </div>

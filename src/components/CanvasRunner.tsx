@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SketchConfig } from '../types';
 import { generateHtml } from '../engine/generator';
 import { templates } from '../templates';
+import { getImageAsset } from '../lib/imageAssets';
 import { EyeOff, AlertTriangle } from 'lucide-react';
 
 export interface ExportEvent {
@@ -131,14 +132,33 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
           if (templates[config.templateId]?.supportsLiveParams) {
             iframeRef.current?.contentWindow?.postMessage({ type: 'params-update', params: config.params }, '*');
           }
+          if (config.templateId === 'photo-poster' && config.imageAssetId) {
+            const expectedRun = runId.current;
+            const target = iframeRef.current?.contentWindow;
+            void getImageAsset(config.imageAssetId).then(blob => {
+              if (!blob) return null;
+              return new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result));
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(blob);
+              });
+            }).then(dataUrl => {
+              if (runId.current === expectedRun && iframeRef.current?.contentWindow === target) {
+                target?.postMessage({ type: 'image-asset', dataUrl }, '*');
+              }
+            }).catch(() => {
+              if (runId.current === expectedRun) target?.postMessage({ type: 'image-asset', dataUrl: null }, '*');
+            });
+          }
         }}
       />
       {sketchError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 px-6 text-center pointer-events-none">
           <AlertTriangle className="text-amber-400" size={28} />
-          <p className="text-sm text-white/80 font-medium">The generated sketch hit an error</p>
+          <p className="text-sm text-white/80 font-medium">{config.templateId === 'photo-poster' ? 'The photo poster hit an error' : 'The generated sketch hit an error'}</p>
           <p className="text-xs text-white/40 max-w-md font-mono">{sketchError}</p>
-          <p className="text-xs text-white/40">Try regenerating with a different description.</p>
+          <p className="text-xs text-white/40">{config.templateId === 'photo-poster' ? 'Try another photo or reload this page.' : 'Try regenerating with a different description.'}</p>
         </div>
       )}
     </div>

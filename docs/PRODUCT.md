@@ -18,6 +18,8 @@ The code is still available. Canvas hides it when it is not needed and exposes i
 
 People can start from a prompt or browse 53 templates. AI generated sketches include editable controls and can use the approved brush and grain libraries. Follow up prompts can refine the current artwork or start a separate one.
 
+People can also upload a JPG, PNG, WebP, or GIF image to make a photo poster. GIF uploads use the first frame. The first version offers Echo, Duotone, and Mosaic treatments with controls for title, small text, colour, image slices, grain, and animation. Photos stay in local browser IndexedDB and are linked to artwork history by ID. They are not sent to the AI worker. Prompt based photo styling is not implemented yet.
+
 Canvas stages generated code before replacing the current artwork. It checks the response shape and JavaScript syntax, runs the sketch in a restricted preview, and can request up to two repairs when an error occurs.
 
 Accepted work is saved to local browser storage. History, Undo, and Redo restore the full sketch, its settings, seed, and recent conversation context. Starting a new artwork does not remove older versions.
@@ -38,7 +40,7 @@ Runtime guards catch many common mistakes, but they are not complete resource is
 
 ## Storage
 
-There are no user accounts or cloud storage. Prompts, code, settings, and version history stay in browser local storage. Clearing site data removes them.
+There are no user accounts or cloud storage. Prompts, code, settings, and version history stay in browser local storage. Uploaded poster photos stay in browser IndexedDB. Clearing site data removes them.
 
 ## Next work
 

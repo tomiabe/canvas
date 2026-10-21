@@ -1,6 +1,6 @@
 # Canvas
 
-Canvas is a browser based studio for making generative art with p5.js. Start with a written idea or one of 53 built in sketches, adjust the result with live controls, and export the finished work.
+Canvas is a browser based studio for making generative art with p5.js. Start with a written idea, one of 53 built in sketches, or your own photo. Adjust the result with live controls and export the finished work.
 
 [Open Canvas](https://canvas.tomiabe.com/)
 
@@ -23,11 +23,14 @@ It works well for:
 - Repairs many syntax and runtime errors automatically
 - Provides controls for colour, movement, density, size, and other sketch settings
 - Includes 53 templates across particles, physics, simulation, geometry, audio, image, and WebGL
+- Turns an uploaded photo into an editable poster with Echo, Duotone, and Mosaic treatments
 - Keeps version history, Undo, and Redo in the browser
 - Exports PNG, GIF, WebM video, and JavaScript source
 - Saves work locally without requiring an account
 
 Canvas is currently designed for screens at least 1024 pixels wide. Saved work stays in the current browser and is not synced to another device.
+
+To make a photo poster, choose **Create from photo** in the template sidebar, upload a JPG, PNG, WebP, or GIF image, then use **Adjust** to change the treatment, title, colours, texture, and movement. For an animated GIF, Canvas uses its first frame. Image files are prepared and stored locally in this browser. They are not sent to the AI service. Photo prompting is not supported yet. Export the poster as PNG, GIF, or video.
 
 ## AI allowance
 
@@ -76,7 +79,7 @@ docs/                Product notes and evaluation results
 
 ## Storage and privacy
 
-Artwork versions, prompts, generated code, and settings are stored in browser local storage. Clearing site data removes them. Export work you want to keep.
+Artwork versions, prompts, generated code, and settings are stored in browser local storage. Uploaded poster images are stored separately in browser IndexedDB. Clearing site data removes both. Export work you want to keep. The photo poster's JavaScript view does not include the uploaded image.
 
 Google Analytics is present on the public site. Canvas does not send prompt text, artwork code, or control values as custom analytics events.
 

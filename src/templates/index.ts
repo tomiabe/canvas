@@ -51,8 +51,10 @@ import { voronoiTemplate } from './voronoi';
 import { lorenzAttractorTemplate } from './lorenzAttractor';
 import { springSystemTemplate } from './springSystem';
 import { watercolorGardenTemplate, charcoalLandscapeTemplate, inkFlowTemplate } from './painterly';
+import { photoPosterTemplate } from './photoPoster';
 
 export const templates: Record<string, Template> = {
+  [photoPosterTemplate.id]: photoPosterTemplate,
   [watercolorGardenTemplate.id]: watercolorGardenTemplate,
   [charcoalLandscapeTemplate.id]: charcoalLandscapeTemplate,
   [inkFlowTemplate.id]: inkFlowTemplate,

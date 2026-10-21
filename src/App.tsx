@@ -286,6 +286,7 @@ export default function App() {
         `${sameArtwork ? codeChanged ? 'Edited code:' : 'Adjusted:' : 'Started:'} ${title}`),
       group: sameArtwork && previous.config.seed === newConfig.seed ? `edit:${changedParams.sort().join(',')}` : undefined,
     });
+    if (newConfig.templateId === 'photo-poster' && previous.config.templateId !== 'photo-poster') setPanel('adjust');
   }, []);
 
   const hasAnyTemplate = !!config.templateId;
@@ -347,7 +348,7 @@ export default function App() {
               mode="new" onModeChange={setPromptMode} usage={usage} usageUnavailable={usageUnavailable} usageBlocked={usageBlocked} />
           )}
 
-          {hasAnyTemplate && !showPrompt && (
+          {hasAnyTemplate && config.templateId !== 'photo-poster' && !showPrompt && (
             <button
               onClick={() => setShowPrompt(true)}
               className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 h-10 px-4 gap-2 rounded-full glass-panel flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors shadow-lg"
@@ -358,7 +359,7 @@ export default function App() {
             </button>
           )}
 
-          {hasAnyTemplate && showPrompt && (
+          {hasAnyTemplate && config.templateId !== 'photo-poster' && showPrompt && (
             <PromptBar
               onGenerate={handleGenerate}
               isLoading={isGenerating}

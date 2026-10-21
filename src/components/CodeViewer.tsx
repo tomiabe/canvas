@@ -52,6 +52,7 @@ export function CodeViewer({ config, onChange }: CodeViewerProps) {
         </button>
       </div>
       <div className="flex-1 overflow-auto p-4 custom-scrollbar flex flex-col">
+        {config.templateId === 'photo-poster' && <p className="mb-3 text-xs text-white/50">This sketch uses your locally stored photo. The code alone does not include the image.</p>}
         {isCustom ? (
           <textarea 
             value={config.params.code || ''}
