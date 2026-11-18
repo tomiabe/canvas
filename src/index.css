@@ -2,16 +2,29 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --color-canvas-bg: #000000;
+  --color-canvas-surface: #1c1c1e;
+  --color-canvas-raised: #29292d;
+  --color-canvas-overlay: #171719;
+  --color-canvas-preview: #0b0b0d;
+  --color-canvas-art-deep: #081d28;
+  --color-canvas-art-teal: #1e6674;
+  --color-canvas-art-gold: #f5d77d;
+  --color-canvas-text: #ededef;
+  --color-canvas-muted: #a1a1aa;
+  --color-canvas-white: #ffffff;
+  --color-canvas-line: #ffffff14;
+  --color-canvas-switch: #34c759;
 }
 
 @layer utilities {
   .glass-panel {
-    background: rgba(28, 28, 30, 0.75);
+    background: color-mix(in srgb, var(--color-canvas-surface) 75%, transparent);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--color-canvas-line);
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -22,19 +35,19 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--color-canvas-white) 20%, transparent);
     border-radius: 4px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: color-mix(in srgb, var(--color-canvas-white) 30%, transparent);
   }
 
   /* Apple-inspired range slider */
   input[type="range"].apple-slider {
     -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--color-canvas-white) 10%, transparent);
     height: 4px;
     border-radius: 2px;
     width: 100%;
@@ -45,11 +58,11 @@
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: var(--color-canvas-white);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--color-canvas-bg) 30%, transparent);
     cursor: pointer;
     margin-top: -6px; /* align with track */
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(255,255,255,0.8);
+    box-shadow: 0px 2px 6px color-mix(in srgb, var(--color-canvas-bg) 30%, transparent), inset 0px 1px 1px color-mix(in srgb, var(--color-canvas-white) 80%, transparent);
   }
   
   input[type="range"].apple-slider::-webkit-slider-runnable-track {
@@ -58,6 +71,49 @@
     cursor: pointer;
     background: transparent;
   }
+
+  input[type="range"].apple-slider.mobile-slider {
+    height: 24px;
+    background: transparent;
+  }
+
+  input[type="range"].apple-slider.mobile-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-canvas-white) 16%, transparent);
+  }
+
+  input[type="range"].apple-slider.mobile-slider::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -10px;
+  }
+
+  .canvas-featured-glow {
+    background: radial-gradient(circle at 45% 55%, var(--color-canvas-art-teal), transparent 65%);
+  }
+
+  .canvas-featured-spark {
+    box-shadow: 0 0 14px var(--color-canvas-art-gold);
+  }
+
+  .canvas-featured-spark-large {
+    box-shadow: 0 0 16px var(--color-canvas-art-gold);
+  }
+
+  .canvas-featured-spark-small {
+    box-shadow: 0 0 12px var(--color-canvas-art-gold);
+  }
+
+  .canvas-switch-glow {
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-canvas-switch) 50%, transparent);
+  }
+
+  .canvas-panel-shadow-left {
+    box-shadow: -10px 0 30px color-mix(in srgb, var(--color-canvas-bg) 50%, transparent);
+  }
+
+  .canvas-panel-shadow-right {
+    box-shadow: 10px 0 30px color-mix(in srgb, var(--color-canvas-bg) 50%, transparent);
+  }
 }
-
-

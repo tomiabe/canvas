@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, X, Wand2, Sliders, Download, PanelLeft } from 'lucide-react';
+import { ArrowUp, Sparkles, Loader2, X, Wand2, Sliders, Download, PanelLeft } from 'lucide-react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
 import { AIUsage, GenerationMode } from '../lib/ai';
@@ -10,7 +10,7 @@ interface PromptBarProps {
   onClose?: () => void;
   config?: SketchConfig;
   /** 'hero' is the centered prompt on the empty canvas; 'floating' edits an existing sketch. */
-  variant?: 'floating' | 'hero';
+  variant?: 'floating' | 'hero' | 'mobile-start' | 'mobile-refine' | 'desktop-dock';
   mode: GenerationMode;
   onModeChange: (mode: GenerationMode) => void;
   usage: AIUsage | null;
@@ -73,6 +73,8 @@ const heroSteps = [
 
 export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'floating', mode, onModeChange, usage, usageUnavailable, usageBlocked }: PromptBarProps) {
   const isHero = variant === 'hero';
+  const isMobileStart = variant === 'mobile-start';
+  const isMobileRefine = variant === 'mobile-refine';
   const [prompt, setPrompt] = useState('');
   const disabled = isLoading || usageBlocked;
 
@@ -97,7 +99,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
     : `${usage.remaining}/${usage.limit} AI submissions left today · resets at 00:00 UTC`;
   const allowance = (
     <p role="status" title="Anonymous allowance is shared by people on the same network. A submission includes up to two automatic repairs. Templates and manual adjustments are unlimited."
-      className={`mt-3 text-[11px] ${usageBlocked ? 'text-amber-200/90' : 'text-white/45'}`}>
+      className={`mt-3 text-[11px] ${usageBlocked ? 'text-amber-200/90' : 'text-canvas-text/45'}`}>
       {usageLabel}
     </p>
   );
@@ -107,12 +109,12 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
         {(['new', 'refine'] as const).map(value => (
           <button key={value} type="button" aria-pressed={mode === value} disabled={isLoading}
             onClick={() => onModeChange(value)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 ${mode === value ? 'bg-white text-black' : 'text-white/55 hover:bg-white/10 hover:text-white'}`}>
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 ${mode === value ? 'bg-canvas-white text-canvas-bg' : 'text-canvas-text/55 hover:bg-canvas-white/10 hover:text-canvas-text'}`}>
             {value === 'new' ? 'New artwork' : 'Refine this artwork'}
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-white/45">
+      <p className="mt-2 text-[11px] text-canvas-text/45">
         {mode === 'new' ? 'Start fresh. Your current artwork stays in History.' : 'Keep this composition, palette and settings as the starting point.'}
       </p>
     </div>
@@ -120,8 +122,8 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
 
   const inputRow = (
     <div className="flex items-center">
-      <div className="w-10 h-10 flex items-center justify-center shrink-0 text-white/50 bg-white/5 rounded-full">
-        {isLoading ? <Loader2 className="animate-spin w-5 h-5 text-white" /> : <Sparkles className="w-5 h-5" />}
+      <div className="w-10 h-10 flex items-center justify-center shrink-0 text-canvas-text/50 bg-canvas-white/5 rounded-full">
+        {isLoading ? <Loader2 className="animate-spin w-5 h-5 text-canvas-text" /> : <Sparkles className="w-5 h-5" />}
       </div>
       <input
         type="text"
@@ -131,15 +133,15 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
         aria-label="Describe your sketch"
         autoFocus={isHero}
         disabled={isLoading}
-        className="flex-1 min-w-0 bg-transparent border-none outline-none text-white placeholder-white/40 px-3 text-sm"
+        className="flex-1 min-w-0 bg-transparent border-none outline-none text-canvas-text placeholder:text-canvas-text/40 px-3 text-sm"
       />
       <button
         type="submit"
         disabled={!prompt.trim() || disabled}
         className={`h-9 px-5 rounded-full font-medium text-sm transition-colors cursor-pointer ${
           prompt.trim() && !disabled
-            ? 'bg-white text-black hover:bg-white/90'
-            : 'bg-white/10 text-white/40 cursor-not-allowed'
+            ? 'bg-canvas-white text-canvas-bg hover:bg-canvas-white/90'
+            : 'bg-canvas-white/10 text-canvas-text/40 cursor-not-allowed'
         }`}
       >
         {isLoading ? 'Generating…' : mode === 'new' ? 'Create' : 'Refine'}
@@ -149,7 +151,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
           type="button"
           onClick={onClose}
           aria-label="Close AI prompt"
-          className="ml-2 p-2 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+          className="ml-2 p-2 text-canvas-text/40 hover:text-canvas-text/80 transition-colors cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -157,31 +159,103 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
     </div>
   );
 
+  if (isMobileStart) {
+    return (
+      <section className="space-y-6 px-6 pt-6">
+        <div className="space-y-3">
+          <h1 className="max-w-xs text-[30px] font-semibold leading-[1.12] tracking-tight">What would you like to make?</h1>
+          <p className="text-sm leading-relaxed text-canvas-text/65">Describe a scene, pattern or motion. Canvas will turn it into a live sketch.</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block">
+            <span className="sr-only">Describe your sketch</span>
+            <textarea value={prompt} onChange={event => setPrompt(event.target.value)} disabled={isLoading}
+              placeholder="Fireflies drifting over a pond at night" rows={4}
+              className="min-h-28 w-full resize-none rounded-xl border border-canvas-white/15 bg-canvas-surface p-4 text-[15px] leading-relaxed text-canvas-text outline-none placeholder:text-canvas-text/55 focus:border-canvas-white/50" />
+          </label>
+          <button type="submit" disabled={!prompt.trim() || disabled}
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-canvas-white text-sm font-semibold text-canvas-bg disabled:cursor-not-allowed disabled:opacity-45">
+            {isLoading ? 'Writing your sketch…' : 'Create sketch'}
+          </button>
+          <div className="text-center">{allowance}</div>
+        </form>
+      </section>
+    );
+  }
+
+  if (isMobileRefine) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <label htmlFor="mobile-refine-prompt" className="block text-[13px] font-medium">Describe a change</label>
+        <div className="flex min-h-12 items-center gap-2 rounded-lg border border-canvas-white/15 bg-canvas-bg px-2 focus-within:border-canvas-white/50">
+          <input id="mobile-refine-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} disabled={isLoading}
+            placeholder="Make the particles move more slowly" className="min-w-0 flex-1 bg-transparent px-1 text-[13px] text-canvas-text outline-none placeholder:text-canvas-text/55" />
+          <button type="submit" disabled={!prompt.trim() || disabled} aria-label="Refine sketch"
+            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-canvas-white text-canvas-bg disabled:opacity-45">
+            {isLoading ? <Loader2 size={17} className="animate-spin" /> : <ArrowUp size={17} />}
+          </button>
+        </div>
+        {allowance}
+      </form>
+    );
+  }
+
+  if (variant === 'desktop-dock') {
+    return (
+      <form onSubmit={handleSubmit} className="shrink-0 space-y-2 border-t border-canvas-line bg-canvas-surface px-5 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="desktop-artwork-prompt" className="text-[13px] font-medium">{mode === 'new' ? 'Describe new artwork' : 'Describe a change'}</label>
+          <div role="group" aria-label="AI artwork mode" className="flex items-center gap-1 rounded-lg bg-canvas-raised p-1">
+            {(['refine', 'new'] as const).map(value => <button key={value} type="button" aria-pressed={mode === value} disabled={isLoading} onClick={() => onModeChange(value)}
+              className={`rounded-md px-3 py-1 text-xs disabled:opacity-50 ${mode === value ? 'bg-canvas-white font-semibold text-canvas-bg' : 'text-canvas-muted hover:text-canvas-text'}`}>
+              {value === 'refine' ? 'Refine' : 'New artwork'}
+            </button>)}
+          </div>
+        </div>
+        <div className="flex min-h-12 items-center gap-3 rounded-lg border border-canvas-line bg-canvas-bg pr-2 pl-4 focus-within:border-canvas-white/50">
+          <input id="desktop-artwork-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} disabled={isLoading}
+            placeholder={mode === 'new' ? 'Describe the artwork you want to make' : 'Make the particles move more slowly'}
+            className="min-w-0 flex-1 bg-transparent text-[13px] text-canvas-text outline-none placeholder:text-canvas-muted" />
+          <button type="submit" disabled={!prompt.trim() || disabled} aria-label={mode === 'new' ? 'Create artwork' : 'Refine artwork'}
+            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-canvas-white text-canvas-bg disabled:opacity-45">
+            {isLoading ? <Loader2 size={17} className="animate-spin" /> : <ArrowUp size={17} />}
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-canvas-muted">
+          <span>Try</span>
+          {suggestions.slice(0, 3).map(suggestion => <button key={suggestion} type="button" disabled={disabled} onClick={() => handleSuggestion(suggestion)}
+            className="rounded-full border border-canvas-line bg-canvas-raised px-2.5 py-1 hover:text-canvas-text disabled:opacity-40">{suggestion}</button>)}
+          <span className="ml-auto text-[11px]" title={usageLabel}>{usageUnavailable ? 'AI allowance unavailable' : usage ? `${usage.remaining} AI submissions left` : 'Checking AI allowance…'}</span>
+        </div>
+      </form>
+    );
+  }
+
   if (isHero) {
     return (
       <div className="absolute inset-0 z-10 flex px-6 overflow-y-auto">
         {/* m-auto centers without clipping the top when the viewport is short. */}
         <div className="w-full max-w-2xl py-10 m-auto">
-          <h1 className="text-2xl font-semibold tracking-tight text-white/90 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-canvas-text/90 text-center">
             Describe the art you want to see
           </h1>
-          <p className="text-sm text-white/40 text-center mt-2 mb-6">
+          <p className="text-sm text-canvas-text/40 text-center mt-2 mb-6">
             Canvas turns your words into a live, animated sketch. No code required.
           </p>
 
           <form
             onSubmit={handleSubmit}
-            className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
+            className="glass-panel rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-canvas-white/20 transition-shadow"
           >
             {inputRow}
             {allowance}
           </form>
 
-          <p className={`text-xs text-center mt-3 h-4 ${isLoading ? 'text-white/50' : 'text-transparent'}`} aria-live="polite">
+          <p className={`text-xs text-center mt-3 h-4 ${isLoading ? 'text-canvas-text/50' : 'text-transparent'}`} aria-live="polite">
             {isLoading ? 'Writing your sketch…' : ''}
           </p>
 
-          <div className="mt-3 text-[10px] text-white/30 font-medium uppercase tracking-wider text-center">
+          <div className="mt-3 text-[10px] text-canvas-text/30 font-medium uppercase tracking-wider text-center">
             Try an example
           </div>
           <div className="flex flex-wrap justify-center gap-2 mt-2">
@@ -191,7 +265,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
                 type="button"
                 disabled={disabled}
                 onClick={() => handleSuggestion(example)}
-                className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 rounded-full border border-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs bg-canvas-white/5 hover:bg-canvas-white/10 text-canvas-text/60 hover:text-canvas-text/90 rounded-full border border-canvas-line transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {example}
               </button>
@@ -203,17 +277,17 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
               const Icon = step.icon;
               return (
                 <div key={step.label} className="flex flex-col items-center text-center gap-1.5">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
-                    <Icon size={14} className="text-white/40" />
+                  <div className="w-8 h-8 rounded-full bg-canvas-white/5 flex items-center justify-center">
+                    <Icon size={14} className="text-canvas-text/40" />
                   </div>
-                  <div className="text-xs font-medium text-white/60">{step.label}</div>
-                  <div className="text-[11px] text-white/30">{step.desc}</div>
+                  <div className="text-xs font-medium text-canvas-text/60">{step.label}</div>
+                  <div className="text-[11px] text-canvas-text/30">{step.desc}</div>
                 </div>
               );
             })}
           </div>
 
-          <p className="flex items-center justify-center gap-1.5 text-xs text-white/30 mt-8">
+          <p className="flex items-center justify-center gap-1.5 text-xs text-canvas-text/30 mt-8">
             <PanelLeft size={12} />
             Or start from one of the templates on the left.
           </p>
@@ -226,15 +300,15 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="glass-panel bg-zinc-900/95! rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
+        className="glass-panel bg-canvas-raised/95! rounded-2xl shadow-2xl p-3 focus-within:ring-2 focus-within:ring-canvas-white/20 transition-shadow"
       >
         {modeSelector}
         {inputRow}
         {allowance}
 
         {!isLoading && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-white/10">
-            <span className="text-[10px] text-white/30 font-medium uppercase tracking-wider mt-0.5 mr-1 shrink-0">
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-canvas-line">
+            <span className="text-[10px] text-canvas-text/30 font-medium uppercase tracking-wider mt-0.5 mr-1 shrink-0">
               <Wand2 size={10} className="inline mr-1" />
               Suggestions
             </span>
@@ -244,7 +318,7 @@ export function PromptBar({ onGenerate, isLoading, onClose, config, variant = 'f
                 type="button"
                 disabled={disabled}
                 onClick={() => handleSuggestion(s)}
-                className="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/80 rounded-full border border-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-2.5 py-1 text-[10px] bg-canvas-white/5 hover:bg-canvas-white/10 text-canvas-text/60 hover:text-canvas-text/80 rounded-full border border-canvas-line transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {s}
               </button>

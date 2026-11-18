@@ -22,7 +22,9 @@ Canvas stages generated code before replacing the current artwork. It checks the
 
 Accepted work is saved to local browser storage. History, Undo, and Redo restore the full sketch, its settings, seed, and recent conversation context. Starting a new artwork does not remove older versions.
 
-Exports include PNG, GIF, WebM video, and JavaScript source. The app is currently intended for laptop and desktop screens.
+Exports include PNG, GIF, browser-supported WebM or MP4 video, and JavaScript source. The phone layout supports prompting, refinement, live controls, template search, history, code inspection, export, and sharing. Direct code editing is available on desktop.
+
+The gallery uses one searchable list with a category filter; Surprise me is part of that list. Sharing encodes a validated sketch in the URL fragment. Opening it creates a new local history version, so a recipient can remix without an account or server storage.
 
 ## AI service
 
@@ -36,15 +38,15 @@ Generated sketches run in an iframe without same origin access. Curated template
 
 Runtime guards catch many common mistakes, but they are not complete resource isolation. A sketch can run successfully and still be blank, slow, or visually poor.
 
+After a generated sketch appears, a person can mark whether it matched their idea. Aggregate analytics record that answer, generation outcomes, and export success or failure. These signals measure useful results beyond syntax validity, but they do not replace visual review. The sketch's prompt, code, and control values are not sent as analytics parameters.
+
 ## Storage
 
 There are no user accounts or cloud storage. Prompts, code, settings, and version history stay in browser local storage. Clearing site data removes them.
 
 ## Next work
 
-- Add URL based sharing and remixing without server storage
 - Add standalone HTML export and p5.js editor handoff
-- Improve support for smaller screens
 - Add optional accounts only if cross device sync becomes necessary
 
 ## Release checks

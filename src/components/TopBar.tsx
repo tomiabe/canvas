@@ -1,21 +1,15 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { templates } from '../templates';
 import { SketchConfig } from '../types';
-import { getSketchScripts } from '../engine/generator';
-import { Download, Code, Palette, SlidersHorizontal, Pause, Play, FileImage, FileVideo, FileJson, CircleHelp, History, Undo2, Redo2 } from 'lucide-react';
+import { CircleHelp, Download, FileImage, FileJson, FileVideo, History, Palette, Redo2, Share2, Undo2 } from 'lucide-react';
 
 interface TopBarProps {
   config: SketchConfig;
   onExport: (type: 'png' | 'gif' | 'video') => void;
-  onToggleCode: () => void;
-  showCode: boolean;
-  showSettings: boolean;
-  onToggleSettings: () => void;
-  previewEnabled: boolean;
-  onTogglePreview: () => void;
+  onExportJs: () => void;
+  onShare: () => void;
   onToggleInfo: () => void;
   showInfo: boolean;
-  hasTemplate: boolean;
   onHome: () => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -25,149 +19,58 @@ interface TopBarProps {
   onToggleHistory: () => void;
 }
 
-export function TopBar({ config, onExport, onToggleCode, showCode, showSettings, onToggleSettings, previewEnabled, onTogglePreview, onToggleInfo, showInfo, hasTemplate, onHome, onUndo, onRedo, canUndo, canRedo, showHistory, onToggleHistory }: TopBarProps) {
+export function TopBar({ config, onExport, onExportJs, onShare, onToggleInfo, showInfo, onHome, onUndo, onRedo, canUndo, canRedo, showHistory, onToggleHistory }: TopBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const template = templates[config.templateId];
+  const preset = template?.presets?.find(item =>
+    Object.entries(item.params).every(([key, value]) => JSON.stringify(config.params[key]) === JSON.stringify(value))
+  );
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
+    function handleClickOutside(event: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) setShowExportMenu(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleJsExport = () => {
-    if (!hasTemplate) return;
-    const template = templates[config.templateId];
-    const code = `// Load these scripts in order before running this sketch:\n${getSketchScripts(config).map(url => `// ${url}`).join('\n')}\n\n${template.generateCode(config.params, config.seed)}`;
-    const blob = new Blob([code], { type: 'text/javascript' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `canvas-${config.templateId}-${config.seed}.js`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportOptions = [
-    { type: 'png' as const, label: 'PNG', desc: 'Screenshot', icon: FileImage },
-    { type: 'gif' as const, label: 'GIF', desc: '3s animation', icon: FileVideo },
-    { type: 'video' as const, label: 'Video', desc: '5s recording', icon: FileVideo },
-  ];
-
   return (
-    <header className="min-h-12 glass-panel grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 sm:gap-4 sm:px-4 text-white/90 shrink-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
-      <button onClick={onHome} title="Start a new artwork - saved versions are kept" aria-label="Canvas - new artwork"
-        className="flex items-center gap-2.5 font-semibold text-sm tracking-tight rounded-md py-2 cursor-pointer hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70">
-        <Palette className="text-white" size={18} />
-        <span>Canvas</span>
-      </button>
-
-      <div role="group" aria-label="Artwork controls" className="flex min-w-0 flex-wrap items-center justify-center gap-1.5 py-2">
-        {(hasTemplate || canUndo || canRedo) && <>
-          <button onClick={onUndo} disabled={!canUndo} aria-label="Undo" title="Undo (⌘/Ctrl Z)"
-            className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-25 disabled:cursor-default cursor-pointer transition-colors"><Undo2 size={14} /></button>
-          <button onClick={onRedo} disabled={!canRedo} aria-label="Redo" title="Redo (⌘/Ctrl Shift Z)"
-            className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-25 disabled:cursor-default cursor-pointer transition-colors"><Redo2 size={14} /></button>
-          <div className="h-4 w-px bg-white/15 mx-1" />
+    <header className="z-30 flex min-h-16 shrink-0 items-center justify-between gap-4 border-b border-canvas-line bg-canvas-surface px-6 text-canvas-text">
+      <div className="flex min-w-0 items-center gap-4">
+        <button type="button" onClick={onHome} title="Start new artwork; previous work stays in History" className="flex shrink-0 items-center gap-2 text-[15px] font-semibold hover:text-canvas-text/80">
+          <Palette size={19} /> Canvas
+        </button>
+        {template && <>
+          <span aria-hidden="true" className="h-6 w-px bg-canvas-white/10" />
+          <span className="min-w-0 truncate text-sm font-medium" title={config.generated?.title ?? template.name}>{config.generated?.title ?? template.name}</span>
+          {preset && <span className="shrink-0 rounded-full bg-canvas-raised px-2.5 py-1 text-xs text-canvas-muted">{preset.name}</span>}
         </>}
-        {hasTemplate && (
-          <>
-            <span className="max-w-48 truncate text-xs font-medium text-white/60 mr-3" title={config.generated?.title ?? templates[config.templateId]?.name}>
-              {config.generated?.title ?? templates[config.templateId]?.name}
-            </span>
-
-            <button
-              onClick={onToggleSettings}
-              aria-pressed={showSettings}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${showSettings ? 'bg-white text-black border-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'}`}
-            >
-              <SlidersHorizontal size={13} />
-              Adjust
-            </button>
-
-            <button
-              onClick={onToggleCode}
-              aria-pressed={showCode}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer active:scale-95 ${showCode ? 'bg-white text-black border-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'}`}
-            >
-              <Code size={13} />
-              Code
-            </button>
-
-            <button
-              onClick={onTogglePreview}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-lg bg-white/5 hover:bg-white/10 border-white/10 transition-colors cursor-pointer active:scale-95"
-              title={previewEnabled ? 'Pause preview' : 'Resume preview'}
-              aria-label={previewEnabled ? 'Pause preview' : 'Resume preview'}
-            >
-              {previewEnabled ? <Pause size={13} /> : <Play size={13} />}
-            </button>
-
-            <div className="h-4 w-[1px] bg-white/15 mx-1"></div>
-
-            <div className="relative" ref={exportRef}>
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-white hover:bg-white/90 text-black rounded-lg transition-colors cursor-pointer active:scale-95 shadow-sm"
-              >
-                <Download size={13} />
-                Export
-              </button>
-
-              {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 w-44 glass-panel rounded-lg overflow-hidden z-50 shadow-xl border border-white/10 py-1">
-                  {exportOptions.map(opt => {
-                    const Icon = opt.icon;
-                    return (
-                      <button
-                        key={opt.type}
-                        onClick={() => { onExport(opt.type); setShowExportMenu(false); }}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors cursor-pointer text-left"
-                      >
-                        <Icon size={14} className="shrink-0" />
-                        <div>
-                          <div className="font-medium">{opt.label}</div>
-                          <div className="text-white/40">{opt.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                  <div className="h-px bg-white/10 my-1"></div>
-                  <button
-                    onClick={() => { handleJsExport(); setShowExportMenu(false); }}
-                    className="flex items-center gap-3 w-full px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors cursor-pointer text-left"
-                  >
-                    <FileJson size={14} className="shrink-0" />
-                    <div>
-                      <div className="font-medium">JS</div>
-                      <div className="text-white/40">Source code</div>
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
-        )}
       </div>
-      <div className="flex items-center gap-3 border-l border-white/10 pl-3 sm:pl-4">
-        <button onClick={onToggleHistory} aria-pressed={showHistory} aria-label="History" title="Version history"
-          className={`py-2 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showHistory ? 'text-white' : 'text-white/50 hover:text-white/90'}`}>
-          <History size={16} /><span className="hidden sm:inline">History</span>
-        </button>
-        <button
-          onClick={onToggleInfo}
-          aria-pressed={showInfo}
-          aria-label="Help"
-          className={`py-2 flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${showInfo ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
-          title="Help"
-        >
-          <CircleHelp size={16} />
-          <span className="hidden sm:inline">Help</span>
-        </button>
+
+      <div className="flex shrink-0 items-center gap-2">
+        {(template || canUndo || canRedo) && <>
+          <button type="button" onClick={onUndo} disabled={!canUndo} aria-label="Undo" title="Undo (⌘/Ctrl Z)" className="flex size-10 items-center justify-center rounded-lg bg-canvas-raised hover:bg-canvas-white/15 disabled:opacity-35"><Undo2 size={18} /></button>
+          <button type="button" onClick={onRedo} disabled={!canRedo} aria-label="Redo" title="Redo (⌘/Ctrl Shift Z)" className="flex size-10 items-center justify-center rounded-lg bg-canvas-raised hover:bg-canvas-white/15 disabled:opacity-35"><Redo2 size={18} /></button>
+          <span aria-hidden="true" className="mx-1 h-6 w-px bg-canvas-white/10" />
+        </>}
+        <button type="button" onClick={onToggleHistory} aria-pressed={showHistory} className={`flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] hover:bg-canvas-white/10 ${showHistory ? 'text-canvas-text' : 'text-canvas-muted'}`}><History size={17} /> History</button>
+        <button type="button" onClick={onToggleInfo} aria-pressed={showInfo} aria-label="Help" title="Help" className={`flex size-10 items-center justify-center rounded-lg hover:bg-canvas-white/10 ${showInfo ? 'text-canvas-text' : 'text-canvas-muted'}`}><CircleHelp size={18} /></button>
+        {template && <>
+          <button type="button" onClick={onShare} className="flex h-10 items-center gap-2 rounded-lg border border-canvas-line bg-canvas-raised px-4 text-[13px] font-medium hover:bg-canvas-white/15"><Share2 size={16} /> Share</button>
+          <div className="relative" ref={exportRef}>
+            <button type="button" onClick={() => setShowExportMenu(value => !value)} aria-expanded={showExportMenu} className="flex h-10 items-center gap-2 rounded-lg bg-canvas-white px-4 text-[13px] font-semibold text-canvas-bg hover:bg-canvas-white/90"><Download size={16} /> Export</button>
+            {showExportMenu && <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-canvas-line bg-canvas-raised p-1 shadow-xl">
+              {([
+                ['png', 'PNG image', FileImage],
+                ['gif', 'GIF animation', FileVideo],
+                ['video', 'Video recording', FileVideo],
+              ] as const).map(([type, label, Icon]) => <button key={type} type="button" onClick={() => { onExport(type); setShowExportMenu(false); }} className="flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-left text-xs hover:bg-canvas-white/10"><Icon size={15} /> {label}</button>)}
+              <div className="my-1 border-t border-canvas-line" />
+              <button type="button" onClick={() => { onExportJs(); setShowExportMenu(false); }} className="flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-left text-xs hover:bg-canvas-white/10"><FileJson size={15} /> p5.js source</button>
+            </div>}
+          </div>
+        </>}
       </div>
     </header>
   );

@@ -24,10 +24,15 @@ It works well for:
 - Provides controls for colour, movement, density, size, and other sketch settings
 - Includes 53 templates across particles, physics, simulation, geometry, audio, image, and WebGL
 - Keeps version history, Undo, and Redo in the browser
-- Exports PNG, GIF, WebM video, and JavaScript source
+- Exports PNG, GIF, browser-supported video (WebM or MP4), and JavaScript source
+- Shares a sketch as a remix link that opens a separate copy
 - Saves work locally without requiring an account
 
-Canvas is currently designed for screens at least 1024 pixels wide. Saved work stays in the current browser and is not synced to another device.
+Canvas works on phones and desktop screens. On a phone, create from a prompt or template, refine and adjust the live sketch, inspect or copy its code, browse history, and export or share it. Code editing remains a desktop tool. Saved history stays in the current browser and is not synced to another device.
+
+## Interface design
+
+The Wonder **Projects → Canvas** artboards are the visual reference for the mobile start and editor screens and the desktop editor. Shared interface colors are defined once in `src/index.css` as `canvas-*` Tailwind theme tokens; components use those tokens rather than inline hex values. Artwork palettes in `src/templates/` are sketch data and remain editable through the artwork controls.
 
 ## AI allowance
 
@@ -79,12 +84,13 @@ docs/                Product notes and evaluation results
 Artwork versions, prompts, generated code, and settings are stored in browser local storage. Clearing site data removes them. Export work you want to keep.
 
 Google Analytics is present on the public site. Canvas does not send prompt text, artwork code, or control values as custom analytics events.
+It records categorical generation, export, and sharing outcomes, plus optional "matched my idea" feedback. Remix links contain sketch code and settings in the URL fragment; anyone you give a link can open a copy.
 
 ## Current limits
 
 - There are no accounts or cloud sync.
-- Shared links and remix links are not implemented yet.
-- Small screen editing is not supported yet.
+- Remix links depend on browser URL limits; very large sketches must be shared as source files.
+- Mobile code inspection and copying are supported; direct code editing is on desktop.
 - AI output can still be visually wrong even when the code runs.
 - Some templates request microphone or webcam access when their features need it.
 

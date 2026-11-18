@@ -1,223 +1,102 @@
 import React, { useMemo, useState } from 'react';
+import { ChevronDown, Search, Shuffle, X } from 'lucide-react';
 import { templates, templateCategories } from '../templates';
 import { SketchConfig, Template } from '../types';
-import { Search, ChevronDown, ChevronRight, List, LayoutGrid, ChevronUp, Wand2 } from 'lucide-react';
 
 interface TemplateGalleryProps {
   config: SketchConfig;
   onChange: (config: SketchConfig) => void;
+  mobile?: boolean;
+  onClose?: () => void;
 }
 
-type GalleryView = 'dropdown' | 'accordion';
+const templateList = Object.values(templates)
+  .filter(template => template.id !== 'custom-sketch')
+  .sort((a, b) => a.name.localeCompare(b.name));
 
-export function TemplateGallery({ config, onChange }: TemplateGalleryProps) {
+export function TemplateGallery({ config, onChange, mobile = false, onClose }: TemplateGalleryProps) {
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [collapsed, setCollapsed] = useState(false);
-  const [view, setView] = useState<GalleryView>('accordion');
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [category, setCategory] = useState('all');
+  const currentTemplate = templates[config.templateId];
 
-  const filteredTemplates = useMemo(() => {
-    let list = Object.values(templates).filter(t => t.id !== 'custom-sketch');
-    if (activeCategory !== 'all') {
-      list = list.filter(t => t.category === activeCategory);
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return templateList.filter(template =>
+      (category === 'all' || template.category === category) &&
+      (!query || `${template.name} ${template.description}`.toLowerCase().includes(query))
+    );
+  }, [search, category]);
+
+  const select = (template: Template, randomize = false) => {
+    if (!randomize && template.id === config.templateId) {
+      onClose?.();
+      return;
     }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
-    }
-    return list.sort((a, b) => a.name.localeCompare(b.name));
-  }, [activeCategory, search]);
-
-  const groupedByCategory = useMemo(() => {
-    const groups: Record<string, Template[]> = {};
-    const allTemplates = Object.values(templates).filter((t): t is Template => t.id !== 'custom-sketch').sort((a, b) => a.name.localeCompare(b.name));
-    for (const t of allTemplates) {
-      const cat = t.category || 'misc';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(t);
-    }
-    return groups;
-  }, []);
-
-  const handleSelect = (template: Template) => {
-    if (template.id === config.templateId) return;
-    const defaultParams: Record<string, any> = {};
-    template.params.forEach(p => {
-      defaultParams[p.id] = p.default;
-    });
-    onChange({
-      templateId: template.id,
-      seed: Math.floor(Math.random() * 1000000),
-      params: defaultParams,
-      libraries: template.libraries,
-    });
-  };
-
-  const toggleCategory = (cat: string) => {
-    setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
-  };
-
-  const handleSurpriseMe = () => {
-    const choices = Object.values(templates).filter(t => t.id !== 'custom-sketch');
-    const template = choices[Math.floor(Math.random() * choices.length)];
-    const randomParams: Record<string, any> = {};
-    template.params.forEach(p => {
-      if (p.type === 'number') {
-        const range = (p.max || 100) - (p.min || 0);
-        let val = (p.min || 0) + Math.random() * range;
-        if (p.step && p.step >= 1) val = Math.floor(val);
-        randomParams[p.id] = val;
-      } else if (p.type === 'boolean') {
-        randomParams[p.id] = Math.random() > 0.5;
-      } else if (p.type === 'enum' && p.options) {
-        randomParams[p.id] = p.options[Math.floor(Math.random() * p.options.length)];
-      } else {
-        randomParams[p.id] = p.default;
+    const params = Object.fromEntries(template.params.map(param => {
+      if (!randomize) return [param.id, param.default];
+      if (param.type === 'number') {
+        const min = param.min ?? 0;
+        const max = param.max ?? 100;
+        const step = param.step ?? 1;
+        const steps = Math.floor((max - min) / step);
+        return [param.id, Number((min + Math.floor(Math.random() * (steps + 1)) * step).toFixed(5))];
       }
-    });
-    onChange({ templateId: template.id, seed: Math.floor(Math.random() * 1000000), params: randomParams, libraries: template.libraries });
+      if (param.type === 'boolean') return [param.id, Math.random() > 0.5];
+      if (param.type === 'enum' && param.options?.length) {
+        return [param.id, param.options[Math.floor(Math.random() * param.options.length)]];
+      }
+      return [param.id, param.default];
+    }));
+    onChange({ templateId: template.id, seed: Math.floor(Math.random() * 1000000), params, libraries: template.libraries });
+    onClose?.();
   };
-
-  const catLabel = (key: string) => templateCategories.find(c => c.key === key)?.label || key;
 
   return (
-    <div className="w-64 shrink-0 glass-panel h-full flex flex-col overflow-hidden text-white/90 border-r border-white/10 z-20 shadow-[5px_0_25px_rgba(0,0,0,0.3)]">
-      <div className="p-3 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-wider text-white/50"
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-            <span>Templates</span>
-          </button>
-          {!collapsed && (
-            <button
-              onClick={() => setView(view === 'dropdown' ? 'accordion' : 'dropdown')}
-              className="p-1 text-white/30 hover:text-white/60 transition-colors cursor-pointer"
-              title={view === 'accordion' ? 'Switch to list view' : 'Switch to accordion view'}
-            >
-              {view === 'accordion' ? <List size={14} /> : <LayoutGrid size={14} />}
-            </button>
-          )}
-        </div>
+    <aside aria-label="Templates" className={`${mobile ? 'w-full h-full bg-canvas-overlay' : 'w-68 h-full bg-canvas-surface border-r border-canvas-line'} shrink-0 flex flex-col overflow-hidden text-canvas-text/90`}>
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        <h2 className="text-[13px] font-medium">Templates</h2>
+        <span className="text-xs text-canvas-text/55">{templateList.length}</span>
+        {mobile && <button type="button" onClick={onClose} aria-label="Close templates" className="flex size-10 items-center justify-center rounded-lg hover:bg-canvas-white/10"><X size={19} /></button>}
       </div>
-
-      {!collapsed && (
-        <>
-          <div className="px-3 pt-3">
-            <button
-              onClick={handleSurpriseMe}
-              title="Start from a random template"
-              className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer active:scale-95"
-            >
-              <Wand2 size={13} /> Surprise Me
-            </button>
-          </div>
-          <div className="px-3 pt-2 pb-1">
-            <div className="relative">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search templates..."
-                className="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-white/30 placeholder-white/40 transition-colors"
-              />
-            </div>
-          </div>
-
-          {view === 'dropdown' && (
-            <div className="px-3 py-1.5 border-b border-white/5 shrink-0">
-              <select
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg block px-2.5 py-1.5 cursor-pointer appearance-none focus:outline-none focus:border-white/30 transition-colors"
-              >
-                {templateCategories.map(cat => (
-                  <option key={cat.key} value={cat.key} className="bg-[#1c1c1e] text-white">{cat.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {view === 'accordion' && (
-            <div className="px-3 py-1.5 border-b border-white/5 shrink-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-white/40 font-medium">{Object.values(templates).filter(t => t.id !== 'custom-sketch').length} templates</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar py-1">
-            {view === 'dropdown' && (
-              <>
-                {filteredTemplates.length === 0 && (
-                  <div className="text-xs text-white/40 text-center py-8">No templates found</div>
-                )}
-                {filteredTemplates.map(t => {
-                  const isActive = t.id === config.templateId;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => handleSelect(t)}
-                      className={`w-full text-left px-3 py-2.5 transition-colors cursor-pointer border-b border-white/5 last:border-b-0 ${
-                        isActive
-                          ? 'bg-white/10 border-l-2 border-l-white text-white'
-                          : 'hover:bg-white/5 text-white/70'
-                      }`}
-                    >
-                      <div className="text-xs font-medium leading-tight">{t.name}</div>
-                      <div className="text-[10px] text-white/40 mt-0.5 line-clamp-1 leading-relaxed">{t.description}</div>
-                    </button>
-                  );
-                })}
-              </>
-            )}
-
-            {view === 'accordion' && (
-              <>
-                {(Object.entries(groupedByCategory) as [string, Template[]][]).map(([cat, catTemplates]) => {
-                  const isExpanded = expandedCategories[cat] !== false;
-                  const hasActive = catTemplates.some(t => t.id === config.templateId);
-                  return (
-                    <div key={cat} className="border-b border-white/5 last:border-b-0">
-                      <button
-                        onClick={() => toggleCategory(cat)}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${hasActive ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
-                      >
-                        <span>{catLabel(cat)}</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-white/30">{catTemplates.length}</span>
-                          {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </div>
-                      </button>
-                      {isExpanded && catTemplates.map(t => {
-                        const isActive = t.id === config.templateId;
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => handleSelect(t)}
-                            className={`w-full text-left pl-7 pr-3 py-2 transition-colors cursor-pointer ${
-                              isActive
-                                ? 'bg-white/10 border-l-2 border-l-white text-white'
-                                : 'hover:bg-white/5 text-white/60'
-                            }`}
-                          >
-                            <div className="text-xs leading-tight">{t.name}</div>
-                            <div className="text-[10px] text-white/35 mt-0.5 line-clamp-1">{t.description}</div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+      <div className="space-y-2 border-b border-canvas-line px-3 pb-3">
+        <label className="relative block">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-canvas-text/55" />
+          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search templates" aria-label="Search templates"
+            className="min-h-10 w-full rounded-lg border border-canvas-line bg-canvas-bg pl-10 pr-3 text-[13px] text-canvas-text outline-none placeholder:text-canvas-text/45 focus:border-canvas-white/40" />
+        </label>
+        <label className="relative block">
+          <select value={category} onChange={event => setCategory(event.target.value)} aria-label="Template category"
+            className="min-h-10 w-full appearance-none rounded-lg border border-canvas-line bg-canvas-raised pl-3 pr-10 text-[13px] text-canvas-text outline-none focus:border-canvas-white/40">
+            {templateCategories.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
+          </select>
+          <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-canvas-text/70" />
+        </label>
+      </div>
+      {!mobile && currentTemplate && <div className="border-b border-canvas-line px-3 py-3">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-canvas-text/45">Current</p>
+        <div className="rounded-lg bg-canvas-raised px-3 py-2.5">
+          <div className="flex items-center gap-2 text-[13px] font-medium"><span className="flex size-4 items-center justify-center rounded-full bg-canvas-white text-[10px] text-canvas-bg">✓</span>{config.generated?.title ?? currentTemplate.name}</div>
+          <p className="mt-1 pl-6 text-xs leading-4 text-canvas-text/55">{config.generated ? 'Artwork created with Canvas' : currentTemplate.description}</p>
+        </div>
+      </div>}
+      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
+        {filtered.length === 0 && <p className="p-5 text-sm text-canvas-text/60">No templates match your search.</p>}
+        {!mobile && <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-canvas-text/45">Browse</p>}
+        {filtered.filter(template => mobile || template.id !== config.templateId).map(template => (
+          <button key={template.id} type="button" onClick={() => select(template)}
+            aria-current={template.id === config.templateId ? 'true' : undefined}
+            className={`w-full border-b border-canvas-white/5 px-4 py-2.5 text-left transition-colors hover:bg-canvas-white/10 ${template.id === config.templateId ? 'bg-canvas-white/10 text-canvas-text' : 'text-canvas-text/80'}`}>
+            <span className="block text-[13px] font-medium">{template.name}</span>
+            <span className="mt-1 block text-xs leading-4 text-canvas-text/55">{template.description}</span>
+          </button>
+        ))}
+      </div>
+      <div className="border-t border-canvas-line p-3">
+        <button type="button" onClick={() => select(templateList[Math.floor(Math.random() * templateList.length)], true)}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-canvas-white/15 bg-canvas-white/5 text-sm font-medium hover:bg-canvas-white/10">
+          <Shuffle size={16} /> Surprise me
+        </button>
+      </div>
+    </aside>
   );
 }

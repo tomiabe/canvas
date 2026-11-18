@@ -137,6 +137,7 @@ test('GIF export preserves whether the artwork was static or animated', async ()
     const listeners: Function[] = [];
     const html = generateHtml({ templateId: 'custom-sketch', seed: 1, params: { code: 'function draw() {}' } });
     const context: any = {
+      parent: { postMessage() {} },
       addEventListener: (name: string, handler: Function) => { if (name === 'message') listeners.push(handler); },
       isLooping: () => looping,
       noLoop: () => { looping = false; },
@@ -149,4 +150,46 @@ test('GIF export preserves whether the artwork was static or animated', async ()
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(looping, initiallyLooping);
   }
+});
+
+test('video export chooses a supported MP4 format when WebM is unavailable', () => {
+  const html = generateHtml({ templateId: 'custom-sketch', seed: 1, params: { code: 'function draw() {}' } });
+  const listeners: Function[] = [];
+  const messages: any[] = [];
+  const downloads: string[] = [];
+  const stream = { getTracks: () => [{ stop() {} }] };
+  const canvas = { captureStream: () => stream };
+  class Recorder {
+    static isTypeSupported(type: string) { return type === 'video/mp4'; }
+    mimeType: string;
+    state = 'inactive';
+    ondataavailable?: (event: { data: Blob }) => void;
+    onstop?: () => void;
+    constructor(_stream: unknown, options: { mimeType?: string }) { this.mimeType = options?.mimeType ?? ''; }
+    start() { this.state = 'recording'; }
+    stop() {
+      this.state = 'inactive';
+      this.ondataavailable?.({ data: new Blob(['frame'], { type: this.mimeType }) });
+      this.onstop?.();
+    }
+  }
+  const context: any = {
+    parent: { postMessage: (message: unknown) => messages.push(message) },
+    document: {
+      querySelector: () => canvas,
+      createElement: () => ({ click() { downloads.push(this.download); } }),
+    },
+    MediaRecorder: Recorder,
+    Blob,
+    URL: { createObjectURL: () => 'blob:video', revokeObjectURL() {} },
+    isLooping: () => true,
+    addEventListener: (name: string, handler: Function) => { if (name === 'message') listeners.push(handler); },
+    setTimeout: (callback: Function) => callback(),
+    clearInterval() {},
+  };
+  context.window = context;
+  runInNewContext([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n'), context);
+  for (const handler of listeners) handler({ data: { type: 'export', exportType: 'video', duration: 5 } });
+  assert.deepEqual(downloads, ['canvas-export.mp4']);
+  assert.equal(messages.at(-1).type, 'export-success');
 });

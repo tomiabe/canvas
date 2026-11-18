@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SketchConfig } from '../types';
 import { generateHtml } from '../engine/generator';
 import { templates } from '../templates';
-import { EyeOff, AlertTriangle } from 'lucide-react';
+import { EyeOff, AlertTriangle, Loader2 } from 'lucide-react';
 
 export interface ExportEvent {
   type: 'png' | 'gif' | 'video';
@@ -16,13 +16,16 @@ interface CanvasRunnerProps {
   previewEnabled?: boolean;
   onReady?: () => void;
   onError?: (message: string) => void;
+  onExportResult?: (result: { type: 'png' | 'gif' | 'video'; ok: boolean; message?: string }) => void;
 }
 
-export function CanvasRunner({ config, exportEvent, previewEnabled = true, onReady, onError }: CanvasRunnerProps) {
+export function CanvasRunner({ config, exportEvent, previewEnabled = true, onReady, onError, onExportResult }: CanvasRunnerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [sketchError, setSketchError] = useState<string | null>(null);
-  const callbacks = useRef({ onReady, onError });
-  callbacks.current = { onReady, onError };
+  const [isReady, setIsReady] = useState(false);
+  const callbacks = useRef({ onReady, onError, onExportResult });
+  callbacks.current = { onReady, onError, onExportResult };
+  const exportType = useRef<'png' | 'gif' | 'video'>('png');
   const runId = useRef('');
   const libraryKey = (config.libraries ?? templates[config.templateId]?.libraries ?? []).join(',');
 
@@ -30,6 +33,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
   useEffect(() => {
     if (!config.templateId || !previewEnabled || !iframeRef.current) return;
     setSketchError(null);
+    setIsReady(false);
     runId.current = crypto.randomUUID();
     try {
       iframeRef.current.srcdoc = generateHtml(config, runId.current);
@@ -52,6 +56,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
       );
     } else {
       setSketchError(null);
+      setIsReady(false);
       runId.current = crypto.randomUUID();
       iframeRef.current.srcdoc = generateHtml(config, runId.current);
     }
@@ -59,6 +64,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
 
   useEffect(() => {
     if (config.templateId && previewEnabled && exportEvent && iframeRef.current && iframeRef.current.contentWindow) {
+      exportType.current = exportEvent.type;
       iframeRef.current.contentWindow.postMessage({
         type: 'export',
         exportType: exportEvent.type,
@@ -83,10 +89,15 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
     const deadline = setTimeout(() => fail('The sketch did not draw a canvas within 15 seconds.'), 15000);
     const handler = (event: MessageEvent) => {
       if (event.source !== iframeRef.current?.contentWindow || event.data?.runId !== runId.current) return;
-      if (event.data?.type === 'sketch-error') {
+      if (event.data?.type === 'export-success') {
+        callbacks.current.onExportResult?.({ type: exportType.current, ok: true });
+      } else if (event.data?.type === 'export-error') {
+        callbacks.current.onExportResult?.({ type: exportType.current, ok: false, message: event.data.message });
+      } else if (event.data?.type === 'sketch-error') {
         fail(event.data.message || 'Unknown error in generated sketch');
       } else if (event.data?.type === 'sketch-ready') {
         clearTimeout(deadline);
+        setIsReady(true);
         readyTimer = setTimeout(() => {
           if (!settled) callbacks.current.onReady?.();
         }, 2000);
@@ -102,13 +113,13 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
 
   // The empty state (hero prompt) is rendered by App on top of this background.
   if (!config.templateId) {
-    return <div className="w-full h-full bg-[#0b0b0d]" />;
+    return <div className="w-full h-full bg-canvas-preview" />;
   }
 
   if (!previewEnabled) {
     return (
-      <div className="w-full h-full bg-[#0b0b0d] overflow-hidden relative border-none flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-white/25">
+      <div className="w-full h-full bg-canvas-preview overflow-hidden relative border-none flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-canvas-text/25">
           <EyeOff size={48} strokeWidth={1} />
           <span className="text-sm font-medium">Preview paused</span>
         </div>
@@ -117,7 +128,7 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
   }
 
   return (
-    <div className="w-full h-full bg-[#0b0b0d] overflow-hidden relative border-none">
+    <div className="w-full h-full bg-canvas-preview overflow-hidden relative border-none">
       <iframe
         ref={iframeRef}
         title="p5-canvas"
@@ -133,12 +144,15 @@ export function CanvasRunner({ config, exportEvent, previewEnabled = true, onRea
           }
         }}
       />
+      {!isReady && !sketchError && <div role="status" className="absolute inset-0 flex items-center justify-center gap-2 bg-canvas-preview text-sm text-canvas-muted">
+        <Loader2 size={17} className="animate-spin" /> Loading sketch…
+      </div>}
       {sketchError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 px-6 text-center pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-canvas-bg/80 px-6 text-center pointer-events-none">
           <AlertTriangle className="text-amber-400" size={28} />
-          <p className="text-sm text-white/80 font-medium">The generated sketch hit an error</p>
-          <p className="text-xs text-white/40 max-w-md font-mono">{sketchError}</p>
-          <p className="text-xs text-white/40">Try regenerating with a different description.</p>
+          <p className="text-sm text-canvas-text/80 font-medium">The generated sketch hit an error</p>
+          <p className="text-xs text-canvas-text/40 max-w-md font-mono">{sketchError}</p>
+          <p className="text-xs text-canvas-text/40">{config.generated ? 'Try regenerating with a different description.' : 'Try another preset or template.'}</p>
         </div>
       )}
     </div>

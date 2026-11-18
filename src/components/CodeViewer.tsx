@@ -7,9 +7,11 @@ import { Copy, Check } from 'lucide-react';
 interface CodeViewerProps {
   config: SketchConfig;
   onChange: (config: SketchConfig) => void;
+  mobile?: boolean;
+  embedded?: boolean;
 }
 
-export function CodeViewer({ config, onChange }: CodeViewerProps) {
+export function CodeViewer({ config, onChange, mobile = false, embedded = false }: CodeViewerProps) {
   const [copied, setCopied] = React.useState(false);
   const template = templates[config.templateId];
   
@@ -37,30 +39,30 @@ export function CodeViewer({ config, onChange }: CodeViewerProps) {
   };
 
   return (
-    <div role="region" aria-label="Artwork code" className="w-80 lg:w-96 shrink-0 glass-panel border-l border-white/10 h-full flex flex-col text-white/90 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
-      <div className="p-3 border-b border-white/10 flex items-center justify-between bg-white/5">
+    <div role="region" aria-label="Artwork code" className={`${mobile || embedded ? 'w-full bg-canvas-surface' : 'w-80 lg:w-96 shrink-0 glass-panel border-l border-canvas-line canvas-panel-shadow-left'} h-full flex flex-col text-canvas-text/90 z-20`}>
+      <div className="p-3 border-b border-canvas-line flex items-center justify-between bg-canvas-white/5">
         <h3 className="text-sm font-medium flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_8px_rgba(52,199,89,0.5)]"></span>
-          p5.js Code {isCustom && <span className="text-white/50 text-xs font-normal">(Editable)</span>}
+          <span className="w-2 h-2 rounded-full bg-canvas-switch canvas-switch-glow"></span>
+          p5.js Code {isCustom && !mobile && <span className="text-canvas-text/50 text-xs font-normal">(Editable)</span>}
         </h3>
         <button
           onClick={handleCopy}
-          className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors flex items-center gap-1.5 text-xs cursor-pointer active:scale-95"
+          className="p-1.5 hover:bg-canvas-white/10 rounded-lg text-canvas-text/60 hover:text-canvas-text transition-colors flex items-center gap-1.5 text-xs cursor-pointer active:scale-95"
         >
-          {copied ? <Check size={14} className="text-[#34C759]" /> : <Copy size={14} />}
+          {copied ? <Check size={14} className="text-canvas-switch" /> : <Copy size={14} />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       <div className="flex-1 overflow-auto p-4 custom-scrollbar flex flex-col">
-        {isCustom ? (
+        {isCustom && !mobile ? (
           <textarea 
             value={config.params.code || ''}
             onChange={handleCodeEdit}
-            className="flex-1 w-full bg-transparent text-xs font-mono text-white/90 whitespace-pre-wrap leading-relaxed outline-none resize-none custom-scrollbar"
+            className="flex-1 w-full bg-transparent text-xs font-mono text-canvas-text/90 whitespace-pre-wrap leading-relaxed outline-none resize-none custom-scrollbar"
             spellCheck="false"
           />
         ) : (
-          <pre className="text-xs font-mono text-white/70 whitespace-pre-wrap break-all leading-relaxed">
+          <pre className="text-xs font-mono text-canvas-text/70 whitespace-pre-wrap break-all leading-relaxed">
             {code.trim()}
           </pre>
         )}

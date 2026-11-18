@@ -101,77 +101,91 @@ export function generateHtml(config: SketchConfig, runId = ''): string {
       };
     }
     
-    // Export functions
+    // Export results are reported to the parent so failures are visible.
     function exportPng() {
-      const canvas = document.querySelector('canvas');
-      if (canvas) {
-        const dataUrl = canvas.toDataURL('image/png');
+      try {
+        const canvas = document.querySelector('canvas');
+        if (!canvas) throw new Error('There is no sketch to export yet.');
         const link = document.createElement('a');
         link.download = 'canvas-export.png';
-        link.href = dataUrl;
+        link.href = canvas.toDataURL('image/png');
         link.click();
+        window.reportSketch('export-success', 'png');
+      } catch (error) {
+        window.reportSketch('export-error', 'PNG export failed: ' + error.message);
       }
     }
-    
+
     async function exportGif(duration, fps) {
-      if (typeof saveGif !== 'function') {
-        console.warn('saveGif not available');
-        return;
-      }
       const still = typeof isLooping === 'function' && !isLooping();
       try {
+        if (typeof saveGif !== 'function') throw new Error('GIF export is unavailable in this browser.');
         await saveGif('canvas-export.gif', duration, { fps: fps || 15, units: 'seconds' });
+        window.reportSketch('export-success', 'gif');
+      } catch (error) {
+        window.reportSketch('export-error', 'GIF export failed: ' + error.message);
       } finally {
         // p5.saveGif unconditionally calls loop(), even for a static painting.
         if (still) noLoop();
       }
     }
-    
+
     function exportVideo(duration) {
-      const canvas = document.querySelector('canvas');
-      if (!canvas) return;
-      // noLoop paintings do not submit frames. Record a 2D snapshot surface
-      // without restarting the painting or changing its random state.
-      const still = typeof isLooping === 'function' && !isLooping();
-      const surface = still ? document.createElement('canvas') : canvas;
-      if (still) { surface.width = canvas.width; surface.height = canvas.height; }
-      const snapshot = still ? surface.getContext('2d') : null;
-      const stream = surface.captureStream(still ? 0 : 30);
+      let stream;
       let frameTimer;
-      let mimeType = 'video/webm;codecs=vp9';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'video/webm';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/mp4';
-        }
-      }
-      const recorder = new MediaRecorder(stream, { mimeType: mimeType });
-      const chunks = [];
-      recorder.ondataavailable = function(e) {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-      recorder.onstop = function() {
-        clearInterval(frameTimer);
-        stream.getTracks().forEach(function(track) { track.stop(); });
-        const blob = new Blob(chunks, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        var ext = mimeType.indexOf('mp4') !== -1 ? 'mp4' : 'webm';
-        a.download = 'canvas-export.' + ext;
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-      recorder.start();
-      if (snapshot) {
-        const frame = function() {
-          snapshot.drawImage(canvas, 0, 0);
-          stream.getVideoTracks()[0].requestFrame();
+      try {
+        const canvas = document.querySelector('canvas');
+        if (!canvas) throw new Error('There is no sketch to export yet.');
+        if (!window.MediaRecorder || !canvas.captureStream) throw new Error('Video recording is unavailable in this browser.');
+        // Keep static paintings still while recording frames from a snapshot surface.
+        const still = typeof isLooping === 'function' && !isLooping();
+        const surface = still ? document.createElement('canvas') : canvas;
+        if (still) { surface.width = canvas.width; surface.height = canvas.height; }
+        const snapshot = still ? surface.getContext('2d') : null;
+        stream = surface.captureStream(still ? 0 : 30);
+        const candidates = ['video/webm;codecs=vp9', 'video/webm', 'video/mp4'];
+        const mimeType = typeof MediaRecorder.isTypeSupported === 'function'
+          ? candidates.find(type => MediaRecorder.isTypeSupported(type)) : undefined;
+        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        const chunks = [];
+        recorder.ondataavailable = function(event) {
+          if (event.data.size > 0) chunks.push(event.data);
         };
-        frame();
-        frameTimer = setInterval(frame, 1000 / 30);
+        recorder.onerror = function() {
+          window.reportSketch('export-error', 'Video recording stopped unexpectedly.');
+        };
+        recorder.onstop = function() {
+          clearInterval(frameTimer);
+          stream.getTracks().forEach(function(track) { track.stop(); });
+          if (!chunks.length) {
+            window.reportSketch('export-error', 'Video recording produced no frames.');
+            return;
+          }
+          const actualType = recorder.mimeType || mimeType || 'video/webm';
+          const blob = new Blob(chunks, { type: actualType });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'canvas-export.' + (actualType.includes('mp4') ? 'mp4' : 'webm');
+          link.click();
+          setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+          window.reportSketch('export-success', 'video');
+        };
+        recorder.start();
+        if (snapshot) {
+          const frame = function() {
+            snapshot.drawImage(canvas, 0, 0);
+            stream.getVideoTracks()[0].requestFrame?.();
+          };
+          frame();
+          frameTimer = setInterval(frame, 1000 / 30);
+        }
+        setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration * 1000);
+      } catch (error) {
+        clearInterval(frameTimer);
+        stream?.getTracks().forEach(function(track) { track.stop(); });
+        window.reportSketch('export-error', 'Video export failed: ' + error.message);
       }
-      setTimeout(function() { recorder.stop(); }, duration * 1000);
     }
     
     // Listen for messages from parent
