@@ -193,7 +193,7 @@ export default {
       status, headers: { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extra },
     });
     let body: { submissionId?: string; messages?: ChatMessage[]; temperature?: number; max_tokens?: number; response_format?: { type: string } } = {};
-    if (!isUsage) {
+    if (!isUsage && !isReset) {
       try {
         body = await boundedBody(request);
       } catch {
