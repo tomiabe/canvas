@@ -92,7 +92,7 @@ test('new artwork excludes previous visuals and conversation, while repairs reta
 });
 
 test('quota denials update the displayed allowance and are not repairable sketch failures', async t => {
-  const usage = { limit: 10, remaining: 0, resetsAt: '2026-10-17T00:00:00Z', reason: 'daily' };
+  const usage = { limit: 15, remaining: 0, resetsAt: '2026-10-17T00:00:00Z', reason: 'daily' };
   t.mock.method(globalThis, 'fetch', async () => Response.json({ error: 'AI allowance exhausted', usage }, { status: 429 }));
   let received: unknown;
   await assert.rejects(generateConfigFromPrompt('orbit', empty, undefined, [], { onUsage: value => { received = value; } }),

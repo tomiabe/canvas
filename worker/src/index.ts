@@ -211,7 +211,7 @@ export default {
       }));
       if (!result.ok) throw new Error('Quota storage unavailable');
       const data = await result.json() as { allowed: boolean; usage: Usage; error?: string };
-      if (typeof data.allowed !== 'boolean' || !data.usage || data.usage.limit !== 10 || !Number.isInteger(data.usage.remaining)) throw new Error('Invalid quota response');
+      if (typeof data.allowed !== 'boolean' || !data.usage || data.usage.limit !== 15 || !Number.isInteger(data.usage.remaining)) throw new Error('Invalid quota response');
       usage = data.usage;
       if (!data.allowed && action !== 'usage') return reply({ error: data.error, usage }, 429, {
         'Retry-After': String(Math.max(1, Math.ceil((Date.parse(usage.retryAt ?? usage.resetsAt) - Date.now()) / 1000))),

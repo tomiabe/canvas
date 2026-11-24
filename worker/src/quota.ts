@@ -10,7 +10,7 @@ export interface QuotaNamespace {
   get(id: unknown): { fetch(request: Request): Promise<Response> };
 }
 export interface Usage {
-  limit: 10;
+  limit: 15;
   remaining: number;
   resetsAt: string;
   reason?: 'daily' | 'burst' | 'global';
@@ -34,7 +34,7 @@ export class QuotaLimiter {
       if (!ledger || ledger.day !== day) ledger = { day, attempts: 0, visitors: {} };
       const visitor = ledger.visitors[identity] ?? { submissions: {}, burst: [] };
       visitor.burst = visitor.burst.filter(time => time > now - 60000);
-      const usage: Usage = { limit: 10, remaining: Math.max(0, 10 - Object.keys(visitor.submissions).length), resetsAt: new Date(resetsAt).toISOString() };
+      const usage: Usage = { limit: 15, remaining: Math.max(0, 15 - Object.keys(visitor.submissions).length), resetsAt: new Date(resetsAt).toISOString() };
       const deny = (reason: Usage['reason'], retry = resetsAt, error = 'AI allowance exhausted') => ({ allowed: false, error, usage: { ...usage, reason, retryAt: new Date(retry).toISOString() } });
       if (ledger.attempts >= cap) return deny('global', resetsAt, 'Global daily AI budget exhausted');
       const count = submissionId ? visitor.submissions[submissionId] ?? 0 : 0;

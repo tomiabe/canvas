@@ -45,14 +45,14 @@ function fixture(cap = 100) {
 
 test('HTTP usage, success, repair cap, identity binding, and CORS', async () => {
   const f = fixture();
-  assert.deepEqual((await (await f.usage()).json()).usage.remaining, 10);
+  assert.deepEqual((await (await f.usage()).json()).usage.remaining, 15);
   const id = randomUUID();
   for (let i = 0; i < 3; i++) {
     const response = await f.send(i === 1 ? id.toUpperCase() : id);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'http://localhost:31235');
     const body = await response.json();
-    assert.equal(body.usage.remaining, 9);
+    assert.equal(body.usage.remaining, 14);
     assert.equal(body.choices[0].message.content, 'ok');
   }
   const denied = await f.send(id);
@@ -60,7 +60,7 @@ test('HTTP usage, success, repair cap, identity binding, and CORS', async () => 
   assert.ok(Number(denied.headers.get('Retry-After')) > 0);
   assert.match((await denied.json()).error, /two repairs/);
   assert.equal(f.calls(), 3);
-  assert.equal((await (await f.send(id, '192.0.2.2')).json()).usage.remaining, 9);
+  assert.equal((await (await f.send(id, '192.0.2.2')).json()).usage.remaining, 14);
   assert.ok(!JSON.stringify([...f.storage.values]).includes('192.0.2.'));
 });
 
@@ -76,7 +76,7 @@ test('parallel same-ID repairs and new-submission burst cannot overshoot', async
   assert.equal(submissions.filter(r => r.status === 200).length, 3);
   assert.equal(submissions.filter(r => r.status === 429).length, 17);
   const usage = (await (await g.usage()).json()).usage;
-  assert.equal(usage.remaining, 7);
+  assert.equal(usage.remaining, 12);
   assert.equal(usage.reason, 'burst');
   assert.ok(Date.parse(usage.retryAt) > Date.now());
 });
@@ -97,21 +97,21 @@ test('daily allowance and UTC reset survive fresh DO instances', async () => {
   try {
     const f = fixture();
     const id = randomUUID();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       assert.equal((await f.send(i === 0 ? id : randomUUID())).status, 200);
       now += 61000;
     }
     const denied = await f.send();
     assert.equal(denied.status, 429);
     assert.deepEqual((await denied.json()).usage, {
-      limit: 10, remaining: 0, resetsAt: '2026-10-17T00:00:00.000Z', reason: 'daily', retryAt: '2026-10-17T00:00:00.000Z',
+      limit: 15, remaining: 0, resetsAt: '2026-10-17T00:00:00.000Z', reason: 'daily', retryAt: '2026-10-17T00:00:00.000Z',
     });
-    // Repairs still work after all ten new submissions are consumed.
+    // Repairs still work after all fifteen new submissions are consumed.
     assert.equal((await f.send(id)).status, 200);
     now = Date.parse('2026-10-17T00:00:00Z');
-    assert.equal((await (await f.usage()).json()).usage.remaining, 10);
-    assert.equal((await (await f.send(id)).json()).usage.remaining, 9);
-    assert.equal(f.calls(), 12);
+    assert.equal((await (await f.usage()).json()).usage.remaining, 15);
+    assert.equal((await (await f.send(id)).json()).usage.remaining, 14);
+    assert.equal(f.calls(), 17);
     const g = fixture(1);
     assert.equal((await g.send()).status, 200);
     assert.equal((await g.send()).status, 429);
@@ -161,7 +161,7 @@ test('invalid, oversized, and malformed input never consumes allowance', async (
   }
   assert.equal(f.calls(), 0);
   assert.equal(f.storage.values.size, 0);
-  assert.equal((await (await f.usage()).json()).usage.remaining, 10);
+  assert.equal((await (await f.usage()).json()).usage.remaining, 15);
 });
 
 test('missing identity, binding, storage failures fail closed with readable errors', async () => {
