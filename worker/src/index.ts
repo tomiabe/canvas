@@ -182,8 +182,10 @@ export default {
       return new Response(null, { status: 204, headers });
     }
 
-    const isUsage = request.method === 'GET' && new URL(request.url).pathname === '/usage';
-    if (request.method !== 'POST' && !isUsage) {
+    const pathname = new URL(request.url).pathname;
+    const isUsage = request.method === 'GET' && pathname === '/usage';
+    const isReset = request.method === 'GET' && pathname === '/reset';
+    if (request.method !== 'POST' && !isUsage && !isReset) {
       return new Response('Method not allowed', { status: 405, headers });
     }
 
@@ -221,6 +223,13 @@ export default {
       const ip = request.headers.get('CF-Connecting-IP');
       if (!ip) throw new Error('Network identity unavailable');
       identity = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip))), byte => byte.toString(16).padStart(2, '0')).join('');
+      if (isReset) {
+        const resetsAt = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`).getTime() + 86400000;
+        await env.QUOTAS.get(env.QUOTAS.idFromName('global')).fetch(new Request('https://quota/internal', { method: 'POST', body: JSON.stringify({ action: 'reset', identity }) }));
+        const usageResp = await env.QUOTAS.get(env.QUOTAS.idFromName('global')).fetch(new Request('https://quota/internal', { method: 'POST', body: JSON.stringify({ action: 'usage', identity }) }));
+        const data = await usageResp.json() as { usage: Usage };
+        return reply({ ok: true, usage: data.usage });
+      }
       const denied = await reserve(isUsage ? 'usage' : 'submission');
       if (denied) return denied;
       if (isUsage) return reply({ usage });

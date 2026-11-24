@@ -23,7 +23,7 @@ export class QuotaLimiter {
   constructor(private state: { storage: Storage }, private env: { GLOBAL_DAILY_ATTEMPT_LIMIT?: string }) {}
 
   async fetch(request: Request): Promise<Response> {
-    const { identity, submissionId, action } = await request.json() as { identity: string; submissionId?: string; action: 'usage' | 'submission' | 'attempt' };
+    const { identity, submissionId, action } = await request.json() as { identity: string; submissionId?: string; action: 'usage' | 'submission' | 'attempt' | 'reset' };
     const cap = Number(this.env.GLOBAL_DAILY_ATTEMPT_LIMIT ?? '100');
     if (!Number.isSafeInteger(cap) || cap < 1) throw new Error('Invalid global budget');
     const result = await this.state.storage.transaction(async storage => {
@@ -35,6 +35,12 @@ export class QuotaLimiter {
       const visitor = ledger.visitors[identity] ?? { submissions: {}, burst: [] };
       visitor.burst = visitor.burst.filter(time => time > now - 60000);
       const usage: Usage = { limit: 15, remaining: Math.max(0, 15 - Object.keys(visitor.submissions).length), resetsAt: new Date(resetsAt).toISOString() };
+      if (action === 'reset') {
+        delete ledger.visitors[identity];
+        await storage.put('ledger', ledger);
+        const resetUsage: Usage = { limit: 15, remaining: 15, resetsAt: new Date(resetsAt).toISOString() };
+        return { allowed: true, usage: resetUsage };
+      }
       const deny = (reason: Usage['reason'], retry = resetsAt, error = 'AI allowance exhausted') => ({ allowed: false, error, usage: { ...usage, reason, retryAt: new Date(retry).toISOString() } });
       if (ledger.attempts >= cap) return deny('global', resetsAt, 'Global daily AI budget exhausted');
       const count = submissionId ? visitor.submissions[submissionId] ?? 0 : 0;
