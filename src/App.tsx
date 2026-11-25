@@ -16,6 +16,7 @@ import { ConversationTurn, StudioAction, createStudio, createVersion, loadStudio
 import { analytics } from './lib/analytics';
 import { downloadSketchSource } from './lib/download';
 import { createShareUrl, decodeShareConfig, sharedPayloadFromHash } from './lib/share';
+import { api } from './lib/api';
 import { Code2, MessageCircle, Pause, Play, SlidersHorizontal } from 'lucide-react';
 
 function feedbackId(config: SketchConfig): string {
@@ -260,6 +261,24 @@ export default function App() {
     }
   };
 
+  const handleSave = async () => {
+    if (!config.templateId) { setNotice('Open or create a sketch before saving it.'); return; }
+    try {
+      await api.saveSketch({
+        title: config.generated?.title ?? templates[config.templateId]?.name ?? 'Untitled sketch',
+        config,
+        thumbnail_url: '',
+        collection: 'Unsorted',
+        tags: '',
+      });
+      setNotice('Sketch saved to your account.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not save the sketch.';
+      if (message.includes('Sign in')) window.location.assign('/signin?next=%2F');
+      else setNotice(message);
+    }
+  };
+
   const handleShare = async () => {
     try {
       const prepared = shareLink.current;
@@ -431,7 +450,7 @@ export default function App() {
       onRestore={id => navigateHistory({ type: 'restore', id })}
       onUndo={() => navigateHistory({ type: 'undo' })} onRedo={() => navigateHistory({ type: 'redo' })}
       canUndo={studio.undo.length > 0} canRedo={studio.redo.length > 0}
-      onExport={handleExport} onExportJs={handleExportJs} onShare={() => { void handleShare(); }}
+      onExport={handleExport} onExportJs={handleExportJs} onShare={() => { void handleShare(); }} onSave={() => { void handleSave(); }}
       previewEnabled={previewEnabled} onTogglePreview={() => setPreviewEnabled(value => !value)}
       isGenerating={isGenerating} usage={usage} usageUnavailable={usageUnavailable} usageBlocked={usageBlocked}
       status={status} failure={failure} onRetry={() => { void handleGenerate(lastPrompt.current, lastMode.current); }}
@@ -449,6 +468,7 @@ export default function App() {
         onExport={handleExport}
         onExportJs={handleExportJs}
         onShare={() => { void handleShare(); }}
+        onSave={() => { void handleSave(); }}
         onToggleInfo={() => setPanel(panel === 'help' ? lastToolPanel.current : 'help')}
         showInfo={panel === 'help'}
         onHome={handleHome}

@@ -8,6 +8,7 @@ interface TopBarProps {
   onExport: (type: 'png' | 'gif' | 'video') => void;
   onExportJs: () => void;
   onShare: () => void;
+  onSave: () => void;
   onToggleInfo: () => void;
   showInfo: boolean;
   onHome: () => void;
@@ -19,7 +20,7 @@ interface TopBarProps {
   onToggleHistory: () => void;
 }
 
-export function TopBar({ config, onExport, onExportJs, onShare, onToggleInfo, showInfo, onHome, onUndo, onRedo, canUndo, canRedo, showHistory, onToggleHistory }: TopBarProps) {
+export function TopBar({ config, onExport, onExportJs, onShare, onSave, onToggleInfo, showInfo, onHome, onUndo, onRedo, canUndo, canRedo, showHistory, onToggleHistory }: TopBarProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const template = templates[config.templateId];
@@ -55,8 +56,11 @@ export function TopBar({ config, onExport, onExportJs, onShare, onToggleInfo, sh
           <span aria-hidden="true" className="mx-1 h-6 w-px bg-canvas-white/10" />
         </>}
         <button type="button" onClick={onToggleHistory} aria-pressed={showHistory} className={`flex h-10 items-center gap-2 rounded-lg px-3 text-[13px] hover:bg-canvas-white/10 ${showHistory ? 'text-canvas-text' : 'text-canvas-muted'}`}><History size={17} /> History</button>
+        <a href="/gallery" className="hidden h-10 items-center rounded-lg px-3 text-[13px] text-canvas-muted hover:bg-canvas-white/10 sm:flex">Gallery</a>
+        <a href="/sketches" className="hidden h-10 items-center rounded-lg px-3 text-[13px] text-canvas-muted hover:bg-canvas-white/10 sm:flex">My sketches</a>
         <button type="button" onClick={onToggleInfo} aria-pressed={showInfo} aria-label="Help" title="Help" className={`flex size-10 items-center justify-center rounded-lg hover:bg-canvas-white/10 ${showInfo ? 'text-canvas-text' : 'text-canvas-muted'}`}><CircleHelp size={18} /></button>
         {template && <>
+          <button type="button" onClick={onSave} className="flex h-10 items-center gap-2 rounded-lg border border-canvas-line bg-canvas-raised px-4 text-[13px] font-medium hover:bg-canvas-white/15">Save</button>
           <button type="button" onClick={onShare} className="flex h-10 items-center gap-2 rounded-lg border border-canvas-line bg-canvas-raised px-4 text-[13px] font-medium hover:bg-canvas-white/15"><Share2 size={16} /> Share</button>
           <div className="relative" ref={exportRef}>
             <button type="button" onClick={() => setShowExportMenu(value => !value)} aria-expanded={showExportMenu} className="flex h-10 items-center gap-2 rounded-lg bg-canvas-white px-4 text-[13px] font-semibold text-canvas-bg hover:bg-canvas-white/90"><Download size={16} /> Export</button>

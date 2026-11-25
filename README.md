@@ -38,6 +38,14 @@ The Wonder **Projects → Canvas** artboards are the visual reference for the mo
 
 AI creation is limited to 10 submissions per network each UTC day, with a short burst limit of 3 submissions per minute. A submission can include up to two automatic repair attempts. Templates, manual controls, playback, history, and export do not use the AI allowance.
 
+## Accounts, saved sketches and gallery
+
+Canvas has four additional routes: `/gallery`, `/sketches`, `/submit`, and `/moderation` (curators only). Sign in at `/signin`. Saved sketches, gallery submissions and approvals are stored in Cloudflare D1 (`canvas-data`), and sessions are signed cookies.
+
+OAuth buttons for Google, Apple and Yahoo are shown but not configured yet. For development, sign in with a name and email using the local account form. To give an account curator access, set its `role` to `curator` in D1.
+
+The Worker schema lives in `worker/src/schema.sql`.
+
 ## Run it locally
 
 You need Node.js 22 or a compatible recent Node.js release.

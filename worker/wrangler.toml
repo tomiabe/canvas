@@ -16,3 +16,8 @@ class_name = "QuotaLimiter"
 [[migrations]]
 tag = "v1-quota-limiter"
 new_sqlite_classes = ["QuotaLimiter"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "canvas-data"
+database_id = "26ac9f1e-0f52-484e-8274-cab168cfe3b8"

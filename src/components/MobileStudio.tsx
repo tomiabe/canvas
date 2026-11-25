@@ -33,6 +33,7 @@ interface MobileStudioProps {
   onExport: (type: 'png' | 'gif' | 'video') => void;
   onExportJs: () => void;
   onShare: () => void;
+  onSave: () => void;
   previewEnabled: boolean;
   onTogglePreview: () => void;
   isGenerating: boolean;
@@ -93,10 +94,11 @@ export function MobileStudio(props: MobileStudioProps) {
   const hasArtwork = !!props.config.templateId;
   const title = props.config.generated?.title ?? templates[props.config.templateId]?.name ?? 'Artwork';
 
-  const openExport = (type: 'png' | 'gif' | 'video' | 'js' | 'share') => {
+  const openExport = (type: 'png' | 'gif' | 'video' | 'js' | 'share' | 'save') => {
     setOverlay(null);
     if (type === 'js') props.onExportJs();
     else if (type === 'share') props.onShare();
+    else if (type === 'save') props.onSave();
     else props.onExport(type);
   };
 
@@ -215,7 +217,7 @@ export function MobileStudio(props: MobileStudioProps) {
             <div className="mb-3 flex items-center justify-between"><h2 className="text-base font-semibold">Export and share</h2><button type="button" onClick={() => setOverlay(null)} aria-label="Close export menu" className="flex size-10 items-center justify-center"><X size={20} /></button></div>
             {([
               ['png', 'PNG image'], ['gif', 'GIF animation'], ['video', 'Video recording'],
-              ['js', 'p5.js source'], ['share', 'Share remix link'],
+              ['save', 'Save to my sketches'], ['js', 'p5.js source'], ['share', 'Share remix link'],
             ] as const).map(([type, label]) => <button key={type} type="button" onClick={() => openExport(type)}
               className="flex min-h-12 w-full items-center border-t border-canvas-line text-left text-sm">{label}</button>)}
           </div>

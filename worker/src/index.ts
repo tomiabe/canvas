@@ -1,8 +1,12 @@
 import { type QuotaNamespace, type Usage } from './quota';
+import { handleApi } from './api';
+import type { D1Database } from './auth';
 export { QuotaLimiter } from './quota';
 
 export interface Env {
   QUOTAS?: QuotaNamespace;
+  DB?: D1Database;
+  SESSION_SECRET?: string;
   GLOBAL_DAILY_ATTEMPT_LIMIT?: string;
   GEMINI_API_KEY?: string;
   GROQ_API_KEY?: string;
@@ -177,6 +181,9 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get('Origin');
     const headers = corsHeaders(origin);
+
+    const api = await handleApi(request, env, headers);
+    if (api) return api;
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers });
